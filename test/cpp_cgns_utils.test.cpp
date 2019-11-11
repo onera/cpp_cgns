@@ -1,4 +1,4 @@
-#include "doctest/doctest.hpp"
+#include "doctest/doctest.h"
 #include "cpp_cgns/cpp_cgns_utils.hpp"
 
 
