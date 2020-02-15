@@ -81,9 +81,10 @@ using tree_range = std::vector<tree_ref>;
 
 
 /// children {
-inline
-void emplace_child(tree& t, tree&& c) {
+inline 
+tree& emplace_child(tree& t, tree&& c) {
   t.children.emplace_back(std::move(c));
+  return t.children.back();
 }
 
 inline

@@ -28,19 +28,26 @@ struct Internal {
     tree newUnstructuredZone(const std::string& name, const std::array<I4,3>& dims);
     tree newGridCoordinates(const std::string& name="GridCoordinates");
     tree newZoneBC();
+    tree newZoneGridConnectivity();
     tree newPointList(const std::string& name, std_e::span<I4> range);
+    tree newPointRange(I4 first, I4 last);
     tree newElementRange(I4 first, I4 last);
     tree newRegularElements(const std::string& name, I4 type, md_array_view<I4,2>& connectivity, I4 first, I4 last, I4 nbEltsOnBoundary=0);
     tree newBC(const std::string& name, std_e::span<I4> point_list);
     tree newGridLocation(const std::string& loc);
+    tree newRind(const std::vector<I4>& rind_planes);
 
     tree newFamily(const std::string& name);
     tree newFamilyBC(const std::string& famName);
-    tree newFlowSolution(const std::string& name, const std::string& gridLocation);
-    tree newDiscreteData(const std::string& name, const std::string& gridLocation);
+    tree newFlowSolution(const std::string& name, const std::string& gridLoc);
+    tree newDiscreteData(const std::string& name, const std::string& gridLoc);
+    tree newZoneSubRegion(const std::string& name, int dim, const std::string& gridLoc);
     tree newBCDataSet(const std::string& name, const std::string& val, const std::string& gridLoc);
     tree newBCData(const std::string& name);
     tree newDescriptor(const std::string& name, const std::string& val);
+
+    tree newGridConnectivityType(const std::string& gc_type);
+    tree newGridConnectivity(const std::string& name, const std::string& z_donor_name, const std::string& loc, const std::string& connec_type);
 
     tree newDataArray(const std::string& name, node_value value);
     tree newUserDefinedData(const std::string& name, node_value value);

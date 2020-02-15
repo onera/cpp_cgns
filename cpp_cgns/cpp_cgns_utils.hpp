@@ -65,10 +65,10 @@ std_e::span<T> view_as_span(node_value& x) {
   return std_e::span<T>((T*)x.data,std_e::cartesian_product(x.dims));
 }
 template<class T>
-std_e::span<T> view_as_span(const node_value& x) {
+std_e::span<const T> view_as_span(const node_value& x) {
   STD_E_ASSERT(x.data_type==to_string<T>());
   STD_E_ASSERT(std_e::is_one_dimensional(x.dims));
-  return std_e::span<T>((const T*)x.data,std_e::cartesian_product(x.dims));
+  return std_e::span<const T>((const T*)x.data,std_e::cartesian_product(x.dims));
 }
 /// node_value -> span }
 

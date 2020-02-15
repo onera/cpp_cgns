@@ -28,7 +28,7 @@ tree Internal::newRootNode() {
 
 tree Internal::newCGNSVersionNode() {
   R4 version = 3.1;
-  auto version_arr = create_node_value_1d({version},alloc());
+  node_value version_arr = create_node_value_1d({version},alloc());
   return {"CGNSLibraryVersion", version_arr, {}, "CGNSLibraryVersion_t"};
 }
 
@@ -59,6 +59,9 @@ tree Internal::newUnstructuredZone(const std::string& name, const std::array<I4,
 tree Internal::newZoneBC() {
   return {std::string("ZoneBC"), MT, {}, "ZoneBC_t"};
 }
+tree Internal::newZoneGridConnectivity() {
+  return {std::string("ZoneGridConnectivity"), MT, {}, "ZoneGridConnectivity_t"};
+}
 
 tree Internal::newGridCoordinates(const std::string& name) {
   return {name, MT, {}, "GridCoordinates_t"};
@@ -71,6 +74,11 @@ tree Internal::newPointList(const std::string& name, std_e::span<I4> range) {
 }
 
 
+tree Internal::newPointRange(I4 first, I4 last) {
+  node_value range_value = create_node_value_1d({first,last},alloc());
+  range_value.dims = {1,2};
+  return {"PointRange", range_value, {}, "IndexRange_t"};
+}
 tree Internal::newElementRange(I4 first, I4 last) {
   node_value range_value = create_node_value_1d({first,last},alloc());
   return {"ElementRange", range_value, {}, "IndexRange_t"};
@@ -90,9 +98,18 @@ tree Internal::newFlowSolution(const std::string& name, const std::string& gridL
   tree loc = newGridLocation(gridLoc);
   return {name, MT, {loc}, "FlowSolution_t"};
 }
+tree Internal::newRind(const std::vector<I4>& rind_planes) {
+  node_value value = create_node_value_1d(rind_planes,alloc());
+  return {"Rind", value, {}, "Rind_t"};
+}
 tree Internal::newDiscreteData(const std::string& name, const std::string& gridLoc) {
   tree loc = newGridLocation(gridLoc);
   return {name, MT, {loc}, "DiscreteData_t"};
+}
+tree Internal::newZoneSubRegion(const std::string& name, int dim, const std::string& gridLoc) {
+  node_value dim_value = create_node_value_1d({dim},alloc());
+  tree loc = newGridLocation(gridLoc);
+  return {name, dim_value, {loc}, "ZoneSubRegion_t"};
 }
 tree Internal::newBCDataSet(const std::string& name, const std::string& val, const std::string& gridLoc) {
   tree loc = newGridLocation(gridLoc);
@@ -124,6 +141,17 @@ tree Internal::newFamilyBC(const std::string& famName) {
 tree Internal::newDescriptor(const std::string& name, const std::string& val) {
   node_value value = create_string_node_value(val,alloc());
   return {name, value, {}, "Descriptor_t"};
+}
+
+tree Internal::newGridConnectivityType(const std::string& gc_type) {
+  node_value gc_type_value = create_string_node_value(gc_type,alloc());
+  return {"GridConnectivityType",gc_type_value,{},"GridConnectivityType_t"};
+}
+tree Internal::newGridConnectivity(const std::string& name, const std::string& z_donor_name, const std::string& loc, const std::string& connec_type) {
+  node_value z_donor_value = create_string_node_value(z_donor_name,alloc());
+  tree location = newGridLocation(loc);
+  tree grid_conn_type = newGridConnectivityType(connec_type);
+  return {name, z_donor_value, {location,grid_conn_type}, "GridConnectivity_t"};
 }
 
 /// node creation }
