@@ -10,15 +10,15 @@ export LANG=en_US
 
 #rm -rf ../build
 
-
-cmake -S . -B../build
+cd ..
+cmake -S . -Bbuild
 
 ## build cpp_cgns and unit tests ##
-cmake --build ../build -- -j8
+cmake --build build -- -j8
 ## build only the library, not the unit tests ##
 #cmake --build ../build --target cpp_cgns -- -j8
 
 
 ## launch unit tests ##
-cd ../build
+cd build
 ./cpp_cgns_unit_tests
