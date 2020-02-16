@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
+include(scripts/cmake/add_extern_package.cmake)
 
 ## Project ##
 project(
@@ -31,7 +32,7 @@ set(CMAKE_BUILD_TYPE "Release") # TODO move
 
 
 ## Targets ##
-add_subdirectory(extern/std_e)
+add_extern_package(std_e)
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 
 add_library(${PROJECT_NAME} SHARED ${cpp_files})
@@ -46,10 +47,10 @@ target_link_libraries(${PROJECT_NAME}
     Python::Python
 )
 
-#add_subdirectory(extern/doctest)
-#add_executable(${PROJECT_NAME}_unit_tests ${test_files})
-#target_link_libraries(${PROJECT_NAME}_unit_tests PUBLIC ${PROJECT_NAME})
-#target_link_libraries(${PROJECT_NAME}_unit_tests PRIVATE doctest::doctest)
+add_extern_package(doctest)
+add_executable(${PROJECT_NAME}_unit_tests ${test_files})
+target_link_libraries(${PROJECT_NAME}_unit_tests PUBLIC ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}_unit_tests PRIVATE doctest::doctest)
 
 
 ## Install ##
