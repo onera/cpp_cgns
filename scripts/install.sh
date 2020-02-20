@@ -11,14 +11,14 @@ export LANG=en_US
 #rm -rf ../build
 
 cd ..
-cmake -S . -Bbuild
+cmake -S . -Bbuild -DCMAKE_INSTALL_PREFIX:PATH=/scratchm/bberthou/dist/test_cpp_cgns
 
 ## build cpp_cgns and unit tests ##
-cmake --build build -- -j8
+cmake --build build/ -j 24 --target install --config Release
 ## build only the library, not the unit tests ##
 #cmake --build ../build --target cpp_cgns -- -j8
 
 
 ## launch unit tests ##
-cd build
-./cpp_cgns_unit_tests
+#cd build
+#./cpp_cgns_unit_tests
