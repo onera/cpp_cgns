@@ -1,6 +1,6 @@
 ## Global config ##
 cmake_minimum_required(VERSION 3.12)
-include(scripts/cmake/target_add_dependency.cmake)
+include(${CMAKE_SOURCE_DIR}/external/project_utils/scripts/cmake/target_add_dependency.cmake)
 
 ## Project ##
 project(
@@ -24,8 +24,9 @@ list(FILTER test_files INCLUDE REGEX ".*\.test\.cpp$")
 
 
 ## Compiler flags ##
+# TODO move
 add_compile_options(-Wall -fmax-errors=2)
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -fno-math-errno -march=native -DNDEBUG -fopenmp -fPIC") # TODO move
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -fno-math-errno -march=native -DNDEBUG -fopenmp -fPIC")
 
 
 ## Targets ##
