@@ -84,7 +84,7 @@ install(DIRECTORY ${src_dir} DESTINATION include FILES_MATCHING PATTERN "*.hpp")
 set(TARGET_NAME ${PROJECT_NAME})
 string(REPLACE ";" " " TARGET_DEPENDENCIES_FIND_PACKAGE_STRING "${${PROJECT_NAME}_DEPENDENCIES_FIND_PACKAGE_STRING}")
 configure_file(
-  ${CMAKE_SOURCE_DIR}/external/project_utils/scripts/cmake/target_config.cmake.in
+  ${git_root_dir}/external/project_utils/scripts/cmake/target_config.cmake.in
   ${PROJECT_NAME}Config.cmake
   @ONLY
 )
