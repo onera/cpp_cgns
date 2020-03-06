@@ -1,33 +1,13 @@
 #include "cpp_cgns/cgns_exception.hpp"
-#include "cpp_cgns/sids_utils.hpp"
-#include "cpp_cgns/sids_manip.hpp"
-#include "cpp_cgns/elements_utils.hpp"
+#include "cpp_cgns/sids/utils.hpp"
+#include "cpp_cgns/tree_manip.hpp"
+#include "cpp_cgns/sids/elements_utils.hpp"
 #include "std_e/multi_array/utils.hpp"
+#include "cpp_cgns/cgns_exception.hpp"
 
 
 namespace cpp_cgns {
 
-
-std::array<I4,3> dims_of_unstruct_zone(tree& zone) {
-  STD_E_ASSERT(zone.type=="Zone_t");
-  tree& zone_type = get_child_by_type(zone,"ZoneType_t");
-  if (zone.type!="Zone_t") 
-    throw cgns_exception("dims_of_unstruct_zone expects a Zone_t tree");
-  if (to_string(zone_type.value)!="Unstructured")
-    throw cgns_exception("dims_of_unstruct_zone expects an unstructured zone");
-  if (zone.value.data_type!="I4")
-    throw cgns_exception("CGNS requires zone dimensions to be of type \"I4\"");
-  if (zone.value.dims.size()!=2 || zone.value.dims[0]!=1 || zone.value.dims[1]!=3)
-    throw cgns_exception("CGNS requires unstructured zone dimensions to be an array of shape {1x3}");
-
-  I4* zone_dims_ptr = (I4*)zone.value.data;
-  return {zone_dims_ptr[0],zone_dims_ptr[1],zone_dims_ptr[2]};
-}
-
-I4 number_of_nodes_of_unstruct_zone(tree& zone) {
-  std::array<I4,3> zone_dims = dims_of_unstruct_zone(zone);
-  return zone_dims[0];
-}
 
 void correct_bc_data_arrays_according_to_SIDS(tree& bcdata_node) {
   // SIDS: boundary field should have shape {1,PointList size}
@@ -36,7 +16,6 @@ void correct_bc_data_arrays_according_to_SIDS(tree& bcdata_node) {
     bcdata_array_node.value.dims = {1,bcdata_array_node.value.dims[0]};
   }
 }
-
 
 CGNS_ENUMT(ElementType_t) element_type(tree& elements_node) {
   STD_E_ASSERT(elements_node.type=="Elements_t");
@@ -81,6 +60,23 @@ bool compare_by_elt_type(tree& elts_node0, tree& elts_node1) {
   STD_E_ASSERT(elts_node0.type=="Elements_t");
   STD_E_ASSERT(elts_node1.type=="Elements_t");
   return element_type(elts_node0) < element_type(elts_node1);
+}
+bool is_boundary(const node_value& parent_elts, int i) {
+  if (parent_elts.data_type=="I4") {
+    auto pe = view_as_md_array<I4,2>(parent_elts);
+    if ((pe(i,0)==0) || (pe(i,1)==0)) { // 0 means no parent element, as per CGNS SIDS 7.3
+      return true;
+    }
+    return false;
+  } else if (parent_elts.data_type=="I8") {
+    auto pe = view_as_md_array<I8,2>(parent_elts);
+    if ((pe(i,0)==0) || (pe(i,1)==0)) { // 0 means no parent element, as per CGNS SIDS 7.3
+      return true;
+    }
+    return false;
+  } else {
+    throw cgns_exception("ParentElements node must be of type I4 or I8, not " + parent_elts.data_type);
+  }
 }
 
 

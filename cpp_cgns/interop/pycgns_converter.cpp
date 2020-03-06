@@ -1,4 +1,4 @@
-#include "cpp_cgns/pycgns_converter.hpp"
+#include "cpp_cgns/interop/pycgns_converter.hpp"
 
 #include "cpp_cgns/cgns_exception.hpp"
 #include "numpy_config.hpp"

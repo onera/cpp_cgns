@@ -1,5 +1,5 @@
-#include "cpp_cgns/sids_creation.hpp"
-#include "cpp_cgns/sids_manip.hpp"
+#include "cpp_cgns/sids/creation.hpp"
+#include "cpp_cgns/tree_manip.hpp"
 #include <functional>
 #include "std_e/multi_array/utils.hpp"
 #include "cpp_cgns/cgns_exception.hpp"

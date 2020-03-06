@@ -1,4 +1,4 @@
-#include "cpp_cgns/elements_utils.hpp"
+#include "cpp_cgns/sids/elements_utils.hpp"
 
 
 #include <vector>
@@ -14,8 +14,8 @@ struct element_traits {
   int nb_of_nodes;
 };
 const std::vector<element_traits> elements_traits = {
-  { CGNS_ENUMV( ElementTypeNull  )       , "ElementTypeNull"        ,  0  },
-  { CGNS_ENUMV( ElementTypeUserDefined ) , "ElementTypeUserDefined" ,  0  },
+  { CGNS_ENUMV( ElementTypeNull  )       , "ElementTypeNull"        , -1  },
+  { CGNS_ENUMV( ElementTypeUserDefined ) , "ElementTypeUserDefined" , -1  },
   { CGNS_ENUMV( NODE )                   , "NODE"                   ,  1  },
   { CGNS_ENUMV( BAR_2 )                  , "BAR_2"                  ,  2  },
   { CGNS_ENUMV( BAR_3 )                  , "BAR_3"                  ,  3  },

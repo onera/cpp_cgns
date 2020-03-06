@@ -77,6 +77,9 @@ const std::string& type(const tree& t) {
 /// range {
 using tree_ref = std::reference_wrapper<tree>;
 using tree_range = std::vector<tree_ref>;
+
+using const_tree_ref = std::reference_wrapper<const tree>;
+using const_tree_range = std::vector<const_tree_ref>;
 /// range }
 
 

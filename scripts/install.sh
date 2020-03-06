@@ -5,8 +5,6 @@ module load python/2.7.13
 export CC=gcc
 export CXX=g++
 
-export LANG=en_US
-
 
 #rm -rf ../build
 
