@@ -1,6 +1,6 @@
 #include "cpp_cgns/cpp_cgns_utils.hpp"
 
-#include "cpp_cgns/cgnslib.hpp"
+#include "cpp_cgns/cgnslib.h"
 #include "std_e/utils/integer_range.hpp"
 
 
@@ -18,7 +18,8 @@ bool compare_by_range(tree& elts_node0, tree& elts_node1);
 bool equal_by_elt_type(tree& elts_node0, tree& elts_node1);
 bool compare_by_elt_type(tree& elts_node0, tree& elts_node1);
 
-bool is_boundary(const node_value& parent_elts, int i);
+template<class Integer>
+bool is_boundary(const md_array_view<Integer,2>& parent_elts, Integer i);
 
 
 } // cpp_cgns

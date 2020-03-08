@@ -3,6 +3,7 @@
 #include <functional>
 #include "std_e/multi_array/utils.hpp"
 #include "cpp_cgns/cgns_exception.hpp"
+#include "cpp_cgns/cgnslib.h"
 
 
 namespace cpp_cgns {
@@ -67,12 +68,6 @@ tree Internal::newGridCoordinates(const std::string& name) {
   return {name, MT, {}, "GridCoordinates_t"};
 }
 
-tree Internal::newPointList(const std::string& name, std_e::span<I4> range) {
-  node_value range_value = view_as_node_value(range);
-  range_value.dims = {1,range_value.dims[0]}; // required by SIDS (9.3: BC_t)
-  return {name, range_value, {}, "IndexArray_t"};
-}
-
 
 tree Internal::newPointRange(I4 first, I4 last) {
   node_value range_value = create_node_value_1d({first,last},alloc());
@@ -84,15 +79,44 @@ tree Internal::newElementRange(I4 first, I4 last) {
   return {"ElementRange", range_value, {}, "IndexRange_t"};
 }
 
-tree Internal::newRegularElements(const std::string& name, I4 type, md_array_view<I4,2>& connectivity, I4 first, I4 last, I4 nbEltsOnBoundary) {
-  tree elts_conn_node = newDataArray("ElementConnectivity", view_as_node_value(connectivity));
-  auto& conn_dims = elts_conn_node.value.dims;
-  conn_dims = {conn_dims[0]*conn_dims[1]};
 
+template<class Multi_array>
+tree Internal::newElements(
+  const std::string& name, I4 type, Multi_array&& connectivity,
+  I4 first, I4 last, I4 nb_elts_on_boundary)
+{
+  tree elts_conn_node = newDataArray("ElementConnectivity", view_as_node_value(connectivity));
   tree eltsRange = newElementRange(first,last);
-  node_value elts_node_val = create_node_value_1d({type,nbEltsOnBoundary},alloc());
+  node_value elts_node_val = create_node_value_1d({type,nb_elts_on_boundary},alloc());
   return {name, elts_node_val, {eltsRange,elts_conn_node}, "Elements_t"};
 }
+tree Internal::newHomogenousElements(
+  const std::string& name, I4 type, md_array_view<I4,2> connectivity,
+  I4 first, I4 last, I4 nb_elts_on_boundary)
+{
+  return newElements(name,type,connectivity,first,last,nb_elts_on_boundary);
+}
+tree Internal::newNgonElements(
+  const std::string& name, std_e::span<I4> connectivity,
+  I4 first, I4 last, I4 nb_elts_on_boundary)
+{
+  I4 ngon_type = CGNS_ENUMV(NGON_n);
+  return newElements(name,ngon_type,connectivity,first,last,nb_elts_on_boundary);
+}
+
+
+tree Internal::newPointList(const std::string& name, std_e::span<I4> pl) {
+  node_value pl_value = view_as_node_value(pl);
+  pl_value.dims = {1,pl_value.dims[0]}; // required by SIDS (9.3: BC_t)
+  return {name, pl_value, {}, "IndexArray_t"};
+}
+tree Internal::newBC(const std::string& name, const std::string& loc, std_e::span<I4> point_list) {
+  node_value bcType = create_string_node_value("FamilySpecified",alloc());
+  tree location = newGridLocation(loc);
+  tree point_list_node = newPointList("PointList",point_list);
+  return {name, bcType, {point_list_node}, "BC_t"};
+}
+
 
 tree Internal::newFlowSolution(const std::string& name, const std::string& gridLoc) {
   tree loc = newGridLocation(gridLoc);
@@ -120,11 +144,7 @@ tree Internal::newBCData(const std::string& name) {
   return {name, MT, {}, "BCData_t"};
 }
 
-tree Internal::newBC(const std::string& name, std_e::span<I4> point_list) {
-  node_value bcType = create_string_node_value("FamilySpecified",alloc());
-  tree point_list_node = newPointList("PointList",point_list);
-  return {name, bcType, {point_list_node}, "BC_t"};
-}
+
 
 tree Internal::newGridLocation(const std::string& loc) {
   node_value location = create_string_node_value(loc,alloc());

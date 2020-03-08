@@ -42,10 +42,10 @@ create_GridCoords0(Internal& I) -> tree {
 auto
 create_GridCoords1(Internal& I) -> tree {
   auto coord_X = make_cgns_vector(
-    { 0.,1.,
-      0.,1.,
-      0.,1.,
-      0.,1. }
+    { 3.,4.,
+      3.,4.,
+      3.,4.,
+      3.,4. }
     ,I.alloc()
   );
   auto coord_Y = make_cgns_vector(
@@ -79,18 +79,26 @@ create_Zone0(Internal& I) -> tree {
 
   emplace_child(zone,create_GridCoords0(I));
 
-  //BC_t bc_inlet = {"Inlet","BCInflowSubsonic",PointList_t<int32_t>({1,2})}; // 1,2 are the two i-faces at x=0.
-  //ZoneBC_t ZoneBC = {
-  //  { std::move(bc_inlet) }
-  //};
+  auto pl_bc = make_cgns_vector<I4>(
+    {1,2}, // 1,2 are the two i-faces at x=0
+    I.alloc()
+  );
+  tree zone_bc = I.newZoneBC();
+  emplace_child(zone_bc,I.newBC("Inlet","FaceCenter",pl_bc));
 
-  //auto pl = PointList_t<int32_t>({7}); // 7 is the bottom i-face at x=3.
-  //auto pld = PointListDonor_t<int32_t>({1}); // cf. zone 1
-  //GridConnectivity_t gc = {"MixingPlane","Abutting1to1","Zone1",pl,pld};
-  //ZoneGridConnectivity_t ZoneGridConnectivity = {
-  //  { std::move(gc) }
-  //};
-
+  auto pl_gc = make_cgns_vector<I4>(
+    {7}, // 7 is the bottom i-face at x=3
+    I.alloc()
+  );
+  auto pl_gc_opp = make_cgns_vector<I4>(
+    {1,2}, // cf. zone 1
+    I.alloc()
+  );
+  tree gc = I.newGridConnectivity("MixingPlane","Zone1","FaceCenter","Abutting1to1");
+  emplace_child(gc,I.newPointList("PointList",pl_gc));
+  emplace_child(gc,I.newPointList("PointListDonor",pl_gc_opp));
+  tree zone_gc = I.newZoneGridConnectivity();
+  emplace_child(zone_gc,std::move(gc));
 
 
   //std::array<int32_t,3> nb_vertices = {{4,3,2}};

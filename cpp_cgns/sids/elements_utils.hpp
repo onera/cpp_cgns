@@ -2,7 +2,7 @@
 
 
 #include <string>
-#include "cpp_cgns/cgnslib.hpp"
+#include "cpp_cgns/cgnslib.h"
 
 
 namespace cpp_cgns {

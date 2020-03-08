@@ -8,6 +8,7 @@
 namespace cpp_cgns {
 
 
+// TODO I4 -> I4 or I8
 struct Internal {
   public:
   // ctors
@@ -29,11 +30,14 @@ struct Internal {
     tree newGridCoordinates(const std::string& name="GridCoordinates");
     tree newZoneBC();
     tree newZoneGridConnectivity();
-    tree newPointList(const std::string& name, std_e::span<I4> range);
     tree newPointRange(I4 first, I4 last);
     tree newElementRange(I4 first, I4 last);
-    tree newRegularElements(const std::string& name, I4 type, md_array_view<I4,2>& connectivity, I4 first, I4 last, I4 nbEltsOnBoundary=0);
-    tree newBC(const std::string& name, std_e::span<I4> point_list);
+    tree newHomogenousElements(const std::string& name, I4 type, md_array_view<I4,2> connectivity, I4 first, I4 last, I4 nbEltsOnBoundary=0);
+    tree newNgonElements(const std::string& name, std_e::span<I4> connectivity, I4 first, I4 last, I4 nbEltsOnBoundary=0);
+
+    tree newPointList(const std::string& name, std_e::span<I4> pl);
+    tree newBC(const std::string& name, const std::string& loc, std_e::span<I4> point_list);
+
     tree newGridLocation(const std::string& loc);
     tree newRind(const std::vector<I4>& rind_planes);
 
@@ -63,6 +67,9 @@ struct Internal {
     // creation according to SIDS
     tree newRootNode();
     tree newCGNSVersionNode();
+
+    template<class Multi_array>
+    tree newElements(const std::string& name, I4 type, Multi_array&& connectivity, I4 first, I4 last, I4 nb_elts_on_boundary);
     // removal
     void deallocate_tree(tree& t);
     void deallocate_node(tree& t);

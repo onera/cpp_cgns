@@ -61,23 +61,16 @@ bool compare_by_elt_type(tree& elts_node0, tree& elts_node1) {
   STD_E_ASSERT(elts_node1.type=="Elements_t");
   return element_type(elts_node0) < element_type(elts_node1);
 }
-bool is_boundary(const node_value& parent_elts, int i) {
-  if (parent_elts.data_type=="I4") {
-    auto pe = view_as_md_array<I4,2>(parent_elts);
-    if ((pe(i,0)==0) || (pe(i,1)==0)) { // 0 means no parent element, as per CGNS SIDS 7.3
-      return true;
-    }
-    return false;
-  } else if (parent_elts.data_type=="I8") {
-    auto pe = view_as_md_array<I8,2>(parent_elts);
-    if ((pe(i,0)==0) || (pe(i,1)==0)) { // 0 means no parent element, as per CGNS SIDS 7.3
-      return true;
-    }
-    return false;
-  } else {
-    throw cgns_exception("ParentElements node must be of type I4 or I8, not " + parent_elts.data_type);
+
+template<class Integer>
+bool is_boundary(const md_array_view<Integer,2>& pe, Integer i) {
+  if ((pe(i,0)==0) || (pe(i,1)==0)) { // 0 means no parent element, as per CGNS SIDS 7.3
+    return true;
   }
+  return false;
 }
+template bool is_boundary<I4>(const md_array_view<I4,2>& pe, I4 i);
+template bool is_boundary<I8>(const md_array_view<I8,2>& pe, I8 i);
 
 
 } // cpp_cgns

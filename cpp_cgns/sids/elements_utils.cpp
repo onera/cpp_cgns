@@ -8,13 +8,14 @@
 
 namespace cpp_cgns {
 
+
 struct element_traits {
   CGNS_ENUMT(ElementType_t) elt_type;
   std::string name;
   int nb_of_nodes;
 };
 const std::vector<element_traits> elements_traits = {
-  { CGNS_ENUMV( ElementTypeNull  )       , "ElementTypeNull"        , -1  },
+  { CGNS_ENUMV( ElementTypeNull  )       , "ElementTypeNull"        ,  0  },
   { CGNS_ENUMV( ElementTypeUserDefined ) , "ElementTypeUserDefined" , -1  },
   { CGNS_ENUMV( NODE )                   , "NODE"                   ,  1  },
   { CGNS_ENUMV( BAR_2 )                  , "BAR_2"                  ,  2  },
@@ -34,10 +35,10 @@ const std::vector<element_traits> elements_traits = {
   { CGNS_ENUMV( HEXA_8 )                 , "HEXA_8"                 ,  8  },
   { CGNS_ENUMV( HEXA_20 )                , "HEXA_20"                ,  20 },
   { CGNS_ENUMV( HEXA_27 )                , "HEXA_27"                ,  27 },
-  { CGNS_ENUMV( MIXED )                  , "MIXED"                  ,  0  },
+  { CGNS_ENUMV( MIXED )                  , "MIXED"                  , -1  },
   { CGNS_ENUMV( PYRA_13 )                , "PYRA_13"                ,  13 },
-  { CGNS_ENUMV( NGON_n )                 , "NGON_n"                 ,  0  },
-  { CGNS_ENUMV( NFACE_n )                , "NFACE_n"                ,  0  },
+  { CGNS_ENUMV( NGON_n )                 , "NGON_n"                 , -1  },
+  { CGNS_ENUMV( NFACE_n )                , "NFACE_n"                , -1  },
   { CGNS_ENUMV( BAR_4 )                  , "BAR_4"                  ,  4  },
   { CGNS_ENUMV( TRI_9 )                  , "TRI_9"                  ,  9  },
   { CGNS_ENUMV( TRI_10 )                 , "TRI_10"                 ,  10 },
