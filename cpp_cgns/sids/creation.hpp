@@ -25,7 +25,7 @@ struct Internal {
 
     // creation according to SIDS
     tree newCGNSTree();
-    tree newCGNSBase(const std::string& name, I4 cellDim, I4 physDim);
+    tree newCGNSBase(const std::string& name, int cellDim, int physDim);
     tree newUnstructuredZone(const std::string& name, const std::array<I4,3>& dims);
     tree newGridCoordinates(const std::string& name="GridCoordinates");
     tree newZoneBC();
@@ -54,10 +54,12 @@ struct Internal {
     tree newGridConnectivity(const std::string& name, const std::string& z_donor_name, const std::string& loc, const std::string& connec_type);
 
     tree newDataArray(const std::string& name, node_value value);
-    tree newUserDefinedData(const std::string& name, node_value value);
 
+    tree newUserDefinedData(const std::string& name, node_value value = MT);
     tree newUserDefinedData(const std::string& name, const std::string& val);
 
+    template<class Int>
+    tree newOrdinal(Int i);
     // removal
     void rm_child_by_name(tree& t, const std::string& name);
     void rm_child_by_type(tree& t, const std::string& type);
@@ -78,6 +80,12 @@ struct Internal {
   // data member
     cgns_allocator* alloc_ptr;
 };
+
+template<class Int>
+tree Internal::newOrdinal(Int i) {
+  node_value val = create_node_value_1d({i},alloc());
+  return {"Ordinal", val, {}, "Ordinal_t"};
+}
 
 
 } // cpp_cgns
