@@ -3,22 +3,17 @@
 
 #include "cpp_cgns/cpp_cgns.hpp"
 #include "std_e/multi_array/multi_array.hpp"
-#include "cpp_cgns/cgns_allocator.hpp"
-#include "cpp_cgns/cgns_vector.hpp"
+#include "cpp_cgns/allocator.hpp"
 #include "std_e/multi_index/cartesian_product.hpp"
 #include "std_e/multi_index/multi_index_range.hpp"
 #include "std_e/future/span.hpp"
 #include "std_e/multi_index/utils.hpp"
 #include "std_e/base/not_implemented_exception.hpp"
+#include "cpp_cgns/containers_and_views.hpp"
+#include "cpp_cgns/containers_utils.hpp"
 
 
 namespace cpp_cgns {
-
-
-// md_array_view {
-constexpr int dyn_rank = std_e::dynamic_size;
-template<class T, int rank> using md_array_view = std_e::dyn_multi_array_view<T,I8,rank>;
-// md_array_view {
 
 
 // span/vector/md_array_view<T> <-> node_value {
@@ -57,26 +52,43 @@ md_array_view<const T,rank> view_as_md_array(const node_value& x) {
 /// node_value -> md_array_view<T> }
 
 
-/// node_value -> span {
-template<class T>
-std_e::span<T> view_as_span(node_value& x) {
-  STD_E_ASSERT(x.data_type==to_string<T>());
-  STD_E_ASSERT(std_e::is_one_dimensional(x.dims));
-  return std_e::span<T>((T*)x.data,std_e::cartesian_product(x.dims));
+/// T*,extent -> md_array_view<T> {
+template<class T, class Multi_index, int rank = std_e::rank_of<Multi_index>>
+md_array_view<T,rank> view_as_md_array(T* ptr, Multi_index&& dims) {
+  std_e::memory_view<T*> mem_view {ptr};
+  std_e::dyn_shape<I8,rank> shape{FWD(dims)};
+  return md_array_view<T,rank>(mem_view,shape);
 }
-template<class T>
-std_e::span<const T> view_as_span(const node_value& x) {
+template<class T, class Multi_index, int rank = std_e::rank_of<Multi_index>>
+md_array_view<const T,rank> view_as_md_array(const T* ptr, Multi_index&& dims) {
+  std_e::memory_view<const T*> mem_view {ptr};
+  std_e::dyn_shape<I8,rank> shape{FWD(dims)};
+  return md_array_view<const T,rank>(mem_view,shape);
+}
+/// T*,extent -> md_array_view<T> }
+
+
+/// node_value -> span {
+template<class T, int rank = dyn_rank>
+std_e::span<T,rank> view_as_span(node_value& x) {
   STD_E_ASSERT(x.data_type==to_string<T>());
   STD_E_ASSERT(std_e::is_one_dimensional(x.dims));
-  return std_e::span<const T>((const T*)x.data,std_e::cartesian_product(x.dims));
+  return std_e::span<T,rank>((T*)x.data,std_e::cartesian_product(x.dims));
+}
+template<class T, int rank = dyn_rank>
+std_e::span<const T,rank> view_as_span(const node_value& x) {
+  STD_E_ASSERT(x.data_type==to_string<T>());
+  STD_E_ASSERT(std_e::is_one_dimensional(x.dims));
+  return std_e::span<const T,rank>((const T*)x.data,std_e::cartesian_product(x.dims));
 }
 /// node_value -> span }
 
 // span/vector/md_array_view<T> <-> node_value }
 
 // to_string {
-std::string to_string(const node_value& x);
-std::string to_string(const tree& t);
+inline constexpr int default_threshold_to_print_whole_array = 10;
+std::string to_string(const node_value& x, int threshold = default_threshold_to_print_whole_array);
+std::string to_string(const tree& t, int threshold = default_threshold_to_print_whole_array);
 // to_string }
 
 // to_string }

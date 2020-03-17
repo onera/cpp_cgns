@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <algorithm>
-#include "cpp_cgns/cgns_exception.hpp"
+#include "cpp_cgns/exception.hpp"
 
 
 namespace cpp_cgns {

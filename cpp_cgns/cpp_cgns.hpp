@@ -39,8 +39,7 @@ struct tree {
 // utility {
 
 /// basic type to_string {
-template<class T> std::string to_string();
-
+template<class T> std::string to_string()     { return "Unknown CGNS data_type"; };
 template<> inline std::string to_string<C1>() { return "C1"; }
 template<> inline std::string to_string<I4>() { return "I4"; }
 template<> inline std::string to_string<I8>() { return "I8"; }

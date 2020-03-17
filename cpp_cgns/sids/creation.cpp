@@ -2,7 +2,7 @@
 #include "cpp_cgns/tree_manip.hpp"
 #include <functional>
 #include "std_e/multi_array/utils.hpp"
-#include "cpp_cgns/cgns_exception.hpp"
+#include "cpp_cgns/exception.hpp"
 #include "cpp_cgns/cgnslib.h"
 
 

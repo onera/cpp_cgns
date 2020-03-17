@@ -1,18 +1,13 @@
 #pragma once
 
 
-// TODO RENAME file cgns_containers
-#include "cpp_cgns/cgns_allocator.hpp"
-#include "std_e/multi_array/multi_array.hpp"
+#include "cpp_cgns/containers_and_views.hpp"
 
 
 namespace cpp_cgns {
 
 
 // cgns_vector {
-template<class T> using cgns_vector = std::vector<T, cgns_std_allocator<T>>;
-
-
 template<class T>
 cgns_vector<T> make_cgns_vector(cgns_allocator& alloc) {
   return cgns_vector<T>(cgns_std_allocator<T>(&alloc));
@@ -31,9 +26,6 @@ cgns_vector<T> make_cgns_vector(std::initializer_list<T> l, cgns_allocator& allo
 
 
 // md_array {
-template<class T, int rank> using md_array = std_e::multi_array< cgns_vector<T> , std_e::dyn_shape<I8,rank>>;
-
-
 template<class T, int rank>
 md_array<T,rank> make_md_array(cgns_allocator& alloc) {
   return md_array<T,rank>(make_cgns_vector<T>(alloc));

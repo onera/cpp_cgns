@@ -35,24 +35,24 @@ std::string to_complete_string(const node_value& x) {
   }
 }
 
-std::string to_string(const node_value& x) {
+std::string to_string(const node_value& x, int threshold) {
   if (x.data_type=="MT") return "MT";
   if (x.data_type=="C1") return std::string((const char*)x.data,x.dims[0]);
-  if (std_e::cartesian_product(x.dims)<10) return to_complete_string(x);
+  if (std_e::cartesian_product(x.dims)<threshold) return to_complete_string(x);
   else return "{"+x.data_type+":"+dims_to_string(x.dims)+"}";
 }
 
-std::string to_string_impl(const tree& t, const std::string& indent) {
+std::string to_string_impl(const tree& t, const std::string& indent, int threshold) {
   static const std::string unit_indent = "  ";
-  std::string s = indent + t.name + ", " + to_string(t.value) + ", " + t.type + "\n";
+  std::string s = indent + t.name + ", " + to_string(t.value,threshold) + ", " + t.type + "\n";
   for (const auto& c : t.children) {
-    s += to_string_impl(c,indent+unit_indent);
+    s += to_string_impl(c,indent+unit_indent,threshold);
   }
   return s;
 }
 
-std::string to_string(const tree& t) {
-  return to_string_impl(t,"");
+std::string to_string(const tree& t, int threshold) {
+  return to_string_impl(t,"",threshold);
 }
 /// to_string }
 

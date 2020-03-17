@@ -1,7 +1,7 @@
 #include "cpp_cgns/sids/Hierarchical_Structures.hpp"
 #include "std_e/future/contract.hpp"
 #include "cpp_cgns/tree_manip.hpp"
-#include "cpp_cgns/cgns_exception.hpp"
+#include "cpp_cgns/exception.hpp"
 
 
 namespace cpp_cgns {

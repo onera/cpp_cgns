@@ -1,5 +1,5 @@
 #include "cpp_cgns/tree_manip.hpp"
-#include "cpp_cgns/cgns_exception.hpp"
+#include "cpp_cgns/exception.hpp"
 #include "std_e/utils/string.hpp"
 
 
@@ -158,7 +158,12 @@ tree_range get_nodes_by_matching(tree& t, const std::string& gen_path) {
 }
 
 tree& get_node_by_matching(tree& t, const std::string& gen_path) {
-  return get_nodes_by_matching(t,gen_path)[0];
+  tree_range ts = get_nodes_by_matching(t,gen_path);
+  if (ts.size() == 0) {
+    throw cgns_exception("No sub-tree matching \""+gen_path+"\" in tree \""+t.name+"\"");
+  } else {
+    return ts[0];
+  }
 }
 /// common searches }
 // tree search }

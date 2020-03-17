@@ -83,10 +83,6 @@ class cgns_std_allocator {
     using propagate_on_container_swap = std::true_type;
 
   // ctors
-    cgns_std_allocator()
-      : alloc(nullptr)
-    {}
-
     explicit
     cgns_std_allocator(cgns_allocator* alloc)
       : alloc(alloc)

@@ -2,7 +2,7 @@
 
 
 #include "cpp_cgns/cpp_cgns_utils.hpp"
-#include "cpp_cgns/cgns_allocator.hpp"
+#include "cpp_cgns/allocator.hpp"
 
 
 namespace cpp_cgns {

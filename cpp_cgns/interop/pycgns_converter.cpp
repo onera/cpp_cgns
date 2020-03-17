@@ -1,6 +1,6 @@
 #include "cpp_cgns/interop/pycgns_converter.hpp"
 
-#include "cpp_cgns/cgns_exception.hpp"
+#include "cpp_cgns/exception.hpp"
 #include "numpy_config.hpp"
 #include <algorithm>
 #include <iostream>

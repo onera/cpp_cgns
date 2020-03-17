@@ -1,9 +1,8 @@
-#include "cpp_cgns/cgns_exception.hpp"
+#include "cpp_cgns/exception.hpp"
 #include "cpp_cgns/sids/utils.hpp"
 #include "cpp_cgns/tree_manip.hpp"
 #include "cpp_cgns/sids/elements_utils.hpp"
 #include "std_e/multi_array/utils.hpp"
-#include "cpp_cgns/cgns_exception.hpp"
 
 
 namespace cpp_cgns {
