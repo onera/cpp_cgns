@@ -70,8 +70,7 @@ struct Internal {
     tree newRootNode();
     tree newCGNSVersionNode();
 
-    template<class Multi_array>
-    tree newElements(const std::string& name, I4 type, Multi_array&& connectivity, I4 first, I4 last, I4 nb_elts_on_boundary);
+    tree newElements(const std::string& name, I4 type, std_e::span<I4> connectivity, I4 first, I4 last, I4 nb_elts_on_boundary);
     // removal
     void deallocate_tree(tree& t);
     void deallocate_node(tree& t);

@@ -80,9 +80,8 @@ tree Internal::newElementRange(I4 first, I4 last) {
 }
 
 
-template<class Multi_array>
 tree Internal::newElements(
-  const std::string& name, I4 type, Multi_array&& connectivity,
+  const std::string& name, I4 type, std_e::span<I4> connectivity,
   I4 first, I4 last, I4 nb_elts_on_boundary)
 {
   tree elts_conn_node = newDataArray("ElementConnectivity", view_as_node_value(connectivity));
@@ -94,7 +93,9 @@ tree Internal::newHomogenousElements(
   const std::string& name, I4 type, md_array_view<I4,2> connectivity,
   I4 first, I4 last, I4 nb_elts_on_boundary)
 {
-  return newElements(name,type,connectivity,first,last,nb_elts_on_boundary);
+  I8 conn_dim = {connectivity.extent(0)*connectivity.extent(1)};
+  auto conn_1d = std_e::make_span(connectivity.data(),conn_dim);
+  return newElements(name,type,conn_1d,first,last,nb_elts_on_boundary);
 }
 tree Internal::newNgonElements(
   const std::string& name, std_e::span<I4> connectivity,
