@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <algorithm>
+#include "std_e/future/contract.hpp"
 
 
 namespace cpp_cgns {
@@ -84,12 +85,18 @@ class cgns_std_allocator {
 
   // ctors
     explicit
+    cgns_std_allocator()
+      : alloc(nullptr)
+    {}
+
+    explicit
     cgns_std_allocator(cgns_allocator* alloc)
       : alloc(alloc)
     {}
 
   // alloc/dealloc
     T* allocate(size_t n) {
+      STD_E_ASSERT(alloc!=nullptr);
       return cpp_cgns::allocate<T>(*alloc,n);
     }
 
