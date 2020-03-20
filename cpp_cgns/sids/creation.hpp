@@ -32,8 +32,9 @@ struct Internal {
     tree newZoneGridConnectivity();
     tree newPointRange(I4 first, I4 last);
     tree newElementRange(I4 first, I4 last);
-    tree newHomogenousElements(const std::string& name, I4 type, md_array_view<I4,2> connectivity, I4 first, I4 last, I4 nbEltsOnBoundary=0);
-    tree newNgonElements(const std::string& name, std_e::span<I4> connectivity, I4 first, I4 last, I4 nbEltsOnBoundary=0);
+    tree newHomogenousElements(const std::string& name, I4 type, md_array_view<I4,2> connectivity, I4 first, I4 last, I4 nb_bnd_elts=0);
+    tree newNgonElements(const std::string& name, std_e::span<I4> connectivity, I4 first, I4 last, I4 nb_bnd_elts=0);
+    tree newNfaceElements(const std::string& name, std_e::span<I4> connectivity, I4 first, I4 last);
 
     tree newPointList(const std::string& name, std_e::span<I4> pl);
     tree newBC(const std::string& name, const std::string& loc, std_e::span<I4> point_list);

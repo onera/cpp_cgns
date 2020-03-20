@@ -54,22 +54,17 @@ const node_value MT = {"MT",{0},nullptr};
 
 
 /// access functions {
-inline
-const std::string& name(const tree& t) {
-  return t.name;
-}
-inline
-node_value& value(tree& t) {
-  return t.value;
-}
-inline
-std::vector<tree>& children(tree& t) {
-  return t.children;
-}
-inline
-const std::string& type(const tree& t) {
-  return t.type;
-}
+inline auto name    (      tree& t) ->       std::string      & { return t.name;     }
+inline auto name    (const tree& t) -> const std::string      & { return t.name;     }
+
+inline auto value   (      tree& t) ->       node_value       & { return t.value;    }
+inline auto value   (const tree& t) -> const node_value       & { return t.value;    }
+
+inline auto children(      tree& t) ->       std::vector<tree>& { return t.children; }
+inline auto children(const tree& t) -> const std::vector<tree>& { return t.children; }
+
+inline auto type    (      tree& t) ->       std::string      & { return t.type;     }
+inline auto type    (const tree& t) -> const std::string      & { return t.type;     }
 /// access functions }
 
 

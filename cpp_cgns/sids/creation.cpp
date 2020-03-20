@@ -81,28 +81,30 @@ tree Internal::newElementRange(I4 first, I4 last) {
 
 
 tree Internal::newElements(
-  const std::string& name, I4 type, std_e::span<I4> connectivity,
-  I4 first, I4 last, I4 nb_elts_on_boundary)
+  const std::string& name, I4 type, std_e::span<I4> conns,
+  I4 first, I4 last, I4 nb_bnd_elts)
 {
-  tree elts_conn_node = newDataArray("ElementConnectivity", view_as_node_value(connectivity));
+  tree elts_conn_node = newDataArray("ElementConnectivity", view_as_node_value(conns));
   tree eltsRange = newElementRange(first,last);
-  node_value elts_node_val = create_node_value_1d({type,nb_elts_on_boundary},alloc());
+  node_value elts_node_val = create_node_value_1d({type,nb_bnd_elts},alloc());
   return {name, elts_node_val, {eltsRange,elts_conn_node}, "Elements_t"};
 }
 tree Internal::newHomogenousElements(
-  const std::string& name, I4 type, md_array_view<I4,2> connectivity,
-  I4 first, I4 last, I4 nb_elts_on_boundary)
+  const std::string& name, I4 type, md_array_view<I4,2> conns,
+  I4 first, I4 last, I4 nb_bnd_elts)
 {
-  I8 conn_dim = {connectivity.extent(0)*connectivity.extent(1)};
-  auto conn_1d = std_e::make_span(connectivity.data(),conn_dim);
-  return newElements(name,type,conn_1d,first,last,nb_elts_on_boundary);
+  I8 conn_dim = {conns.extent(0)*conns.extent(1)};
+  auto conn_1d = std_e::make_span(conns.data(),conn_dim);
+  return newElements(name,type,conn_1d,first,last,nb_bnd_elts);
 }
-tree Internal::newNgonElements(
-  const std::string& name, std_e::span<I4> connectivity,
-  I4 first, I4 last, I4 nb_elts_on_boundary)
-{
+
+tree Internal::newNgonElements(const std::string& name, std_e::span<I4> conns, I4 first, I4 last, I4 nb_bnd_elts) {
   I4 ngon_type = CGNS_ENUMV(NGON_n);
-  return newElements(name,ngon_type,connectivity,first,last,nb_elts_on_boundary);
+  return newElements(name,ngon_type,conns,first,last,nb_bnd_elts);
+}
+tree Internal::newNfaceElements(const std::string& name, std_e::span<I4> conns, I4 first, I4 last) {
+  I4 nface_type = CGNS_ENUMV(NFACE_n);
+  return newElements(name,nface_type,conns,first,last,0);
 }
 
 
