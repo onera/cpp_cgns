@@ -1,4 +1,6 @@
-## Introduction ##
+cpp_cgns
+========
+
 `cpp_cgns` offers a mapping of CGNS trees into a C++ in-memory representation, plus utilities for manipulation of C++ CGNS trees.
 
 ## Dependencies ##

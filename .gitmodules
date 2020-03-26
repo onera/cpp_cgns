@@ -6,4 +6,4 @@
 	url = https://github.com/BerengerBerthoul/project_utils.git
 [submodule "external/std_e"]
 	path = external/std_e
-	url = https://git.onera.fr/std_e
+	url = https://github.com/BerengerBerthoul/std_e.git
