@@ -6,7 +6,7 @@
 #include <iostream>
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 // typenum <-> string representation {
@@ -210,4 +210,4 @@ tree view_as_cpptree(PyObject* pytree) {
 // tree <-> pytree }
 
 
-} // cpp_cgns
+} // cgns

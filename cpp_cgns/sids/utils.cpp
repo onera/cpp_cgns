@@ -5,7 +5,7 @@
 #include "std_e/multi_array/utils.hpp"
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 void correct_bc_data_arrays_according_to_SIDS(tree& bcdata_node) {
@@ -69,4 +69,4 @@ template bool is_boundary<I4>(const md_array_view<I4,2>& pe, I4 i);
 template bool is_boundary<I8>(const md_array_view<I8,2>& pe, I8 i);
 
 
-} // cpp_cgns
+} // cgns

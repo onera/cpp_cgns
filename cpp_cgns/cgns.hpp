@@ -6,7 +6,7 @@
 #include <functional> // for std::reference_wrapper
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 // core {
@@ -100,4 +100,4 @@ void emplace_children(tree& t, std::vector<tree>&& cs) {
 // utility }
 
 
-} // cpp_cgns
+} // cgns

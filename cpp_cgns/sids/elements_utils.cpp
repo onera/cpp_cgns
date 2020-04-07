@@ -6,7 +6,7 @@
 #include "cpp_cgns/exception.hpp"
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 struct element_traits {
@@ -116,4 +116,4 @@ std::vector<CGNS_ENUMT(ElementType_t)> element_types_of_dimension(int dim) {
 }
 
 
-} // cpp_cgns
+} // cgns

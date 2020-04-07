@@ -1,7 +1,7 @@
-#include "cpp_cgns/cpp_cgns_utils.hpp"
+#include "cpp_cgns/node_manip.hpp"
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 bool is_of_name(const tree& tree, const std::string& name);
@@ -29,4 +29,4 @@ tree_range get_nodes_by_matching(tree& t, const std::string& gen_path);
 
 
 
-} // cpp_cgns
+} // cgns

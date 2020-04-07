@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "cpp_cgns/cpp_cgns.hpp"
+#include "cpp_cgns/cgns.hpp"
 #include "std_e/multi_array/multi_array.hpp"
 #include "cpp_cgns/allocator.hpp"
 #include "std_e/multi_index/cartesian_product.hpp"
@@ -9,11 +9,11 @@
 #include "std_e/future/span.hpp"
 #include "std_e/multi_index/utils.hpp"
 #include "std_e/base/not_implemented_exception.hpp"
-#include "cpp_cgns/containers_and_views.hpp"
+#include "cpp_cgns/array.hpp"
 #include "cpp_cgns/containers_utils.hpp"
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 // span/vector/md_array_view<T> <-> node_value {
@@ -133,4 +133,4 @@ auto allocate_md_array(const std_e::multi_index<I8,rank>& dims, cgns_allocator& 
 // md_array allocation by cgns allocator }
 
 
-} // cpp_cgns }
+} // cgns }

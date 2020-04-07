@@ -1,4 +1,4 @@
-#include "cpp_cgns/cpp_cgns_utils.hpp"
+#include "cpp_cgns/node_manip.hpp"
 
 
 #include "std_e/utils/string.hpp"
@@ -7,7 +7,7 @@
 #include <algorithm>
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 /// to_string {
@@ -57,4 +57,4 @@ std::string to_string(const tree& t, int threshold) {
 /// to_string }
 
 
-} // cpp_cgns
+} // cgns

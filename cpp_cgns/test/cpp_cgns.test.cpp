@@ -1,8 +1,8 @@
 #include "doctest/doctest.h"
-#include "cpp_cgns/cpp_cgns.hpp"
+#include "cpp_cgns/cgns.hpp"
 
 
-using namespace cpp_cgns;
+using namespace cgns;
 
 
 TEST_CASE("Hand-written tree construction") {

@@ -6,7 +6,7 @@
 #include "cpp_cgns/cgnslib.h"
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 // factory {
@@ -226,4 +226,4 @@ void factory::rm_children_by_type(tree& t, const std::string& type) {
 // factory }
 
 
-} // cpp_cgns
+} // cgns

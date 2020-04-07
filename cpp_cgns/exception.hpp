@@ -5,7 +5,7 @@
 #include <string>
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 class cgns_exception : public std::exception {
@@ -24,4 +24,4 @@ class cgns_exception : public std::exception {
 };
 
 
-} // cpp_cgns
+} // cgns

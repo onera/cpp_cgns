@@ -4,7 +4,7 @@
 #include "cpp_cgns/tree_manip.hpp"
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 std_e::span<const I4,2> ElementType_ElementSizeBoundary(const tree& e) {
   STD_E_ASSERT(e.type=="Elements_t");
@@ -77,4 +77,4 @@ md_array_view<I4,2> ParentElements(tree& e) {
   return view_as_md_array<I4,2>(parent_elts.value);
 }
 
-} // cpp_cgns
+} // cgns

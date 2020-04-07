@@ -1,10 +1,10 @@
 #include "doctest/doctest.h"
-#include "cpp_cgns/cpp_cgns.hpp"
+#include "cpp_cgns/cgns.hpp"
 #include "cpp_cgns/allocator.hpp"
 #include "cpp_cgns/containers_utils.hpp"
 
 
-using namespace cpp_cgns;
+using namespace cgns;
 
 
 // for the tests below, fake_python_allocator represent an external allocation strategy (e.g. Python third-party library)

@@ -4,7 +4,7 @@
 #include "cpp_cgns/exception.hpp"
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 std::array<I4,3> dims_of_unstruct_zone(const tree& zone) {
@@ -42,4 +42,4 @@ bool is_boundary_partitionned_zone(const tree& z) {
 }
 
 
-} // cpp_cgns
+} // cgns

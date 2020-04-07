@@ -3,7 +3,7 @@
 #include "std_e/utils/string.hpp"
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 // tree search {
@@ -169,4 +169,4 @@ tree& get_node_by_matching(tree& t, const std::string& gen_path) {
 // tree search }
 
 
-} // cpp_cgns
+} // cgns

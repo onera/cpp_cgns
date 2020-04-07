@@ -1,10 +1,10 @@
-#include "cpp_cgns/cpp_cgns_utils.hpp"
+#include "cpp_cgns/node_manip.hpp"
 
 #include "cpp_cgns/cgnslib.h"
 #include "std_e/utils/integer_range.hpp"
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 void correct_bc_data_arrays_according_to_SIDS(tree& bcdata_node);
@@ -28,4 +28,4 @@ bool face_is_boundary(const Array2& parent_elts) {
 }
 
 
-} // cpp_cgns
+} // cgns

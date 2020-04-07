@@ -1,11 +1,11 @@
 #pragma once
 
 
-#include "cpp_cgns/cpp_cgns_utils.hpp"
+#include "cpp_cgns/node_manip.hpp"
 #include "cpp_cgns/allocator.hpp"
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 // TODO I4 -> I4 or I8
@@ -90,4 +90,4 @@ tree factory::newOrdinal(I i) {
 using Internal = factory; // TODO DEL
 
 
-} // cpp_cgns
+} // cgns
