@@ -9,14 +9,14 @@ namespace cpp_cgns {
 
 
 // TODO I4 -> I4 or I8
-struct Internal {
+struct factory {
   public:
   // ctors
-    Internal(cgns_allocator* alloc)
+    factory(cgns_allocator* alloc)
       : alloc_ptr(alloc)
     {}
-    Internal(const Internal&) = delete;
-    Internal& operator=(const Internal&) = delete;
+    factory(const factory&) = delete;
+    factory& operator=(const factory&) = delete;
 
     // accessors
     cgns_allocator& alloc() {
@@ -32,6 +32,8 @@ struct Internal {
     tree newZoneGridConnectivity();
     tree newPointRange(I4 first, I4 last);
     tree newElementRange(I4 first, I4 last);
+
+    tree newElements(const std::string& name, I4 type, std_e::span<I4> connectivity, I4 first, I4 last, I4 nb_bnd_elts = 0);
     tree newHomogenousElements(const std::string& name, I4 type, md_array_view<I4,2> connectivity, I4 first, I4 last, I4 nb_bnd_elts=0);
     tree newNgonElements(const std::string& name, std_e::span<I4> connectivity, I4 first, I4 last, I4 nb_bnd_elts=0);
     tree newNfaceElements(const std::string& name, std_e::span<I4> connectivity, I4 first, I4 last);
@@ -59,8 +61,8 @@ struct Internal {
     tree newUserDefinedData(const std::string& name, node_value value = MT);
     tree newUserDefinedData(const std::string& name, const std::string& val);
 
-    template<class Int>
-    tree newOrdinal(Int i);
+    template<class I>
+    tree newOrdinal(I i);
     // removal
     void rm_child_by_name(tree& t, const std::string& name);
     void rm_child_by_type(tree& t, const std::string& type);
@@ -70,8 +72,6 @@ struct Internal {
     // creation according to SIDS
     tree newRootNode();
     tree newCGNSVersionNode();
-
-    tree newElements(const std::string& name, I4 type, std_e::span<I4> connectivity, I4 first, I4 last, I4 nb_elts_on_boundary);
     // removal
     void deallocate_tree(tree& t);
     void deallocate_node(tree& t);
@@ -81,11 +81,13 @@ struct Internal {
     cgns_allocator* alloc_ptr;
 };
 
-template<class Int>
-tree Internal::newOrdinal(Int i) {
+template<class I>
+tree factory::newOrdinal(I i) {
   node_value val = create_node_value_1d({i},alloc());
   return {"Ordinal", val, {}, "Ordinal_t"};
 }
+
+using Internal = factory; // TODO DEL
 
 
 } // cpp_cgns

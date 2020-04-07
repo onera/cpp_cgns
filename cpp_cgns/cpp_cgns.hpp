@@ -45,6 +45,11 @@ template<> inline std::string to_string<I4>() { return "I4"; }
 template<> inline std::string to_string<I8>() { return "I8"; }
 template<> inline std::string to_string<R4>() { return "R4"; }
 template<> inline std::string to_string<R8>() { return "R8"; }
+template<> inline std::string to_string<const C1>() { return "C1"; }
+template<> inline std::string to_string<const I4>() { return "I4"; }
+template<> inline std::string to_string<const I8>() { return "I8"; }
+template<> inline std::string to_string<const R4>() { return "R4"; }
+template<> inline std::string to_string<const R8>() { return "R8"; }
 /// basic type to_string }
 
 
