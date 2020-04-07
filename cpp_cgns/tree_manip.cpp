@@ -55,35 +55,35 @@ const tree& get_child_by_predicate(const tree& t, Unary_predicate p, const cgns_
 bool is_of_name(const tree& tree, const std::string& name) {
   return tree.name == name;
 }
-bool is_of_type(const tree& tree, const std::string& type) {
-  return tree.type == type;
+bool is_of_label(const tree& tree, const std::string& label) {
+  return tree.label == label;
 }
-bool is_one_of_types(const tree& tree, const std::vector<std::string>& types) {
-  return std::any_of(begin(types),end(types),[&tree](const std::string& type){ return is_of_type(tree,type); });
+bool is_one_of_labels(const tree& tree, const std::vector<std::string>& labels) {
+  return std::any_of(begin(labels),end(labels),[&tree](const std::string& label){ return is_of_label(tree,label); });
 }
 
 bool has_child_of_name(const tree& t, const std::string& name) {
   auto predicate = [&](const tree& child){ return is_of_name(child,name); };
   return has_child_by_predicate(t,predicate);
 }
-bool has_child_of_type(const tree& t, const std::string& type) {
-  auto predicate = [&](const tree& child){ return is_of_type(child,type); };
+bool has_child_of_label(const tree& t, const std::string& label) {
+  auto predicate = [&](const tree& child){ return is_of_label(child,label); };
   return has_child_by_predicate(t,predicate);
 }
 /// common predicates }
 
 
 /// common searches {
-tree_range get_children_by_type(tree& t, const std::string& type) {
-  auto predicate = [&](const tree& child){ return is_of_type(child,type); };
+tree_range get_children_by_label(tree& t, const std::string& label) {
+  auto predicate = [&](const tree& child){ return is_of_label(child,label); };
   return get_children_by_predicate(t,predicate);
 }
-tree_range get_children_by_types(tree& t, const std::vector<std::string>& types) {
-  auto predicate = [&](const tree& child){ return is_one_of_types(child,types); };
+tree_range get_children_by_labels(tree& t, const std::vector<std::string>& labels) {
+  auto predicate = [&](const tree& child){ return is_one_of_labels(child,labels); };
   return get_children_by_predicate(t,predicate);
 }
-tree_range get_children_by_name_or_type(tree& t, const std::string& s) {
-  auto predicate = [&](const tree& child){ return is_of_name(child,s) || is_of_type(child,s); };
+tree_range get_children_by_name_or_label(tree& t, const std::string& s) {
+  auto predicate = [&](const tree& child){ return is_of_name(child,s) || is_of_label(child,s); };
   return get_children_by_predicate(t,predicate);
 }
 
@@ -92,23 +92,23 @@ tree& get_child_by_name(tree& t, const std::string& name) {
   cgns_exception e("Child of name \""+name+"\" not found in tree \""+t.name+"\"");
   return get_child_by_predicate(t,predicate,e);
 }
-tree& get_child_by_type(tree& t, const std::string& type) {
-  auto predicate = [&](const tree& child){ return is_of_type(child,type); };
-  cgns_exception e("Child of type \""+type+"\" not found in tree \""+t.name+"\"");
+tree& get_child_by_label(tree& t, const std::string& label) {
+  auto predicate = [&](const tree& child){ return is_of_label(child,label); };
+  cgns_exception e("Child of label \""+label+"\" not found in tree \""+t.name+"\"");
   return get_child_by_predicate(t,predicate,e);
 }
 
 //// const versions {
-const_tree_range get_children_by_type(const tree& t, const std::string& type) {
-  auto predicate = [&](const tree& child){ return is_of_type(child,type); };
+const_tree_range get_children_by_label(const tree& t, const std::string& label) {
+  auto predicate = [&](const tree& child){ return is_of_label(child,label); };
   return get_children_by_predicate(t,predicate);
 }
-const_tree_range get_children_by_types(const tree& t, const std::vector<std::string>& types) {
-  auto predicate = [&](const tree& child){ return is_one_of_types(child,types); };
+const_tree_range get_children_by_labels(const tree& t, const std::vector<std::string>& labels) {
+  auto predicate = [&](const tree& child){ return is_one_of_labels(child,labels); };
   return get_children_by_predicate(t,predicate);
 }
-const_tree_range get_children_by_name_or_type(const tree& t, const std::string& s) {
-  auto predicate = [&](const tree& child){ return is_of_name(child,s) || is_of_type(child,s); };
+const_tree_range get_children_by_name_or_label(const tree& t, const std::string& s) {
+  auto predicate = [&](const tree& child){ return is_of_name(child,s) || is_of_label(child,s); };
   return get_children_by_predicate(t,predicate);
 }
 
@@ -117,9 +117,9 @@ const tree& get_child_by_name(const tree& t, const std::string& name) {
   cgns_exception e("Child of name \""+name+"\" not found in tree \""+t.name+"\"");
   return get_child_by_predicate(t,predicate,e);
 }
-const tree& get_child_by_type(const tree& t, const std::string& type) {
-  auto predicate = [&](const tree& child){ return is_of_type(child,type); };
-  cgns_exception e("Child of type \""+type+"\" not found in tree \""+t.name+"\"");
+const tree& get_child_by_label(const tree& t, const std::string& label) {
+  auto predicate = [&](const tree& child){ return is_of_label(child,label); };
+  cgns_exception e("Child of label \""+label+"\" not found in tree \""+t.name+"\"");
   return get_child_by_predicate(t,predicate,e);
 }
 //// const versions }
@@ -136,7 +136,7 @@ tree_range get_nodes_by_matching(tree& t, std::vector<std::string> identifiers_s
   STD_E_ASSERT(identifiers_stack.size()>0);
 
   auto current_id = identifiers_stack.back();
-  tree_range nodes_matching_current_id = get_children_by_name_or_type(t,current_id);
+  tree_range nodes_matching_current_id = get_children_by_name_or_label(t,current_id);
 
   if (identifiers_stack.size()==1) {
     return nodes_matching_current_id;

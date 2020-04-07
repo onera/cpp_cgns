@@ -8,9 +8,9 @@ namespace cgns {
 
 
 std::array<I4,3> dims_of_unstruct_zone(const tree& zone) {
-  STD_E_ASSERT(zone.type=="Zone_t");
-  const tree& zone_type = get_child_by_type(zone,"ZoneType_t");
-  if (zone.type!="Zone_t") 
+  STD_E_ASSERT(zone.label=="Zone_t");
+  const tree& zone_type = get_child_by_label(zone,"ZoneType_t");
+  if (zone.label!="Zone_t") 
     throw cgns_exception("dims_of_unstruct_zone expects a Zone_t tree");
   if (to_string(zone_type.value)!="Unstructured")
     throw cgns_exception("dims_of_unstruct_zone expects an unstructured zone");
@@ -37,7 +37,7 @@ I4 VertexBoundarySize_U(const tree& zone) {
 }
 
 bool is_boundary_partitionned_zone(const tree& z) {
-  STD_E_ASSERT(z.type=="Zone_t");
+  STD_E_ASSERT(z.label=="Zone_t");
   return VertexBoundarySize_U(z) != 0; // per CGNS SIDS 6.3
 }
 

@@ -44,7 +44,7 @@ std::string to_string(const node_value& x, int threshold) {
 
 std::string to_string_impl(const tree& t, const std::string& indent, int threshold) {
   static const std::string unit_indent = "  ";
-  std::string s = indent + t.name + ", " + to_string(t.value,threshold) + ", " + t.type + "\n";
+  std::string s = indent + t.name + ", " + to_string(t.value,threshold) + ", " + t.label + "\n";
   for (const auto& c : t.children) {
     s += to_string_impl(c,indent+unit_indent,threshold);
   }

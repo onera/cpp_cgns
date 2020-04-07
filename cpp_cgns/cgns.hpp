@@ -31,7 +31,7 @@ struct tree {
   std::string name;
   node_value value;
   std::vector<tree> children;
-  std::string type;
+  std::string label;
 };
 // core }
 
@@ -68,8 +68,8 @@ inline auto value   (const tree& t) -> const node_value       & { return t.value
 inline auto children(      tree& t) ->       std::vector<tree>& { return t.children; }
 inline auto children(const tree& t) -> const std::vector<tree>& { return t.children; }
 
-inline auto type    (      tree& t) ->       std::string      & { return t.type;     }
-inline auto type    (const tree& t) -> const std::string      & { return t.type;     }
+inline auto label   (      tree& t) ->       std::string      & { return t.label;    }
+inline auto label   (const tree& t) -> const std::string      & { return t.label;    }
 /// access functions }
 
 

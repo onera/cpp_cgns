@@ -152,8 +152,8 @@ PyObject* view_as_pytree(tree& t) {
   }
   PyList_SetItem(pytree,2,py_children);
 
-  // 3. type
-  PyObject* py_label = PyString_FromString(t.type.c_str());
+  // 3. label
+  PyObject* py_label = PyString_FromString(t.label.c_str());
   PyList_SetItem(pytree,3,py_label);
 
   return pytree;
@@ -195,7 +195,7 @@ tree view_as_cpptree(PyObject* pytree) {
     children[i] = view_as_cpptree(py_child);
   }
 
-  // 3. type
+  // 3. label
   PyObject* py_label = PyList_GetItem(pytree,3);
   // std::string label = std::string(PyString_AsString(py_label));
   // TODO CLEAN

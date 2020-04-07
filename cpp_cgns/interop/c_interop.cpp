@@ -75,12 +75,12 @@ void cgns_rm_children(cgns_tree* t) {
 /// children }
 
 
-/// type {
-const char* cgns_type(cgns_tree* t) {
-  return t->impl.type.c_str();
+/// label {
+const char* cgns_label(cgns_tree* t) {
+  return t->impl.label.c_str();
 }
 void cgns_set_type(cgns_tree* t, const char* s) {
-  t->impl.type = s;
+  t->impl.label = s;
 }
-/// type }
+/// label }
 // access functions }

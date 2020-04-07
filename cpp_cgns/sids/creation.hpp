@@ -65,8 +65,8 @@ struct factory {
     tree newOrdinal(I i);
     // removal
     void rm_child_by_name(tree& t, const std::string& name);
-    void rm_child_by_type(tree& t, const std::string& type);
-    void rm_children_by_type(tree& t, const std::string& type);
+    void rm_child_by_label(tree& t, const std::string& label);
+    void rm_children_by_label(tree& t, const std::string& label);
   private:
   // member functions
     // creation according to SIDS

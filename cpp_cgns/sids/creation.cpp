@@ -213,12 +213,12 @@ void factory::rm_child_by_name(tree& t, const std::string& name) {
   auto predicate = [&](const tree& child){ return is_of_name(child,name); };
   rm_child_by_predicate(t,predicate);
 }
-void factory::rm_child_by_type(tree& t, const std::string& type) {
-  auto predicate = [&](const tree& child){ return is_of_type(child,type); };
+void factory::rm_child_by_label(tree& t, const std::string& label) {
+  auto predicate = [&](const tree& child){ return is_of_label(child,label); };
   rm_child_by_predicate(t,predicate);
 }
-void factory::rm_children_by_type(tree& t, const std::string& type) {
-  auto predicate = [&](const tree& child){ return is_of_type(child,type); };
+void factory::rm_children_by_label(tree& t, const std::string& label) {
+  auto predicate = [&](const tree& child){ return is_of_label(child,label); };
   rm_children_by_predicate(t,predicate);
 }
 /// node removal }
