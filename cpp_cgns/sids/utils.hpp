@@ -9,7 +9,7 @@ namespace cgns {
 
 void correct_bc_data_arrays_according_to_SIDS(tree& bcdata_node);
 
-CGNS_ENUMT(ElementType_t) element_type(tree& elements_node);
+ElementType_t element_type(tree& elements_node);
 std_e::integer_closed_range_ref<I4> element_range(tree& element_node);
 md_array_view<I4,2> regular_elements_connectivities(tree& elements_node);
 

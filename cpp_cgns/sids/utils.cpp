@@ -16,10 +16,10 @@ void correct_bc_data_arrays_according_to_SIDS(tree& bcdata_node) {
   }
 }
 
-CGNS_ENUMT(ElementType_t) element_type(tree& elements_node) {
+ElementType_t element_type(tree& elements_node) {
   STD_E_ASSERT(elements_node.label=="Elements_t");
   auto val = view_as_span<I4>(elements_node.value);
-  return (CGNS_ENUMT(ElementType_t))val[0]; // from SIDS File Mapping Manual, Elements_t
+  return (ElementType_t)val[0]; // from SIDS File Mapping Manual, Elements_t
 }
 std_e::integer_closed_range_ref<I4> element_range(tree& elements_node) {
   STD_E_ASSERT(elements_node.label=="Elements_t");

@@ -99,11 +99,11 @@ tree factory::newHomogenousElements(
 }
 
 tree factory::newNgonElements(const std::string& name, std_e::span<I4> conns, I4 first, I4 last, I4 nb_bnd_elts) {
-  I4 ngon_type = CGNS_ENUMV(NGON_n);
+  I4 ngon_type = NGON_n;
   return newElements(name,ngon_type,conns,first,last,nb_bnd_elts);
 }
 tree factory::newNfaceElements(const std::string& name, std_e::span<I4> conns, I4 first, I4 last) {
-  I4 nface_type = CGNS_ENUMV(NFACE_n);
+  I4 nface_type = NFACE_n;
   return newElements(name,nface_type,conns,first,last,0);
 }
 
