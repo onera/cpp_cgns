@@ -2,6 +2,7 @@
 
 
 #include "cpp_cgns/sids/elements_utils.hpp"
+#include "cpp_cgns/exception.hpp"
 
 
 namespace cgns {
@@ -28,13 +29,15 @@ is_interleaved(connectivity_category cat) -> bool {
   return false;
 }
 
-template<connectivity_category cat> inline auto size_of_type(int n);
-template<> inline auto size_of_type<            ngon >(int n) { return n; };
-template<> inline auto size_of_type<interleaved_ngon >(int n) { return n; };
-template<> inline auto size_of_type<            nface>(int n) { return n; };
-template<> inline auto size_of_type<interleaved_nface>(int n) { return n; };
-template<> inline auto size_of_type<            mixed>(int n) { return number_of_nodes(ElementType_t(n)); }; // TODO perfo number_of_nodes (inline+correct!!)
-template<> inline auto size_of_type<interleaved_mixed>(int n) { return number_of_nodes(ElementType_t(n)); };
-
+template<connectivity_category cat, class I> constexpr auto
+size_of_type(I n) {
+  if constexpr (cat==ngon || cat==interleaved_ngon || cat==nface || cat==interleaved_nface) {
+    return n;
+  } else if constexpr (cat==mixed || cat==interleaved_mixed) {
+    return number_of_nodes2(n);
+  } else {
+    throw cgns_exception("homogenous or unknown connectivity category");
+  }
+}
 
 } // cgns

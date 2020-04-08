@@ -1,8 +1,6 @@
 #include "cpp_cgns/sids/connectivity_category.hpp"
 
-
 namespace cgns {
-
 
 template<class I> auto 
 connectivity_category_of(const tree& e) -> connectivity_category {

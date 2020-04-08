@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cpp_cgns/cgns.hpp"
-#include <array>
 #include "std_e/future/contract.hpp"
 #include "cpp_cgns/tree_manip.hpp"
 #include "cpp_cgns/exception.hpp"
