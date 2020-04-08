@@ -19,7 +19,7 @@ enum connectivity_category {
 };
 using all_connectivity_categories = std::make_integer_sequence<int,nb_connectivity_categories>;
 
-auto
+template<class I> auto 
 connectivity_category_of(const tree& e) -> connectivity_category;
 
 constexpr auto
