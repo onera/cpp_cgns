@@ -79,6 +79,9 @@ inline constexpr std::array elements_traits = std_e::make_array(
   element_traits{ HEXA_125                , "HEXA_125"               ,  125}
 );
 
+using all_basic_2D_elements = std::integer_sequence<ElementType_t,TRI_3,QUAD_4>;
+using all_basic_3D_elements = std::integer_sequence<ElementType_t,TETRA_4,PYRA_5,PENTA_6,HEXA_8>;
+using all_basic_2D_and_3D_elements = std::integer_sequence<ElementType_t,TRI_3,QUAD_4,TETRA_4,PYRA_5,PENTA_6,HEXA_8>;
 
 int number_of_nodes(ElementType_t elt); // TODO DEL
 
