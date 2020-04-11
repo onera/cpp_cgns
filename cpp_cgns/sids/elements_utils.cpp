@@ -33,6 +33,7 @@ std::string cgns_element_to_string(ElementType_t elt) {
 }
 
 
+// TODO new elements (not only till HEXA_64)
 std::vector<ElementType_t> element_types_of_dimension(int dim) {
   if (dim==0) return {NODE};
 
