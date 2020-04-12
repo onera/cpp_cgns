@@ -13,7 +13,7 @@ cpp_cgns
 4. Use `cmake` to configure, build and install. The configuration step will automatically download `doctest`. If you are not familiar with `cmake` usage, an example is given in `scripts/install.sh`. By default, `cmake` will build the library, its dependencies, and a unit test executable.
 
 ## Development ##
-The `cpp_cgns` repository is compatible with the development process described in `external/project_utils/doc/main.md`. It uses git submodules to ease the joint development with other repositories compatible with this organization. TL;DR: configure the git repository with `cd external/project_utils/scripts && configure_top_level_repo.sh".
+The `cpp_cgns` repository is compatible with the development process described in `external/project_utils/doc/main.md`. It uses git submodules to ease the joint development with other repositories compatible with this organization. TL;DR: configure the git repository with `cd external/project_utils/scripts && configure_top_level_repo.sh`.
 
 ## Acknowledgements ##
 The design of the C++/CGNS mapping is based on python/CGNS. Tree manipulation functions are based on Cassiopee (http://elsa.onera.fr/Cassiopee/).
