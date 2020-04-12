@@ -1,6 +1,7 @@
 ## Global config ##
 cmake_minimum_required(VERSION 3.12)
 
+find_package(Git 2.14 REQUIRED)
 execute_process(COMMAND git rev-parse --show-superproject-working-tree
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   OUTPUT_VARIABLE git_root_dir_with_space
@@ -20,6 +21,21 @@ project(
   DESCRIPTION	"C++/CGNS mapping"
   LANGUAGES	CXX
 )
+
+
+## Dependencies ##
+include(FetchContent)
+### doctest ###
+FetchContent_Declare(
+  doctest
+  GIT_REPOSITORY https://github.com/onqtam/doctest.git
+  GIT_TAG        2.3.7
+)
+FetchContent_GetProperties(doctest)
+if(NOT doctest_POPULATED)
+  FetchContent_Populate(doctest)
+  add_subdirectory(${doctest_SOURCE_DIR} ${doctest_BINARY_DIR})
+endif()
 
 
 ## Find files ##
@@ -58,7 +74,6 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 add_executable(${PROJECT_NAME}_unit_tests ${test_files})
-target_add_dependency(${PROJECT_NAME}_unit_tests doctest)
 target_link_libraries(${PROJECT_NAME}_unit_tests
   PUBLIC
     ${PROJECT_NAME}
