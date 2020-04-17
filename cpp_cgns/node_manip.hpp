@@ -38,6 +38,7 @@ node_value view_as_node_value(std_e::multi_array<T0,T1>& x) {
 template<class T, int rank>
 md_array_view<T,rank> view_as_md_array(node_value& x) {
   STD_E_ASSERT(x.data_type==to_string<T>());
+  STD_E_ASSERT(x.dims.size()==rank);
   std_e::memory_view<T*> mem_view {(T*)x.data};
   std_e::dyn_shape<I8,rank> shape{x.dims};
   return md_array_view<T,rank>(mem_view,shape);
@@ -45,6 +46,7 @@ md_array_view<T,rank> view_as_md_array(node_value& x) {
 template<class T, int rank>
 md_array_view<const T,rank> view_as_md_array(const node_value& x) {
   STD_E_ASSERT(x.data_type==to_string<T>());
+  STD_E_ASSERT(x.dims.size()==rank);
   std_e::memory_view<const T*> mem_view {(const T*)x.data};
   std_e::dyn_shape<I8,rank> shape{x.dims};
   return md_array_view<const T,rank>(mem_view,shape);
@@ -58,12 +60,6 @@ md_array_view<T,rank> view_as_md_array(T* ptr, Multi_index&& dims) {
   std_e::memory_view<T*> mem_view {ptr};
   std_e::dyn_shape<I8,rank> shape{FWD(dims)};
   return md_array_view<T,rank>(mem_view,shape);
-}
-template<class T, class Multi_index, int rank = std_e::rank_of<Multi_index>>
-md_array_view<const T,rank> view_as_md_array(const T* ptr, Multi_index&& dims) {
-  std_e::memory_view<const T*> mem_view {ptr};
-  std_e::dyn_shape<I8,rank> shape{FWD(dims)};
-  return md_array_view<const T,rank>(mem_view,shape);
 }
 /// T*,extent -> md_array_view<T> }
 
