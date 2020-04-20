@@ -44,27 +44,31 @@ set(test_files ${cpp_and_test_files})
 list(FILTER test_files INCLUDE REGEX ".*\.test\.cpp$")
 
 
-## Compiler flags ##
-# TODO move
-add_compile_options(-Wall -fmax-errors=2)
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -fno-math-errno -march=native -DNDEBUG -fopenmp -fPIC")
-
-
 ## Targets ##
 add_library(${PROJECT_NAME} SHARED ${cpp_files})
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${include_dir}>
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
 
 target_add_dependency(${PROJECT_NAME} std_e)
-target_add_thirdparty_dependency(${PROJECT_NAME} Python REQUIRED COMPONENTS Interpreter Development)
-target_link_libraries(${PROJECT_NAME}
-  PUBLIC 
-    std_e::std_e
-    Python::Python
-)
+
+if(CMAKE_VERSION VERSION_LESS 3.14)
+  target_add_thirdparty_dependency(${PROJECT_NAME} Python REQUIRED COMPONENTS Interpreter Development)
+  target_link_libraries(${PROJECT_NAME}
+    PUBLIC 
+      std_e::std_e
+      Python::Python
+  )
+else()
+  target_add_thirdparty_dependency(${PROJECT_NAME} Python REQUIRED COMPONENTS Interpreter Development NumPy)
+  target_link_libraries(${PROJECT_NAME}
+    PUBLIC 
+      std_e::std_e
+      Python::Python
+      Python::NumPy
+  )
+endif()
 
 add_executable(${PROJECT_NAME}_unit_tests ${test_files})
 target_link_libraries(${PROJECT_NAME}_unit_tests
