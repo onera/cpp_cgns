@@ -6,7 +6,7 @@
 #include <functional> // for std::reference_wrapper
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 // core {
@@ -31,7 +31,7 @@ struct tree {
   std::string name;
   node_value value;
   std::vector<tree> children;
-  std::string type;
+  std::string label;
 };
 // core }
 
@@ -45,6 +45,11 @@ template<> inline std::string to_string<I4>() { return "I4"; }
 template<> inline std::string to_string<I8>() { return "I8"; }
 template<> inline std::string to_string<R4>() { return "R4"; }
 template<> inline std::string to_string<R8>() { return "R8"; }
+template<> inline std::string to_string<const C1>() { return "C1"; }
+template<> inline std::string to_string<const I4>() { return "I4"; }
+template<> inline std::string to_string<const I8>() { return "I8"; }
+template<> inline std::string to_string<const R4>() { return "R4"; }
+template<> inline std::string to_string<const R8>() { return "R8"; }
 /// basic type to_string }
 
 
@@ -63,8 +68,8 @@ inline auto value   (const tree& t) -> const node_value       & { return t.value
 inline auto children(      tree& t) ->       std::vector<tree>& { return t.children; }
 inline auto children(const tree& t) -> const std::vector<tree>& { return t.children; }
 
-inline auto type    (      tree& t) ->       std::string      & { return t.type;     }
-inline auto type    (const tree& t) -> const std::string      & { return t.type;     }
+inline auto label   (      tree& t) ->       std::string      & { return t.label;    }
+inline auto label   (const tree& t) -> const std::string      & { return t.label;    }
 /// access functions }
 
 
@@ -95,4 +100,4 @@ void emplace_children(tree& t, std::vector<tree>&& cs) {
 // utility }
 
 
-} // cpp_cgns
+} // cgns

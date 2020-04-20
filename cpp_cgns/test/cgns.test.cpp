@@ -1,8 +1,8 @@
-#include "doctest/doctest.h"
-#include "cpp_cgns/cpp_cgns.hpp"
+#include "std_e/unit_test/doctest.hpp"
+#include "cpp_cgns/cgns.hpp"
 
 
-using namespace cpp_cgns;
+using namespace cgns;
 
 
 TEST_CASE("Hand-written tree construction") {
@@ -13,7 +13,7 @@ TEST_CASE("Hand-written tree construction") {
     "MyArray", // name
     {"R8",{data_size},values.data()}, // value
     {}, // children (none here)
-    "DataArray_t" // SIDS type
+    "DataArray_t" // SIDS label
   };
 
   CHECK( t.name == "MyArray" );
@@ -26,7 +26,7 @@ TEST_CASE("Hand-written tree construction") {
 
   CHECK( t.children.size() == 0 );
 
-  CHECK( t.type == "DataArray_t" );
+  CHECK( t.label == "DataArray_t" );
 
 
 

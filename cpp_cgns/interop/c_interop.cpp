@@ -1,11 +1,11 @@
-#include "cpp_cgns/cpp_cgns.hpp"
+#include "cpp_cgns/cgns.hpp"
 #include "cpp_cgns/interop/c_interop.hpp"
 #include <algorithm>
 
 
 // Opaque type for C that contains the C++ cgns tree
 struct cgns_tree {
-  cpp_cgns::tree impl;
+  cgns::tree impl;
 };
 
 
@@ -45,7 +45,7 @@ int64_t cgns_dim(cgns_tree* t, int i) {
   return t->impl.value.dims[i];
 }
 void cgns_set_dims(cgns_tree* t, int nb_dims, int64_t* dims) {
-  t->impl.value.dims = std::vector<cpp_cgns::I8>(nb_dims);
+  t->impl.value.dims = std::vector<cgns::I8>(nb_dims);
   std::copy_n(dims,nb_dims,begin(t->impl.value.dims));
 }
 
@@ -63,8 +63,8 @@ int cgns_nb_children(cgns_tree* t) {
   return t->impl.children.size();
 }
 cgns_tree* cgns_child(cgns_tree* t, int i) {
-  cpp_cgns::tree& child_i = t->impl.children[i];
-  return reinterpret_cast<cgns_tree*>(&child_i); // cgns_tree is composed of a cpp_cgns::tree, so same memory layouts
+  cgns::tree& child_i = t->impl.children[i];
+  return reinterpret_cast<cgns_tree*>(&child_i); // cgns_tree is composed of a cgns::tree, so same memory layouts
 }
 void cgns_push_child(cgns_tree* t, cgns_tree* c) {
   t->impl.children.push_back(c->impl);
@@ -75,12 +75,12 @@ void cgns_rm_children(cgns_tree* t) {
 /// children }
 
 
-/// type {
-const char* cgns_type(cgns_tree* t) {
-  return t->impl.type.c_str();
+/// label {
+const char* cgns_label(cgns_tree* t) {
+  return t->impl.label.c_str();
 }
 void cgns_set_type(cgns_tree* t, const char* s) {
-  t->impl.type = s;
+  t->impl.label = s;
 }
-/// type }
+/// label }
 // access functions }

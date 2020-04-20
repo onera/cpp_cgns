@@ -1,8 +1,8 @@
-#include "doctest/doctest.h"
-#include "cpp_cgns/cpp_cgns_utils.hpp"
+#include "std_e/unit_test/doctest.hpp"
+#include "cpp_cgns/node_manip.hpp"
 
 
-using namespace cpp_cgns;
+using namespace cgns;
 
 
 TEST_CASE("View multi_array as cgns node_value") {

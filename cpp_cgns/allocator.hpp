@@ -6,7 +6,7 @@
 #include "std_e/future/contract.hpp"
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 class cgns_allocator final {
@@ -97,7 +97,7 @@ class cgns_std_allocator {
   // alloc/dealloc
     T* allocate(size_t n) {
       STD_E_ASSERT(alloc!=nullptr);
-      return cpp_cgns::allocate<T>(*alloc,n);
+      return cgns::allocate<T>(*alloc,n);
     }
 
     void deallocate(T* p, size_t) noexcept { 
@@ -122,4 +122,4 @@ bool operator!=(const cgns_std_allocator<T0>& x, const cgns_std_allocator<T1>& y
 }
 
 
-} // cpp_cgns
+} // cgns

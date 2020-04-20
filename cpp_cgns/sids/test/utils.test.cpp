@@ -1,8 +1,8 @@
-#include "doctest/doctest.h"
+#include "std_e/unit_test/doctest.hpp"
 
 #include "cpp_cgns/sids/utils.hpp"
 
-using namespace cpp_cgns;
+using namespace cgns;
 
 TEST_CASE("sids_utils is_boundary") {
   cgns_allocator alloc;

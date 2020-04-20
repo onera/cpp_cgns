@@ -1,10 +1,10 @@
 #pragma once
 
 
-#include "cpp_cgns/containers_and_views.hpp"
+#include "cpp_cgns/array.hpp"
 
 
-namespace cpp_cgns {
+namespace cgns {
 
 
 // cgns_vector {
@@ -52,4 +52,4 @@ md_array<T,2> make_md_array(std::initializer_list<std::initializer_list<T>> ll, 
 // md_array }
 
 
-} // cpp_cgns
+} // cgns
