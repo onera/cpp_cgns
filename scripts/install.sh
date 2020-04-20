@@ -5,9 +5,6 @@ module load python/2.7.13
 export CC=gcc
 export CXX=g++
 
-
-#rm -rf ../build
-
 cd ..
 export PROJECT_ROOT=$(pwd)/../..
 cmake -S . -Bbuild -DCMAKE_INSTALL_PREFIX:PATH=/scratchm/bberthou/dist/test_cpp_cgns

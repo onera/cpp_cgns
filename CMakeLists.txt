@@ -8,6 +8,9 @@ else()
 endif()
 include(${PROJECT_ROOT}/external/project_utils/scripts/cmake/target_add_dependency.cmake)
 
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
 ## Project ##
 project(
   cpp_cgns VERSION 0.1.0
