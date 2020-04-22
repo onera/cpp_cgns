@@ -46,7 +46,7 @@ md_array_view<T,rank> view_as_md_array(node_value& x) {
 template<class T, int rank>
 md_array_view<const T,rank> view_as_md_array(const node_value& x) {
   STD_E_ASSERT(x.data_type==to_string<T>());
-  STD_E_ASSERT(x.dims.size()==rank);
+  STD_E_ASSERT(int(x.dims.size())==rank);
   std_e::memory_view<const T*> mem_view {(const T*)x.data};
   std_e::dyn_shape<I8,rank> shape{x.dims};
   return md_array_view<const T,rank>(mem_view,shape);
