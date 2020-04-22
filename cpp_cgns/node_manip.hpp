@@ -10,7 +10,7 @@
 #include "std_e/multi_index/utils.hpp"
 #include "std_e/base/not_implemented_exception.hpp"
 #include "cpp_cgns/array.hpp"
-#include "cpp_cgns/containers_utils.hpp"
+#include "cpp_cgns/container_utils.hpp"
 
 
 namespace cgns {
