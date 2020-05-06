@@ -49,6 +49,13 @@ md_array<T,2> make_md_array(std::initializer_list<std::initializer_list<T>> ll, 
   auto sz = ll.size() * std::begin(ll)->size();
   return md_array<T,2>(ll,make_cgns_vector<T>(sz,alloc));
 }
+template<class T, class I, class... Is>
+auto make_md_array(cgns_allocator& alloc, I i, Is... is) {
+  constexpr int rank = 1+sizeof...(Is);
+  std_e::multi_index<I,rank> dims = {i,is...};
+  I sz = std_e::cartesian_product(dims);
+  return md_array<T,rank>(make_cgns_vector<T>(sz,alloc),i,is...);
+}
 // md_array }
 
 
