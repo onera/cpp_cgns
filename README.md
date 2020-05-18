@@ -17,3 +17,6 @@ The `cpp_cgns` repository is compatible with the development process described i
 
 ## Acknowledgements ##
 The design of the C++/CGNS mapping is based on python/CGNS. Tree manipulation functions are based on Cassiopee (http://elsa.onera.fr/Cassiopee/).
+
+## License ##
+`cpp_cgns` is available under the MPL-2.0 licence.
