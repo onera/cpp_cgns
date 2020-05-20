@@ -87,7 +87,5 @@ tree factory::newOrdinal(I i) {
   return {"Ordinal", val, {}, "Ordinal_t"};
 }
 
-using Internal = factory; // TODO DEL
-
 
 } // cgns

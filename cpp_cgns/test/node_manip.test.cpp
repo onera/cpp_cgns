@@ -5,8 +5,9 @@
 using namespace cgns;
 
 
+// TODO factorize with std_e::multi_array test
 TEST_CASE("View multi_array as cgns node_value") {
-  std_e::dyn_multi_array<I4,I8,2> x = {
+  std_e::dyn_multi_array<I4,2> x = {
     {2,3,4},
     {5,6,7}
   };

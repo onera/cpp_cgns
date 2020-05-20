@@ -107,8 +107,7 @@ class cgns_std_allocator {
   // comparisons
     template <class T0, class T1> friend
     bool operator==(const cgns_std_allocator<T0>& x, const cgns_std_allocator<T1>& y);
-  //private:
-  public:// TODO
+  private:
     cgns_allocator* alloc;
 };
 

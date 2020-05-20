@@ -4,13 +4,13 @@
 #include "cpp_cgns/cgns.hpp"
 #include "std_e/multi_array/multi_array.hpp"
 #include "cpp_cgns/allocator.hpp"
-#include "std_e/multi_index/cartesian_product.hpp"
+#include "std_e/multi_index/cartesian_product_size.hpp"
 #include "std_e/multi_index/multi_index_range.hpp"
 #include "std_e/future/span.hpp"
 #include "std_e/multi_index/utils.hpp"
 #include "std_e/base/not_implemented_exception.hpp"
-#include "cpp_cgns/array.hpp"
-#include "cpp_cgns/container_utils.hpp"
+#include "cpp_cgns/array_types.hpp"
+#include "cpp_cgns/array_utils.hpp"
 
 
 namespace cgns {
@@ -19,7 +19,7 @@ namespace cgns {
 // span/vector/md_array_view<T> <-> node_value {
 
 /// span/vector/md_array_view<T> -> node_value {
-template<class T, index_t N>
+template<class T, ptrdiff_t N>
 node_value view_as_node_value(std_e::span<T,N> x) {
   return {to_string<T>(),{(I8)x.size()},x.data()};
 }
@@ -39,16 +39,16 @@ template<class T, int rank>
 md_array_view<T,rank> view_as_md_array(node_value& x) {
   STD_E_ASSERT(x.data_type==to_string<T>());
   STD_E_ASSERT(x.dims.size()==rank);
-  std_e::memory_view<T*> mem_view {(T*)x.data};
   std_e::dyn_shape<I8,rank> shape{x.dims};
+  std_e::span<T> mem_view {(T*)x.data,shape.size()};
   return md_array_view<T,rank>(mem_view,shape);
 }
 template<class T, int rank>
 md_array_view<const T,rank> view_as_md_array(const node_value& x) {
   STD_E_ASSERT(x.data_type==to_string<T>());
   STD_E_ASSERT(int(x.dims.size())==rank);
-  std_e::memory_view<const T*> mem_view {(const T*)x.data};
   std_e::dyn_shape<I8,rank> shape{x.dims};
+  std_e::span<const T> mem_view {(const T*)x.data,shape.size()};
   return md_array_view<const T,rank>(mem_view,shape);
 }
 /// node_value -> md_array_view<T> }
@@ -57,8 +57,8 @@ md_array_view<const T,rank> view_as_md_array(const node_value& x) {
 /// T*,extent -> md_array_view<T> {
 template<class T, class Multi_index, int rank = std_e::rank_of<Multi_index>>
 md_array_view<T,rank> view_as_md_array(T* ptr, Multi_index&& dims) {
-  std_e::memory_view<T*> mem_view {ptr};
   std_e::dyn_shape<I8,rank> shape{FWD(dims)};
+  std_e::span<T> mem_view {ptr,shape.size()};
   return md_array_view<T,rank>(mem_view,shape);
 }
 /// T*,extent -> md_array_view<T> }
@@ -69,13 +69,13 @@ template<class T, int rank = dyn_rank>
 std_e::span<T,rank> view_as_span(node_value& x) {
   STD_E_ASSERT(x.data_type==to_string<T>());
   STD_E_ASSERT(std_e::is_one_dimensional(x.dims));
-  return std_e::span<T,rank>((T*)x.data,std_e::cartesian_product(x.dims));
+  return std_e::span<T,rank>((T*)x.data,std_e::cartesian_product_size(x.dims));
 }
 template<class T, int rank = dyn_rank>
 std_e::span<const T,rank> view_as_span(const node_value& x) {
   STD_E_ASSERT(x.data_type==to_string<T>());
   STD_E_ASSERT(std_e::is_one_dimensional(x.dims));
-  return std_e::span<const T,rank>((const T*)x.data,std_e::cartesian_product(x.dims));
+  return std_e::span<const T,rank>((const T*)x.data,std_e::cartesian_product_size(x.dims));
 }
 /// node_value -> span }
 
@@ -116,17 +116,6 @@ node_value create_string_node_value(const std::string& s, cgns_allocator& alloc)
   return create_node_value_1d__impl(s,alloc);
 }
 // node_value creation from "small" arrays }
-
-
-// md_array allocation by cgns allocator {
-template<class T, int rank>
-auto allocate_md_array(const std_e::multi_index<I8,rank>& dims, cgns_allocator& alloc) {
-  T* ptr = allocate<T>(alloc,std_e::cartesian_product(dims));
-  std_e::memory_view<T*> mem_view {ptr};
-  std_e::dyn_shape<I8,rank> shape(dims);
-  return md_array_view<T,rank>(mem_view,shape);
-}
-// md_array allocation by cgns allocator }
 
 
 } // cgns }
