@@ -1,0 +1,11 @@
+************************
+v0.1.0 (June 2020)
+************************
+First documented release
+
+Features
+""""""""
+
+* C++/CGNS mapping
+* md_array utilities
+* SIDS utilities

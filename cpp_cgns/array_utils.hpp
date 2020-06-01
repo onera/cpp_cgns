@@ -39,8 +39,7 @@ template<class T>
 md_array_view<T,2> make_md_array(std::initializer_list<std::initializer_list<T>> ll, cgns_allocator& alloc) {
   I8 sz = ll.size() * std::begin(ll)->size();
   T* ptr = allocate<T>(alloc,sz);
-  std_e::span<T> mem_view {ptr,sz};
-  return md_array_view<T,2>(ll,mem_view);
+  return md_array_view<T,2>(ll,ptr);
 }
 // md_array }
 
