@@ -1,5 +1,6 @@
 #include "cpp_cgns/interop/pycgns_converter.hpp"
 
+#include "std_e/future/contract.hpp"
 #include "cpp_cgns/exception.hpp"
 #include "numpy_config.hpp"
 #include <algorithm>
@@ -7,6 +8,29 @@
 
 
 namespace cgns {
+
+// std::string <-> python string {
+std::string to_std_string(PyObject* py_str) {
+  #if PY_VERSION_HEX >= 0x03000000
+    if (PyBytes_Check(py_str)) {
+      return std::string(PyBytes_AsString(py_str));
+    } else {
+      STD_E_ASSERT(PyUnicode_Check(py_str)) 
+      return PyBytes_AsString(PyUnicode_AsUTF8String(py_str));
+    }
+  #else
+    return std::string(PyString_AsString(py_str));
+  #endif
+}
+
+PyObject* to_python_string(const std::string& s) {
+  #if PY_VERSION_HEX >= 0x03000000
+    return PyUnicode_FromString(s.c_str());
+  #else
+    return PyString_FromString(s.c_str());
+  #endif
+}
+// std::string <-> python string }
 
 
 // typenum <-> string representation {
@@ -67,8 +91,8 @@ struct data_type_typenum {
 
 const std::vector<data_type_typenum> data_types_typenums = {
   {"MT" , NPY_NOTYPE },
-  {"C1" , NPY_BYTE   },
-  {"C1" , NPY_STRING },
+  {"C1" , NPY_BYTE   }, // C1 -> NPY_BYTE (we would like C1 -> NPY_STRING, but then "ValueError: data type must provide an itemsize")
+  {"C1" , NPY_STRING }, // NPY_STRING -> C1 (this is what we want)
   {"I4" , NPY_INT32  },
   {"I8" , NPY_INT64  },
   {"R4" , NPY_FLOAT32},
@@ -137,7 +161,7 @@ PyObject* view_as_pytree(tree& t) {
   PyObject* pytree = PyList_New(4);
 
   // 0. name
-  PyObject* py_name = PyString_FromString(t.name.c_str());
+  PyObject* py_name = to_python_string(t.name);
   PyList_SetItem(pytree,0,py_name);
 
   // 1. value
@@ -153,7 +177,7 @@ PyObject* view_as_pytree(tree& t) {
   PyList_SetItem(pytree,2,py_children);
 
   // 3. label
-  PyObject* py_label = PyString_FromString(t.label.c_str());
+  PyObject* py_label = to_python_string(t.label);
   PyList_SetItem(pytree,3,py_label);
 
   return pytree;
@@ -162,19 +186,9 @@ PyObject* view_as_pytree(tree& t) {
 tree view_as_cpptree(PyObject* pytree) {
   _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault) // TODO check
 
-  // TODO
-  // This one fails in python 3 ---
-  // std::string(PyString_AsString(py_name));
-  // Replace by std::string(PyUnicode_AsUTF8(py_name));
-  // See macro
-
   // 0. name
-  std::string name; // TODO CLEAN
   PyObject* py_name = PyList_GetItem(pytree,0);
-  if (PyString_Check(py_name)) name = std::string(PyString_AsString(py_name));
-#if PY_VERSION_HEX >= 0x03000000
-  else if (PyUnicode_Check(py_name)) name = PyBytes_AsString(PyUnicode_AsUTF8String(py_name));
-#endif
+  std::string name = to_std_string(py_name);
 
   // 1. value
   PyObject* py_value = PyList_GetItem(pytree,1);
@@ -197,13 +211,7 @@ tree view_as_cpptree(PyObject* pytree) {
 
   // 3. label
   PyObject* py_label = PyList_GetItem(pytree,3);
-  // std::string label = std::string(PyString_AsString(py_label));
-  // TODO CLEAN
-  std::string label;
-  if (PyString_Check(py_label)) label = std::string(PyString_AsString(py_label));
-#if PY_VERSION_HEX >= 0x03000000
-  else if (PyUnicode_Check(py_label)) label = PyBytes_AsString(PyUnicode_AsUTF8String(py_label));
-#endif
+  std::string label = to_std_string(py_label);
 
   return {name,value,children,label};
 }
