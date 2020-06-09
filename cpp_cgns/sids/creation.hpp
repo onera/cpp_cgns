@@ -19,70 +19,70 @@ struct factory {
     factory& operator=(const factory&) = delete;
 
     // accessors
-    cgns_allocator& alloc() {
+    cgns_allocator& alloc() const {
       return *alloc_ptr;
     }
 
     // creation according to SIDS
-    tree newCGNSTree();
-    tree newCGNSBase(const std::string& name, int cellDim, int physDim);
-    tree newUnstructuredZone(const std::string& name, const std::array<I4,3>& dims);
-    tree newGridCoordinates(const std::string& name="GridCoordinates");
-    tree newZoneBC();
-    tree newZoneGridConnectivity();
-    tree newPointRange(I4 first, I4 last);
-    tree newElementRange(I4 first, I4 last);
+    tree newCGNSTree() const;
+    tree newCGNSBase(const std::string& name, int cellDim, int physDim) const;
+    tree newUnstructuredZone(const std::string& name, const std::array<I4,3>& dims) const;
+    tree newGridCoordinates(const std::string& name="GridCoordinates") const;
+    tree newZoneBC() const;
+    tree newZoneGridConnectivity() const;
+    tree newPointRange(I4 first, I4 last) const;
+    tree newElementRange(I4 first, I4 last) const;
 
-    tree newElements(const std::string& name, I4 type, std_e::span<I4> connectivity, I4 first, I4 last, I4 nb_bnd_elts = 0);
-    tree newHomogenousElements(const std::string& name, I4 type, md_array_view<I4,2> connectivity, I4 first, I4 last, I4 nb_bnd_elts=0);
-    tree newNgonElements(const std::string& name, std_e::span<I4> connectivity, I4 first, I4 last, I4 nb_bnd_elts=0);
-    tree newNfaceElements(const std::string& name, std_e::span<I4> connectivity, I4 first, I4 last);
+    tree newElements(const std::string& name, I4 type, std_e::span<I4> connectivity, I4 first, I4 last, I4 nb_bnd_elts = 0) const;
+    tree newHomogenousElements(const std::string& name, I4 type, md_array_view<I4,2> connectivity, I4 first, I4 last, I4 nb_bnd_elts=0) const;
+    tree newNgonElements(const std::string& name, std_e::span<I4> connectivity, I4 first, I4 last, I4 nb_bnd_elts=0) const;
+    tree newNfaceElements(const std::string& name, std_e::span<I4> connectivity, I4 first, I4 last) const;
 
-    tree newPointList(const std::string& name, std_e::span<I4> pl);
-    tree newBC(const std::string& name, const std::string& loc, std_e::span<I4> point_list);
+    tree newPointList(const std::string& name, std_e::span<I4> pl) const;
+    tree newBC(const std::string& name, const std::string& loc, std_e::span<I4> point_list) const;
 
-    tree newGridLocation(const std::string& loc);
-    tree newRind(const std::vector<I4>& rind_planes);
+    tree newGridLocation(const std::string& loc) const;
+    tree newRind(const std::vector<I4>& rind_planes) const;
 
-    tree newFamily(const std::string& name);
-    tree newFamilyBC(const std::string& famName);
-    tree newFlowSolution(const std::string& name, const std::string& gridLoc);
-    tree newDiscreteData(const std::string& name, const std::string& gridLoc);
-    tree newZoneSubRegion(const std::string& name, int dim, const std::string& gridLoc);
-    tree newBCDataSet(const std::string& name, const std::string& val, const std::string& gridLoc);
-    tree newBCData(const std::string& name);
-    tree newDescriptor(const std::string& name, const std::string& val);
+    tree newFamily(const std::string& name) const;
+    tree newFamilyBC(const std::string& famName) const;
+    tree newFlowSolution(const std::string& name, const std::string& gridLoc) const;
+    tree newDiscreteData(const std::string& name, const std::string& gridLoc) const;
+    tree newZoneSubRegion(const std::string& name, int dim, const std::string& gridLoc) const;
+    tree newBCDataSet(const std::string& name, const std::string& val, const std::string& gridLoc) const;
+    tree newBCData(const std::string& name) const;
+    tree newDescriptor(const std::string& name, const std::string& val) const;
 
-    tree newGridConnectivityType(const std::string& gc_type);
-    tree newGridConnectivity(const std::string& name, const std::string& z_donor_name, const std::string& loc, const std::string& connec_type);
+    tree newGridConnectivityType(const std::string& gc_type) const;
+    tree newGridConnectivity(const std::string& name, const std::string& z_donor_name, const std::string& loc, const std::string& connec_type) const;
 
-    tree newDataArray(const std::string& name, node_value value);
+    tree newDataArray(const std::string& name, node_value value) const;
 
-    tree newUserDefinedData(const std::string& name, node_value value = MT);
-    tree newUserDefinedData(const std::string& name, const std::string& val);
+    tree newUserDefinedData(const std::string& name, node_value value = MT) const;
+    tree newUserDefinedData(const std::string& name, const std::string& val) const;
 
     template<class I>
-    tree newOrdinal(I i);
+    tree newOrdinal(I i) const;
     // removal
-    void rm_child_by_name(tree& t, const std::string& name);
-    void rm_child_by_label(tree& t, const std::string& label);
-    void rm_children_by_label(tree& t, const std::string& label);
+    void rm_child_by_name(tree& t, const std::string& name) const;
+    void rm_child_by_label(tree& t, const std::string& label) const;
+    void rm_children_by_label(tree& t, const std::string& label) const;
   private:
   // member functions
     // creation according to SIDS
-    tree newRootNode();
-    tree newCGNSVersionNode();
+    tree newRootNode() const;
+    tree newCGNSVersionNode() const;
     // removal
-    void deallocate_tree(tree& t);
-    void deallocate_node(tree& t);
-    template<class Unary_predicate> void rm_children_by_predicate(tree& t, Unary_predicate p);
-    template<class Unary_predicate> void rm_child_by_predicate(tree& t, Unary_predicate p);
+    void deallocate_tree(tree& t) const;
+    void deallocate_node(tree& t) const;
+    template<class Unary_predicate> void rm_children_by_predicate(tree& t, Unary_predicate p) const;
+    template<class Unary_predicate> void rm_child_by_predicate(tree& t, Unary_predicate p) const;
   // data member
-    cgns_allocator* alloc_ptr;
+    cgns_allocator* const alloc_ptr;
 };
 
 template<class I>
-tree factory::newOrdinal(I i) {
+tree factory::newOrdinal(I i) const {
   node_value val = create_node_value_1d({i},alloc());
   return {"Ordinal", val, {}, "Ordinal_t"};
 }
