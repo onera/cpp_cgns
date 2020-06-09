@@ -50,6 +50,15 @@ template<> inline std::string to_string<const I4>() { return "I4"; }
 template<> inline std::string to_string<const I8>() { return "I8"; }
 template<> inline std::string to_string<const R4>() { return "R4"; }
 template<> inline std::string to_string<const R8>() { return "R8"; }
+
+//size_t size_of(const std::string& data_type) {
+//  if (data_type=="C1") return sizeof(char);
+//  if (data_type=="I4") return sizeof(std::int32_t);
+//  if (data_type=="I8") return sizeof(std::int64_t);
+//  if (data_type=="R4") return sizeof(float);
+//  if (data_type=="R8") return sizeof(double);
+//  throw;
+//}
 /// basic type to_string }
 
 

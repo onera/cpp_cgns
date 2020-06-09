@@ -9,6 +9,74 @@
 namespace cgns {
 
 
+class allocator {
+  public:
+    allocator() = default;
+    allocator(const allocator&) = delete;
+    allocator& operator=(const allocator&) = delete;
+    allocator(allocator&&) = default;
+    allocator& operator=(allocator&&) = default;
+    virtual ~allocator() noexcept = default;
+
+    template<class T> friend
+    T* allocate(allocator& a, size_t n) {
+      return a.allocate(n*sizeof(T));
+    }
+    friend
+    void deallocate(allocator& a, void* p) {
+      return a.deallocate(p);
+    }
+
+  protected:
+    virtual void* allocate(size_t n) = 0;
+    virtual void deallocate(void* p) noexcept = 0;
+};
+
+class numpy_allocator final : allocator {
+  public:
+    void* allocate(size_t n) override {
+      PyObject* py_array = PyArray_SimpleNew(1, n, NPY_BYTE);
+      py_arrays.push_back(py_array);
+      return PyArray_DATA(py_array);
+    }
+
+    auto position(void* p) {
+      return std::find_if(
+        begin(py_arrays),end(py_arrays),
+        [p](PyObject* py_array){ return PyArray_DATA(py_array)==p; }
+      );
+    }
+    bool owns_memory(void* p) {
+      return position(p)!=end(py_arrays);
+    }
+
+    // conditionnal deallocation: only deallocate if has allocated the memory
+    void deallocate(void* p) noexcept {
+      auto pos = position(p);
+      if (pos!=end(py_arrays)) {
+        Py_DECREF(py_array);
+        py_arrays.erase(pos);
+      }
+    }
+
+    PyObject* retrieve_owning_array(void* p) noexcept {
+      auto pos = position(p);
+      STD_E_ASSERT(pos!=end(py_arrays));
+      PyObject* py_array = *pos;
+      py_arrays.erase(pos);
+      return py_array; // memory now owned by caller
+    }
+
+    ~numpy_allocator() override noexcept {
+      for (PyObject* py_array : py_arrays) {
+        Py_DECREF(py_array);
+      }
+    }
+
+  private:
+    std::vector<PyObject*> py_arrays;
+};
+
 class cgns_allocator final {
   public:
     cgns_allocator() = default;
@@ -20,40 +88,30 @@ class cgns_allocator final {
     template<class T>
     T* allocate(size_t n) {
       size_t sz = n*sizeof(T);
-      void* ptr = malloc(sz);
-      owned_ptrs.push_back(ptr);
-      return (T*)ptr;
+      void* p = malloc(sz);
+      owned_ptrs.push_back(p);
+      return (T*)p;
     }
 
-    auto position_in_owned_ptrs(void* ptr) {
-      return std::find(begin(owned_ptrs),end(owned_ptrs),ptr);
+    auto position(void* p) {
+      return std::find(begin(owned_ptrs),end(owned_ptrs),p);
     }
-    bool owns_memory(void* ptr) {
-      return position_in_owned_ptrs(ptr)!=end(owned_ptrs);
+    bool owns_memory(void* p) {
+      return position(p)!=end(owned_ptrs);
     }
 
     // conditionnal deallocation: only deallocate if has allocated the memory
-    void deallocate(void* ptr) {
-      auto pos = position_in_owned_ptrs(ptr);
+    void deallocate(void* p) noexcept {
+      auto pos = position(p);
       if (pos!=end(owned_ptrs)) {
-        free(ptr);
+        free(p);
         owned_ptrs.erase(pos);
       }
     }
 
-    bool release_if_owner(void* ptr) {
-      auto pos = position_in_owned_ptrs(ptr);
-      if (pos!=end(owned_ptrs)) {
-        owned_ptrs.erase(pos);
-        return true;
-      } else {
-        return false;
-      }
-    }
-
-    ~cgns_allocator() {
-      for (auto& ptr : owned_ptrs) {
-        free(ptr);
+    ~cgns_allocator() noexcept {
+      for (auto& p : owned_ptrs) {
+        free(p);
       }
     }
   private:

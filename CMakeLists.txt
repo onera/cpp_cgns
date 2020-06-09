@@ -17,7 +17,7 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 project(
   cpp_cgns VERSION 0.1.0
   DESCRIPTION	"C++/CGNS mapping"
-  LANGUAGES	CXX
+  LANGUAGES	C CXX
 )
 
 
@@ -78,6 +78,21 @@ endif()
 
 ## Install ##
 target_install(${PROJECT_NAME})
+
+## CPython interface
+add_library(py_${PROJECT_NAME} SHARED "${src_dir}/interop/py_cpp_cgns.cpp")
+target_link_libraries(py_${PROJECT_NAME}
+  PUBLIC 
+    std_e::std_e
+    cpp_cgns::cpp_cgns
+)
+set_target_properties(
+  py_${PROJECT_NAME}
+  PROPERTIES
+    PREFIX ""
+    OUTPUT_NAME "py_${PROJECT_NAME}"
+    LINKER_LANGUAGE C
+)
 
 
 ## Unit tests ##

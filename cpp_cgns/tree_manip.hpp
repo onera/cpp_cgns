@@ -1,4 +1,4 @@
-#include "cpp_cgns/node_manip.hpp"
+#include "cpp_cgns/cgns.hpp"
 
 
 namespace cgns {
@@ -26,7 +26,6 @@ const_tree_range get_children_by_name_or_label(const tree& t, const std::string&
 
 tree& get_node_by_matching(tree& t, const std::string& gen_path);
 tree_range get_nodes_by_matching(tree& t, const std::string& gen_path);
-
 
 
 } // cgns

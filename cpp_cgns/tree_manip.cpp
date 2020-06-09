@@ -1,6 +1,8 @@
 #include "cpp_cgns/tree_manip.hpp"
+#include "cpp_cgns/node_manip.hpp"
 #include "cpp_cgns/exception.hpp"
 #include "std_e/utils/string.hpp"
+#include "std_e/future/contract.hpp"
 
 
 namespace cgns {

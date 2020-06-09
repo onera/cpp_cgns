@@ -4,7 +4,7 @@
 #include "cpp_cgns/exception.hpp"
 #include "numpy_config.hpp"
 #include <algorithm>
-#include <iostream>
+#include "cpp_cgns/allocator.hpp"
 
 
 namespace cgns {
@@ -126,7 +126,8 @@ std::string typenum_to_data_type(int typenum) {
 // node_value <-> numpy_array {
 PyObject* view_as_numpy_array(node_value& n) {
   int typenum = data_type_to_typenum(n.data_type);
-  if (typenum==NPY_NOTYPE) {
+  if (typenum==NPY_NOTYPE) { // TODO DEL
+    Py_INCREF(Py_None);  
     return Py_None;
   } else {
     return PyArray_SimpleNewFromData(n.dims.size(), n.dims.data(), typenum, n.data);
@@ -153,6 +154,42 @@ node_value view_as_node(PyArrayObject* numpy_array) {
 // node_value <-> numpy_array }
 
 
+// cgns::tree attributes <-> pytree attributes {
+std::string get_py_name(PyObject* pytree) {
+  return to_std_string(PyList_GetItem(pytree,0));
+}
+void set_py_name(PyObject* pytree, const std::string& name) {
+  PyList_SetItem(pytree,0,to_python_string(name));
+}
+
+std::string get_py_label(PyObject* pytree) {
+  return to_std_string(PyList_GetItem(pytree,3));
+}
+void set_py_label(PyObject* pytree, const std::string& label) {
+  PyObject* py_label = to_python_string(label);
+  PyList_SetItem(pytree,3,py_label);
+}
+
+node_value get_py_value(PyObject* pytree) {
+  PyObject* py_value = PyList_GetItem(pytree,1);
+  if (py_value==Py_None) {
+    return MT;
+  } else {
+    PyArrayObject* numpy_array = (PyArrayObject*)py_value;
+    return view_as_node(numpy_array);
+  }
+}
+void set_py_value(PyObject* pytree, node_value& value) { // NOTE: non const ref because shared data
+  PyObject* py_value;
+  if (value.data_type=="MT") {
+    Py_INCREF(Py_None); // TODO not sure it is needed
+    py_value = Py_None;
+  } else {
+    py_value = view_as_numpy_array(value);
+  }
+  PyList_SetItem(pytree,1,py_value);
+}
+// cgns::tree attributes <-> pytree attributes }
 
 
 // tree <-> pytree {
@@ -160,15 +197,10 @@ PyObject* view_as_pytree(tree& t) {
   _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault)
   PyObject* pytree = PyList_New(4);
 
-  // 0. name
-  PyObject* py_name = to_python_string(t.name);
-  PyList_SetItem(pytree,0,py_name);
+  set_py_name(pytree,t.name);
+  set_py_label(pytree,t.label);
+  set_py_value(pytree,t.value);
 
-  // 1. value
-  PyObject* py_value = view_as_numpy_array(t.value);
-  PyList_SetItem(pytree,1,py_value);
-
-  // 2. children
   PyObject* py_children = PyList_New(t.children.size());
   for (size_t i=0; i<t.children.size(); ++i) {
     PyObject* py_child = view_as_pytree(t.children[i]);
@@ -176,31 +208,17 @@ PyObject* view_as_pytree(tree& t) {
   }
   PyList_SetItem(pytree,2,py_children);
 
-  // 3. label
-  PyObject* py_label = to_python_string(t.label);
-  PyList_SetItem(pytree,3,py_label);
-
   return pytree;
 }
+
 
 tree view_as_cpptree(PyObject* pytree) {
   _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault) // TODO check
 
-  // 0. name
-  PyObject* py_name = PyList_GetItem(pytree,0);
-  std::string name = to_std_string(py_name);
+  std::string name = get_py_name(pytree);
+  std::string label = get_py_label(pytree);
+  node_value value = get_py_value(pytree);
 
-  // 1. value
-  PyObject* py_value = PyList_GetItem(pytree,1);
-  node_value value;
-  if (py_value==Py_None) {
-    value = MT;
-  } else {
-    PyArrayObject* numpy_array = (PyArrayObject*)py_value;
-    value = view_as_node(numpy_array);
-  }
-
-  // 2. children
   PyObject* py_children = PyList_GetItem(pytree,2);
   int nb_children = PyList_Size(py_children);
   std::vector<tree> children(nb_children);
@@ -209,13 +227,79 @@ tree view_as_cpptree(PyObject* pytree) {
     children[i] = view_as_cpptree(py_child);
   }
 
-  // 3. label
-  PyObject* py_label = PyList_GetItem(pytree,3);
-  std::string label = to_std_string(py_label);
-
   return {name,value,children,label};
 }
 // tree <-> pytree }
 
+
+// tree -> pytree with ownership transfer {
+// SEE https://stackoverflow.com/a/52737023/1583122
+void capsule_cleanup_by_free(PyObject* capsule) {
+  void* memory = PyCapsule_GetPointer(capsule, NULL);
+  free(memory); // because cgns_allocator uses malloc/free
+}
+PyObject* make_owning_numpy_array(node_value& n) {
+  PyObject* np_arr = view_as_numpy_array(n);
+  PyObject* capsule = PyCapsule_New(n.data, NULL, capsule_cleanup_by_free);
+  PyArray_SetBaseObject((PyArrayObject*) np_arr, capsule);
+  return np_arr;
+}
+
+PyObject* pytree_with_transfered_ownership(tree& t, cgns_allocator& alloc) {
+  // creates a pytree from t
+  // if t memory was allocated with alloc,
+  //   then we release the ownship from alloc
+  //   and create a numpy array owning it (PyArray_SimpleNewFromData && cleanup capsule)
+  // if not, we only create a non-owning numpy array (PyArray_SimpleNewFromData)
+
+  _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault)
+  PyObject* pytree = PyList_New(4);
+
+  set_py_name(pytree,t.name);
+  set_py_label(pytree,t.label);
+
+  if (alloc.release_if_owner(t.value.data)) {
+    PyObject* py_value = make_owning_numpy_array(t.value);
+    PyList_SetItem(pytree,1,py_value);
+  } else {
+    set_py_value(pytree,t.value);
+  }
+
+  PyObject* py_children = PyList_New(t.children.size());
+  for (size_t i=0; i<t.children.size(); ++i) {
+    PyObject* py_child = pytree_with_transfered_ownership(t.children[i],alloc);
+    PyList_SetItem(py_children,i,py_child);
+  }
+  PyList_SetItem(pytree,2,py_children);
+
+  return pytree;
+}
+void pytree_with_transfered_ownership_inplace(tree& t, cgns_allocator& alloc, PyObject* pytree) {
+  // creates a pytree from t
+  // if t memory was allocated with alloc,
+  //   then we release the ownship from alloc
+  //   and create a numpy array owning it (PyArray_SimpleNewFromData && cleanup capsule)
+  // if not, we only create a non-owning numpy array (PyArray_SimpleNewFromData)
+
+  _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault)
+
+  set_py_name(pytree,t.name);
+  set_py_label(pytree,t.label);
+
+  if (alloc.release_if_owner(t.value.data)) {
+    PyObject* py_value = make_owning_numpy_array(t.value);
+    PyList_SetItem(pytree,1,py_value);
+  } else {
+    set_py_value(pytree,t.value);
+  }
+
+  PyObject* py_children = PyList_New(t.children.size());
+  for (size_t i=0; i<t.children.size(); ++i) {
+    PyObject* py_child = pytree_with_transfered_ownership(t.children[i],alloc);
+    PyList_SetItem(py_children,i,py_child);
+  }
+  PyList_SetItem(pytree,2,py_children);
+}
+// tree -> pytree with ownership transfer }
 
 } // cgns
