@@ -80,10 +80,9 @@ endif()
 target_install(${PROJECT_NAME})
 
 ## CPython interface
-add_library(py_${PROJECT_NAME} SHARED "${src_dir}/interop/py_cpp_cgns.cpp")
+add_library(py_${PROJECT_NAME} SHARED "${src_dir}/interop/py_${PROJECT_NAME}.cpp")
 target_link_libraries(py_${PROJECT_NAME}
   PUBLIC 
-    std_e::std_e
     cpp_cgns::cpp_cgns
 )
 set_target_properties(

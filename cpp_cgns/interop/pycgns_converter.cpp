@@ -274,31 +274,60 @@ PyObject* pytree_with_transfered_ownership(tree& t, cgns_allocator& alloc) {
 
   return pytree;
 }
-void pytree_with_transfered_ownership_inplace(tree& t, cgns_allocator& alloc, PyObject* pytree) {
-  // creates a pytree from t
-  // if t memory was allocated with alloc,
-  //   then we release the ownship from alloc
-  //   and create a numpy array owning it (PyArray_SimpleNewFromData && cleanup capsule)
-  // if not, we only create a non-owning numpy array (PyArray_SimpleNewFromData)
+//void pytree_with_transfered_ownership_inplace(tree& t, cgns_allocator& alloc, PyObject* pytree) {
+//  // creates a pytree from t
+//  // if t memory was allocated with alloc,
+//  //   then we release the ownship from alloc
+//  //   and create a numpy array owning it (PyArray_SimpleNewFromData && cleanup capsule)
+//  // if not, we only create a non-owning numpy array (PyArray_SimpleNewFromData)
+//
+//  _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault)
+//
+//  set_py_name(pytree,t.name);
+//  set_py_label(pytree,t.label);
+//
+//  if (alloc.release_if_owner(t.value.data)) {
+//    PyObject* py_value = make_owning_numpy_array(t.value);
+//    PyList_SetItem(pytree,1,py_value);
+//  } else {
+//    set_py_value(pytree,t.value);
+//  }
+//
+//  PyObject* py_children = PyList_New(t.children.size());
+//  for (size_t i=0; i<t.children.size(); ++i) {
+//    PyObject* py_child = pytree_with_transfered_ownership(t.children[i],alloc);
+//    PyList_SetItem(py_children,i,py_child);
+//  }
+//  PyList_SetItem(pytree,2,py_children);
+//}
+
+bool same_node_data(const node_value& x, const node_value& y) {
+  return
+      x.data_type==y.data_type
+   && x.dims==y.dims
+   && x.data==y.data;
+}
+void add_new_nodes_and_ownership(tree& t, cgns_allocator& alloc, PyObject* pytree) {
+  // precondition: t\pytree == empty set
 
   _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault)
 
-  set_py_name(pytree,t.name);
-  set_py_label(pytree,t.label);
+  STD_E_ASSERT(name(t)==get_py_name(pytree));
+  STD_E_ASSERT(label(t)==get_py_label(pytree));
+  STD_E_ASSERT(same_node_data(t.value,get_py_value(pytree)));
 
-  if (alloc.release_if_owner(t.value.data)) {
-    PyObject* py_value = make_owning_numpy_array(t.value);
-    PyList_SetItem(pytree,1,py_value);
-  } else {
-    set_py_value(pytree,t.value);
+  PyObject* py_children = PyList_GetItem(pytree,2);
+  int nb_py_children = PyList_Size(py_children);
+  int nb_children = t.children.size();
+  STD_E_ASSERT(nb_py_children<=nb_children);
+  for (int i=0; i<nb_py_children; ++i) {
+    PyObject* py_child = PyList_GetItem(py_children,i);
+    add_new_nodes_and_ownership(t.children[i],alloc,py_child);
   }
-
-  PyObject* py_children = PyList_New(t.children.size());
-  for (size_t i=0; i<t.children.size(); ++i) {
+  for (int i=nb_py_children; i<nb_children; ++i) {
     PyObject* py_child = pytree_with_transfered_ownership(t.children[i],alloc);
-    PyList_SetItem(py_children,i,py_child);
+    PyList_Append(py_children,py_child);
   }
-  PyList_SetItem(pytree,2,py_children);
 }
 // tree -> pytree with ownership transfer }
 
