@@ -117,7 +117,7 @@ tree factory::newBC(const std::string& name, const std::string& loc, std_e::span
   node_value bcType = create_string_node_value("FamilySpecified",alloc());
   tree location = newGridLocation(loc);
   tree point_list_node = newPointList("PointList",point_list);
-  return {name, bcType, {point_list_node}, "BC_t"};
+  return {name, bcType, {location,point_list_node}, "BC_t"};
 }
 
 
