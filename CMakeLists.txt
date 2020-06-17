@@ -89,8 +89,11 @@ set_target_properties(
   py_${PROJECT_NAME}
   PROPERTIES
     PREFIX ""
-    OUTPUT_NAME "py_${PROJECT_NAME}"
+    OUTPUT_NAME "${PROJECT_NAME}"
     LINKER_LANGUAGE C
+)
+install(TARGETS py_${PROJECT_NAME} EXPORT py_${PROJECT_NAME}Targets
+  LIBRARY DESTINATION py
 )
 
 
