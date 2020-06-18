@@ -91,8 +91,7 @@ struct data_type_typenum {
 
 const std::vector<data_type_typenum> data_types_typenums = {
   {"MT" , NPY_NOTYPE },
-  {"C1" , NPY_BYTE   }, // C1 -> NPY_BYTE (we would like C1 -> NPY_STRING, but then "ValueError: data type must provide an itemsize")
-  {"C1" , NPY_STRING }, // NPY_STRING -> C1 (this is what we want)
+  {"C1" , NPY_STRING },
   {"I4" , NPY_INT32  },
   {"I8" , NPY_INT64  },
   {"R4" , NPY_FLOAT32},
@@ -121,8 +120,6 @@ std::string typenum_to_data_type(int typenum) {
 // data_type <-> typenum }
 
 
-
-
 // node_value <-> numpy_array {
 PyObject* view_as_numpy_array(node_value& n) {
   int typenum = data_type_to_typenum(n.data_type);
@@ -130,7 +127,12 @@ PyObject* view_as_numpy_array(node_value& n) {
     Py_INCREF(Py_None);  
     return Py_None;
   } else {
-    return PyArray_SimpleNewFromData(n.dims.size(), n.dims.data(), typenum, n.data);
+    PyArray_Descr* descr = PyArray_DescrFromType(typenum);
+    if (typenum==NPY_STRING) {
+      PyObject* descr_str = to_python_string("|S1");
+      PyArray_DescrConverter( descr_str, &descr );
+    }
+    return PyArray_NewFromDescr(&PyArray_Type, descr, 1, n.dims.data(), NULL, n.data, NPY_ARRAY_F_CONTIGUOUS, NULL);
   }
 }
 
