@@ -123,17 +123,12 @@ std::string typenum_to_data_type(int typenum) {
 // node_value <-> numpy_array {
 PyObject* view_as_numpy_array(node_value& n) {
   int typenum = data_type_to_typenum(n.data_type);
-  if (typenum==NPY_NOTYPE) { // TODO DEL
-    Py_INCREF(Py_None);  
-    return Py_None;
-  } else {
-    PyArray_Descr* descr = PyArray_DescrFromType(typenum);
-    if (typenum==NPY_STRING) {
-      PyObject* descr_str = to_python_string("|S1");
-      PyArray_DescrConverter( descr_str, &descr );
-    }
-    return PyArray_NewFromDescr(&PyArray_Type, descr, 1, n.dims.data(), NULL, n.data, NPY_ARRAY_F_CONTIGUOUS, NULL);
+  PyArray_Descr* descr = PyArray_DescrFromType(typenum);
+  if (typenum==NPY_STRING) {
+    PyObject* descr_str = to_python_string("|S1");
+    PyArray_DescrConverter( descr_str, &descr );
   }
+  return PyArray_NewFromDescr(&PyArray_Type, descr, n.dims.size(), n.dims.data(), NULL, n.data, NPY_ARRAY_F_CONTIGUOUS, NULL);
 }
 
 node_value view_as_node(PyArrayObject* numpy_array) {
