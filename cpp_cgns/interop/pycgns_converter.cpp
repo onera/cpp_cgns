@@ -15,7 +15,7 @@ std::string to_std_string(PyObject* py_str) {
     if (PyBytes_Check(py_str)) {
       return std::string(PyBytes_AsString(py_str));
     } else {
-      STD_E_ASSERT(PyUnicode_Check(py_str)) 
+      STD_E_ASSERT(PyUnicode_Check(py_str));
       return PyBytes_AsString(PyUnicode_AsUTF8String(py_str));
     }
   #else
@@ -92,6 +92,8 @@ struct data_type_typenum {
 const std::vector<data_type_typenum> data_types_typenums = {
   {"MT" , NPY_NOTYPE },
   {"C1" , NPY_STRING },
+  //{"C1" , NPY_BYTE   }, // C1 -> NPY_BYTE (we would like C1 -> NPY_STRING, but then "ValueError: data type must provide an itemsize")
+  //{"C1" , NPY_STRING }, // NPY_STRING -> C1 (this is what we want)
   {"I4" , NPY_INT32  },
   {"I8" , NPY_INT64  },
   {"R4" , NPY_FLOAT32},
@@ -324,6 +326,7 @@ void add_new_nodes_and_ownership(tree& t, cgns_allocator& alloc, PyObject* pytre
   for (int i=nb_py_children; i<nb_children; ++i) {
     PyObject* py_child = pytree_with_transfered_ownership(t.children[i],alloc);
     PyList_Append(py_children,py_child);
+    Py_DECREF(py_child); // TODO check
   }
 }
 // tree -> pytree with ownership transfer }

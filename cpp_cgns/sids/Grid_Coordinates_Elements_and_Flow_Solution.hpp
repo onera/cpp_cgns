@@ -6,6 +6,9 @@
 #include "std_e/future/contract.hpp"
 #include "cpp_cgns/exception.hpp"
 #include "cpp_cgns/tree_manip.hpp"
+#include "cpp_cgns/cgnslib.h"
+#include "cpp_cgns/sids/Hierarchical_Structures.hpp"
+
 
 // SEE http://cgns.github.io/CGNS_docs_current/sids/cgnsbase.html
 // From SIDS §7: Grid Coordinates, Elements, and Flow Solutions
@@ -63,5 +66,28 @@ ElementStartOffset(Tree& e) {
   auto& res = get_child_by_name(e,"ElementStartOffset");
   return view_as_md_array<I,2>(res.value);
 }
+
+
+template<class I, class Tree> auto
+element_pool(Tree& z, ElementType_t e_type) -> tree& {
+  STD_E_ASSERT(label(z)=="Zone_t");
+  auto elt_pools = get_children_by_label(z,"Elements_t");
+  auto elt_pool_it = std::find_if(begin(elt_pools),end(elt_pools),[e_type](const auto& e_pool){ return ElementType<I>(e_pool)==e_type; });
+  STD_E_ASSERT(elt_pool_it!=end(elt_pools));
+  return *elt_pool_it;
+}
+
+template<class Tree, class F> auto
+for_each_unstructured_zone(Tree& b, F f) -> void {
+  STD_E_ASSERT(b.label=="CGNSBase_t");
+  auto zs = get_children_by_label(b,"Zone_t");
+
+  for (auto& z : zs) {
+    if (is_unstructured_zone(z)) {
+      f(z);
+    }
+  }
+}
+
 
 } // cgns
