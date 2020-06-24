@@ -135,7 +135,7 @@ PyObject* view_as_numpy_array(node_value& n) {
 
 node_value view_as_node(PyArrayObject* numpy_array) {
   if (!PyArray_IS_F_CONTIGUOUS(numpy_array)) {
-    throw cgns_exception("In python/CGNS, numpy array must be contiguous and fortran-order");
+    throw cgns_exception("In python/CGNS, numpy array must be contiguous and fortran-ordered");
   }
 
   int typenum = PyArray_TYPE(numpy_array);

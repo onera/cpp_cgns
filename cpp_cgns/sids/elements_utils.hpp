@@ -86,10 +86,11 @@ using all_basic_2D_and_3D_elements = std::integer_sequence<ElementType_t,TRI_3,Q
 
 constexpr int number_of_nodes(int n) { return elements_traits[n].nb_nodes; };
 
-std::string cgns_element_to_string(ElementType_t elt);
+auto to_string(ElementType_t elt) -> std::string;
 
 
-std::vector<ElementType_t> element_types_of_dimension(int dim);
+auto element_types_of_dimension(int dim) -> std::vector<ElementType_t>;
 
+auto grid_location(ElementType_t elt_type) -> std::string;
 
 } // cgns

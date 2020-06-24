@@ -16,16 +16,20 @@ tree& get_child_by_label(tree& t, const std::string& label);
 tree_range get_children_by_label(tree& t, const std::string& label);
 tree_range get_children_by_labels(tree& t, const std::vector<std::string>& labels);
 tree_range get_children_by_name_or_label(tree& t, const std::string& s);
+
+tree& get_node_by_matching(tree& t, const std::string& gen_path);
+tree_range get_nodes_by_matching(tree& t, const std::string& gen_path);
+
 // const versions {
 const tree& get_child_by_name(const tree& t, const std::string& name);
 const tree& get_child_by_label(const tree& t, const std::string& label);
 const_tree_range get_children_by_label(const tree& t, const std::string& label);
 const_tree_range get_children_by_labels(const tree& t, const std::vector<std::string>& labels);
 const_tree_range get_children_by_name_or_label(const tree& t, const std::string& s);
-// const versions }
 
-tree& get_node_by_matching(tree& t, const std::string& gen_path);
-tree_range get_nodes_by_matching(tree& t, const std::string& gen_path);
+const tree& get_node_by_matching(const tree& t, const std::string& gen_path);
+const_tree_range get_nodes_by_matching(const tree& t, const std::string& gen_path);
+// const versions }
 
 
 } // cgns

@@ -170,5 +170,39 @@ tree& get_node_by_matching(tree& t, const std::string& gen_path) {
 /// common searches }
 // tree search }
 
+//// const versions {
+const_tree_range get_nodes_by_matching(const tree& t, std::vector<std::string> identifiers_stack) {
+  STD_E_ASSERT(identifiers_stack.size()>0);
+
+  auto current_id = identifiers_stack.back();
+  const_tree_range nodes_matching_current_id = get_children_by_name_or_label(t,current_id);
+
+  if (identifiers_stack.size()==1) {
+    return nodes_matching_current_id;
+  } else {
+    identifiers_stack.pop_back();
+
+    const_tree_range matching_nodes;
+    for (auto& node : nodes_matching_current_id) {
+      append(matching_nodes,get_nodes_by_matching(node,identifiers_stack));
+    }
+    return matching_nodes;
+  }
+}
+const_tree_range get_nodes_by_matching(const tree& t, const std::string& gen_path) {
+  auto identifiers = std_e::split(gen_path,'/');
+  std::reverse(begin(identifiers),end(identifiers));
+  return get_nodes_by_matching(t,identifiers);
+}
+const tree& get_node_by_matching(const tree& t, const std::string& gen_path) {
+  const_tree_range ts = get_nodes_by_matching(t,gen_path);
+  if (ts.size() == 0) {
+    throw cgns_exception("No sub-tree matching \""+gen_path+"\" in tree \""+t.name+"\"");
+  } else {
+    return ts[0];
+  }
+}
+//// const versions }
+
 
 } // cgns

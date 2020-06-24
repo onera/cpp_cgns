@@ -21,6 +21,7 @@ namespace cgns {
 /// span/vector/md_array_view<T> -> node_value {
 template<class T, ptrdiff_t N>
 node_value view_as_node_value(std_e::span<T,N> x) {
+  static_assert(!std::is_const_v<T>,"no way to ensure constness in CGNS tree");
   return {to_string<T>(),{(I8)x.size()},x.data()};
 }
 template<class T>

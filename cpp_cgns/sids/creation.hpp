@@ -15,8 +15,6 @@ struct factory {
     factory(cgns_allocator* alloc)
       : alloc_ptr(alloc)
     {}
-    factory(const factory&) = delete;
-    factory& operator=(const factory&) = delete;
 
     // accessors
     cgns_allocator& alloc() const {
