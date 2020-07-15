@@ -71,14 +71,14 @@ const node_value MT = {"MT",{0},nullptr};
 inline auto name    (      tree& t) ->       std::string      & { return t.name;     }
 inline auto name    (const tree& t) -> const std::string      & { return t.name;     }
 
+inline auto label   (      tree& t) ->       std::string      & { return t.label;    }
+inline auto label   (const tree& t) -> const std::string      & { return t.label;    }
+
 inline auto value   (      tree& t) ->       node_value       & { return t.value;    }
 inline auto value   (const tree& t) -> const node_value       & { return t.value;    }
 
 inline auto children(      tree& t) ->       std::vector<tree>& { return t.children; }
 inline auto children(const tree& t) -> const std::vector<tree>& { return t.children; }
-
-inline auto label   (      tree& t) ->       std::string      & { return t.label;    }
-inline auto label   (const tree& t) -> const std::string      & { return t.label;    }
 /// access functions }
 
 
@@ -88,6 +88,10 @@ using tree_range = std::vector<tree_ref>;
 
 using const_tree_ref = std::reference_wrapper<const tree>;
 using const_tree_range = std::vector<const_tree_ref>;
+
+template<class Tree> using ref = std::reference_wrapper<Tree>;
+template<class Tree> using range = std::vector<Tree>;
+template<class Tree> using range_of_ref = range<ref<Tree>>;
 /// range }
 
 

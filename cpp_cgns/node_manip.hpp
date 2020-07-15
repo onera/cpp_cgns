@@ -80,6 +80,18 @@ std_e::span<const T,rank> view_as_span(const node_value& x) {
 }
 /// node_value -> span }
 
+
+/// node_value -> any array {
+template<class T, int N = 1, class Node_value> auto
+view_as_array(Node_value& value) {
+  if constexpr (N==1) {
+    return view_as_span<T>(value);
+  } else {
+    return view_as_md_array<T,N>(value);
+  }
+}
+/// node_value -> any array }
+
 // span/vector/md_array_view<T> <-> node_value }
 
 // to_string {
