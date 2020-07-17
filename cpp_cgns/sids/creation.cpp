@@ -193,7 +193,7 @@ template<class Unary_predicate>
 void factory::rm_child_by_predicate(tree& t, Unary_predicate p) const {
   auto& cs = t.children;
   auto pos = std::find_if(begin(cs),end(cs),p);
-  if (pos==end(t.children)) {
+  if (pos==end(cs)) {
     throw cgns_exception("No node to erase");
   } else {
     deallocate_tree(*pos);
@@ -209,6 +209,10 @@ void factory::rm_children_by_predicate(tree& t, Unary_predicate p) const {
   cs.erase(pos,end(cs));
 }
 
+void factory::rm_child(tree& t, const tree& c) const {
+  auto predicate = [&](const tree& child){ return &child==&c; };
+  rm_child_by_predicate(t,predicate);
+}
 void factory::rm_child_by_name(tree& t, const std::string& name) const {
   auto predicate = [&](const tree& child){ return is_of_name(child,name); };
   rm_child_by_predicate(t,predicate);

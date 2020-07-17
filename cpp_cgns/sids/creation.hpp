@@ -62,6 +62,7 @@ struct factory {
     template<class I>
     tree newOrdinal(I i) const;
     // removal
+    void rm_child(tree& t, const tree& c) const;
     void rm_child_by_name(tree& t, const std::string& name) const;
     void rm_child_by_label(tree& t, const std::string& label) const;
     void rm_children_by_label(tree& t, const std::string& label) const;
