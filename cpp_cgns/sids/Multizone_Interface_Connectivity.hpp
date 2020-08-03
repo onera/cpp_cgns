@@ -7,5 +7,6 @@
 namespace cgns {
 
 std::string ZoneDonorName(const tree& gc);
+std::string GridLocation(const tree& t);
 
 } // cgns
