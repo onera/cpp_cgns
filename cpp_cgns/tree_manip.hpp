@@ -21,18 +21,19 @@ template<class Unary_pred> auto has_child_by_predicate(const tree& t, Unary_pred
 
 
 // searches {
-template<class Tree, class Unary_pred> auto get_children_by_predicate(Tree& t, Unary_pred p)                          -> range_of_ref<Tree>;
-template<class Tree, class Unary_pred> auto get_child_by_predicate   (Tree& t, Unary_pred p, const cgns_exception& e) -> Tree&;
-template<class Tree, class Unary_pred> auto get_child_by_predicate   (Tree& t, Unary_pred p)                          -> Tree&;
+template<class Tree, class Unary_pred> auto get_children_by_predicate (Tree& t, Unary_pred p)                          -> range_of_ref<Tree>;
+template<class Tree, class Unary_pred> auto get_child_by_predicate    (Tree& t, Unary_pred p, const cgns_exception& e) -> decltype(auto);
+template<class Tree, class Unary_pred> auto get_child_by_predicate    (Tree& t, Unary_pred p)                          -> decltype(auto);
 
-template<class Tree>                   auto get_child_by_name        (Tree& t, const std::string& name ) -> Tree&;
+template<class Tree>                   auto get_child_by_name         (Tree& t, const std::string& name ) -> decltype(auto);
 
-template<class Tree>                   auto get_child_by_label       (Tree& t, const std::string& label) -> Tree&;
-template<class Tree>                   auto get_children_by_label    (Tree& t, const std::string& label) -> range_of_ref<Tree>;
-template<class Tree>                   auto get_children_by_labels   (Tree& t, const std::vector<std::string>& labels) -> range_of_ref<Tree>;
+template<class Tree>                   auto get_child_by_label        (Tree& t, const std::string& label) -> decltype(auto);
+template<class Tree>                   auto get_children_by_label     (Tree& t, const std::string& label) -> range_of_ref<Tree>;
+template<class Tree>                   auto get_children_by_labels    (Tree& t, const std::vector<std::string>& labels) -> range_of_ref<Tree>;
 
-template<class Tree>                   auto get_node_by_matching     (Tree& t, const std::string& gen_path) -> Tree&;
-template<class Tree>                   auto get_nodes_by_matching    (Tree& t, const std::string& gen_path) -> range_of_ref<Tree>;
+template<class Tree>                   auto get_node_by_matching      (Tree& t, const std::string& gen_path) -> decltype(auto);
+template<class Tree>                   auto get_nodes_by_matching     (Tree& t, const std::string& gen_path) -> range_of_ref<Tree>;
+template<class Tree>                   auto get_nodes_by_matching     (Tree& t, const std::vector<std::string>& gen_paths) -> range_of_ref<Tree>;
 
 template<class T, int N=1, class Tree> auto get_child_value_by_name   (Tree& t, const std::string& s);
 template<class T, int N=1, class Tree> auto get_child_value_by_label  (Tree& t, const std::string& s);
@@ -57,7 +58,7 @@ get_children_by_predicate(Tree& t, Unary_pred p) -> range_of_ref<Tree>{
   return sub_ts;
 }
 template<class Tree, class Unary_pred> auto
-get_child_by_predicate(Tree& t, Unary_pred p, const cgns_exception& e) -> Tree& {
+get_child_by_predicate(Tree& t, Unary_pred p, const cgns_exception& e) -> decltype(auto) {
   auto pos = std::find_if(begin(children(t)),end(children(t)),p);
   if (pos==end(children(t))) {
     throw e;
@@ -66,7 +67,7 @@ get_child_by_predicate(Tree& t, Unary_pred p, const cgns_exception& e) -> Tree& 
   }
 }
 template<class Tree, class Unary_pred> auto
-get_child_by_predicate(Tree& t, Unary_pred p) -> Tree& {
+get_child_by_predicate(Tree& t, Unary_pred p) -> decltype(auto) {
   const cgns_exception e("No child satisfying predicate found in tree \""+name(t)+"\"");
   return get_child_by_predicate(t,p,e);
 }
@@ -91,13 +92,13 @@ get_children_by_name_or_label(Tree& t, const std::string& s) -> range_of_ref<Tre
 }
 
 template<class Tree> auto
-get_child_by_name(Tree& t, const std::string& name_) -> Tree& {
+get_child_by_name(Tree& t, const std::string& name_) -> decltype(auto) {
   auto predicate = [&](const tree& child){ return is_of_name(child,name_); };
   cgns_exception e("Child of name \""+name_+"\" not found in tree \""+name(t)+"\"");
   return get_child_by_predicate(t,predicate,e);
 }
 template<class Tree> auto
-get_child_by_label(Tree& t, const std::string& label) -> Tree& {
+get_child_by_label(Tree& t, const std::string& label) -> decltype(auto) {
   auto predicate = [&](const tree& child){ return is_of_label(child,label); };
   cgns_exception e("Child of label \""+label+"\" not found in tree \""+name(t)+"\"");
   return get_child_by_predicate(t,predicate,e);
@@ -111,7 +112,7 @@ append(Array0& x, const Array1& y)  {
   }
 }
 template<class Tree> auto
-get_nodes_by_matching(Tree& t, std::vector<std::string> identifiers_stack) -> range_of_ref<Tree> {
+get_nodes_by_matching_impl(Tree& t, std::vector<std::string> identifiers_stack) -> range_of_ref<Tree> {
   STD_E_ASSERT(identifiers_stack.size()>0);
 
   auto current_id = identifiers_stack.back();
@@ -124,7 +125,7 @@ get_nodes_by_matching(Tree& t, std::vector<std::string> identifiers_stack) -> ra
 
     range_of_ref<Tree> matching_nodes;
     for (Tree& node : nodes_matching_current_id) {
-      append(matching_nodes,get_nodes_by_matching(node,identifiers_stack));
+      append(matching_nodes,get_nodes_by_matching_impl(node,identifiers_stack));
     }
     return matching_nodes;
   }
@@ -134,16 +135,24 @@ template<class Tree> auto
 get_nodes_by_matching(Tree& t, const std::string& gen_path) -> range_of_ref<Tree> {
   auto identifiers = std_e::split(gen_path,'/');
   std::reverse(begin(identifiers),end(identifiers));
-  return get_nodes_by_matching(t,identifiers);
+  return get_nodes_by_matching_impl(t,identifiers);
+}
+template<class Tree> auto
+get_nodes_by_matching(Tree& t, const std::vector<std::string>& gen_paths) -> range_of_ref<Tree> {
+  range_of_ref<Tree> res;
+  for (const auto& gen_path : gen_paths) {
+    append(res,get_nodes_by_matching(t,gen_path));
+  }
+  return res;
 }
 
 template<class Tree> auto
-get_node_by_matching(Tree& t, const std::string& gen_path) -> Tree& {
-  tree_range ts = get_nodes_by_matching(t,gen_path);
+get_node_by_matching(Tree& t, const std::string& gen_path) -> decltype(auto) {
+  range_of_ref<Tree> ts = get_nodes_by_matching(t,gen_path);
   if (ts.size() == 0) {
     throw cgns_exception("No sub-tree matching \""+gen_path+"\" in tree \""+name(t)+"\"");
   } else {
-    return ts[0];
+    return ts[0].get();
   }
 }
 /// common searches }

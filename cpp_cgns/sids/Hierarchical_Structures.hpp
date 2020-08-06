@@ -2,6 +2,7 @@
 
 #include "cpp_cgns/cgns.hpp"
 #include "std_e/future/contract.hpp"
+#include "std_e/future/span.hpp"
 #include "cpp_cgns/node_manip.hpp"
 #include "cpp_cgns/tree_manip.hpp"
 #include "cpp_cgns/exception.hpp"

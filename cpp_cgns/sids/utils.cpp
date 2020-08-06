@@ -68,5 +68,23 @@ bool is_boundary(const md_array_view<Integer,2>& pe, Integer i) {
 template bool is_boundary<I4>(const md_array_view<I4,2>& pe, I4 i);
 template bool is_boundary<I8>(const md_array_view<I8,2>& pe, I8 i);
 
+auto
+elts_ranges_are_contiguous(const tree_range& elt_pools) -> bool {
+  STD_E_ASSERT(std::is_sorted(begin(elt_pools),end(elt_pools),compare_by_range));
+  int nb_of_elt_types = elt_pools.size();
+  for (int i=0; i<nb_of_elt_types-1; ++i) {
+    auto current_range = element_range(elt_pools[i]);
+    auto next_range = element_range(elt_pools[i+1]);
+    return contiguous(current_range,next_range);
+  }
+  return true;
+}
+auto
+elts_types_are_unique(const tree_range& elt_pools) -> bool {
+  STD_E_ASSERT(std::is_sorted(begin(elt_pools),end(elt_pools),compare_by_elt_type));
+  auto last = std::adjacent_find(begin(elt_pools),end(elt_pools),equal_by_elt_type);
+  return last==end(elt_pools);
+}
+
 
 } // cgns

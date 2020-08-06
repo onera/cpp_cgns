@@ -14,9 +14,4 @@ std::string ZoneDonorName(const tree& gc) {
   return to_string(gc.value);
 }
 
-std::string GridLocation(const tree& t) {
-  const tree& gl = get_child_by_name(t,"GridLocation");
-  return to_string(gl.value);
-}
-
 } // cgns

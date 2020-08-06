@@ -28,4 +28,8 @@ bool face_is_boundary(const Array2& parent_elts) {
 }
 
 
+auto elts_ranges_are_contiguous(const tree_range& elt_pools) -> bool;
+auto elts_types_are_unique(const tree_range& elt_pools) -> bool;
+
+
 } // cgns
