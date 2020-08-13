@@ -4,10 +4,10 @@
 #include "cpp_cgns/node_manip.hpp"
 
 static PyObject*
-cpp_cgns_ownership_test(PyObject* self, PyObject* args) {
+cpp_cgns_ownership_test(PyObject* /*self*/, PyObject* args) {
   PyObject* base_pytree;
   if (!PyArg_ParseTuple(args, "O", &base_pytree)) return NULL;
-  
+
   cgns::tree base = cgns::view_as_cpptree(base_pytree);
 
   cgns::cgns_allocator alloc; // allocates and owns memory

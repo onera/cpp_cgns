@@ -102,7 +102,7 @@ std::string to_string(const tree& t, int threshold = default_threshold_to_print_
 
 // to_string }
 inline
-tree deep_copy(const tree& t, cgns_allocator& alloc) {
+tree deep_copy(const tree& /*t */, cgns_allocator& /* alloc */) {
   throw std_e::not_implemented_exception();
 }
 
