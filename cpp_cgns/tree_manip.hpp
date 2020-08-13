@@ -158,17 +158,17 @@ get_node_by_matching(Tree& t, const std::string& gen_path) -> decltype(auto) {
 /// common searches }
 // tree search }
 
-template<class T, int N = 1, class Tree> auto
+template<class T, int N, class Tree> auto
 get_child_value_by_name(Tree& t, const std::string& s) {
   Tree& n = get_child_by_name(t,s);
   return view_as_array<T,N>(value(n));
 }
-template<class T, int N = 1, class Tree> auto
+template<class T, int N, class Tree> auto
 get_child_value_by_label(Tree& t, const std::string& s) {
   Tree& n = get_child_by_label(t,s);
   return view_as_array<T,N>(value(n));
 }
-template<class T, int N = 1, class Tree> auto
+template<class T, int N, class Tree> auto
 get_node_value_by_matching(Tree& t, const std::string& s) {
   Tree& n = get_node_by_matching(t,s);
   return view_as_array<T,N>(value(n));
