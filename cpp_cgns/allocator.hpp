@@ -110,7 +110,7 @@ class cgns_std_allocator {
       return cgns::allocate<T>(*alloc,n);
     }
 
-    void deallocate(T* p, size_t) noexcept { 
+    void deallocate(T*, size_t) noexcept {
       // do nothing: deallocation should be done by the cgns_allocator
     }
 

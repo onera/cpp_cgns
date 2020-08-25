@@ -24,7 +24,7 @@ struct factory {
     // creation according to SIDS
     tree newCGNSTree() const;
     tree newCGNSBase(const std::string& name, int cellDim, int physDim) const;
-    tree newUnstructuredZone(const std::string& name, const std::array<I4,3>& dims) const;
+    tree newUnstructuredZone(const std::string& name, const std::array<I4,3>& dims = {0,0,0}) const;
     tree newGridCoordinates(const std::string& name="GridCoordinates") const;
     tree newZoneBC() const;
     tree newZoneGridConnectivity() const;
