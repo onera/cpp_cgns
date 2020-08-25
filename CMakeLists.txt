@@ -27,7 +27,7 @@ include(FetchContent)
 FetchContent_Declare(
   doctest
   GIT_REPOSITORY https://github.com/onqtam/doctest.git
-  GIT_TAG        2.3.7
+  GIT_TAG        2.4.0
 )
 FetchContent_GetProperties(doctest)
 if(NOT doctest_POPULATED)
@@ -45,9 +45,9 @@ file(GLOB_RECURSE cpp_and_test_files
   "${src_dir}/*.cpp"
 )
 set(cpp_files ${cpp_and_test_files})
-list(FILTER cpp_files EXCLUDE REGEX ".*\.test\.cpp$")
+list(FILTER cpp_files EXCLUDE REGEX ".*\\.test\\.cpp$")
 set(test_files ${cpp_and_test_files})
-list(FILTER test_files INCLUDE REGEX ".*\.test\.cpp$")
+list(FILTER test_files INCLUDE REGEX ".*\\.test\\.cpp$")
 
 
 ## Targets ##
