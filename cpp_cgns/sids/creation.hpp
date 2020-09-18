@@ -62,6 +62,7 @@ struct factory {
     template<class I>
     tree newOrdinal(I i) const;
     // removal
+    bool deallocate_node_value(node_value& val) const;
     void rm_child(tree& t, const tree& c) const;
     void rm_child_by_name(tree& t, const std::string& name) const;
     void rm_child_by_label(tree& t, const std::string& label) const;
@@ -72,8 +73,8 @@ struct factory {
     tree newRootNode() const;
     tree newCGNSVersionNode() const;
     // removal
+    bool deallocate_node(tree& t) const;
     void deallocate_tree(tree& t) const;
-    void deallocate_node(tree& t) const;
     template<class Unary_predicate> void rm_children_by_predicate(tree& t, Unary_predicate p) const;
     template<class Unary_predicate> void rm_child_by_predicate(tree& t, Unary_predicate p) const;
   // data member

@@ -180,8 +180,11 @@ tree factory::newGridConnectivity(const std::string& name, const std::string& z_
 /// node creation }
 
 /// node removal {
-void factory::deallocate_node(tree& t) const {
-  alloc().deallocate(t.value.data);
+bool factory::deallocate_node_value(node_value& val) const {
+  return alloc().deallocate(val.data);
+}
+bool factory::deallocate_node(tree& t) const {
+  return deallocate_node_value(t.value);
 }
 void factory::deallocate_tree(tree& t) const {
   deallocate_node(t);

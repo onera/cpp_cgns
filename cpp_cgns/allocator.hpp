@@ -33,12 +33,14 @@ class cgns_allocator final {
     }
 
     // conditionnal deallocation: only deallocate if has allocated the memory
-    void deallocate(void* ptr) {
+    bool deallocate(void* ptr) {
       auto pos = position_in_owned_ptrs(ptr);
       if (pos!=end(owned_ptrs)) {
         free(ptr);
         owned_ptrs.erase(pos);
+        return true;
       }
+      return false;
     }
 
     bool release_if_owner(void* ptr) {
