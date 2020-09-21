@@ -365,6 +365,52 @@ void update_and_transfer_ownership(tree& t, cgns_allocator& alloc, PyObject* pyt
     Py_DECREF(py_child); // TODO check
   }
 }
+
+// TODO DEL the other (but test that it does not break anything!)
+void update_and_transfer_ownership2(tree& t, cgns_allocator& alloc, PyObject* pytree) {
+  // preconditions:
+  //   - nodes similar in t and pytree have the same order
+  //     (in other words, t nodes were never reordered)
+  //   - nodes are identified by name (no renaming in t)
+
+  _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault)
+
+  STD_E_ASSERT(name(t)==get_py_name(pytree));
+  STD_E_ASSERT(label(t)==get_py_label(pytree));
+
+  if (!same_node_data(t.value,get_py_value(pytree))) {
+    // TODO factor with pytree_with_transfered_ownership(t.children[i],alloc,py_child);
+    if (alloc.release_if_owner(t.value.data)) {
+      PyObject* py_value = make_owning_numpy_array(t.value);
+      PyList_SetItem(pytree,1,py_value);
+    } else {
+      set_py_value(pytree,t.value);
+    }
+  }
+
+  PyObject* py_children = PyList_GetItem(pytree,2);
+  int nb_children = t.children.size();
+  int i = 0;
+  int i_py = 0;
+  while (i_py < PyList_Size(py_children)) {
+    PyObject* py_child = PyList_GetItem(py_children,i_py);
+    if (i<nb_children && t.children[i].name==get_py_name(py_child)) {
+      update_and_transfer_ownership2(t.children[i],alloc,py_child);
+      ++i;
+      ++i_py;
+    } else { // since t and pytree have the same order
+             // it means an item has been removed in t
+             // and this should be propagated to pytree
+      PyList_SetSlice(py_children, i_py, i_py+1, NULL); // rm item at i_py
+      Py_DECREF(py_child); // TODO check
+    }
+  }
+  for (; i<nb_children; ++i) {
+    PyObject* py_child = pytree_with_transfered_ownership(t.children[i],alloc);
+    PyList_Append(py_children,py_child);
+    Py_DECREF(py_child); // TODO check
+  }
+}
 // tree -> pytree with ownership transfer }
 
 } // cgns

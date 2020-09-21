@@ -192,25 +192,6 @@ void factory::deallocate_tree(tree& t) const {
     deallocate_tree(c);
   }
 }
-template<class Unary_predicate>
-void factory::rm_child_by_predicate(tree& t, Unary_predicate p) const {
-  auto& cs = t.children;
-  auto pos = std::find_if(begin(cs),end(cs),p);
-  if (pos==end(cs)) {
-    throw cgns_exception("No node to erase");
-  } else {
-    deallocate_tree(*pos);
-    cs.erase(pos);
-  }
-}
-template<class Unary_predicate>
-void factory::rm_children_by_predicate(tree& t, Unary_predicate p) const {
-  auto& cs = t.children;
-  auto not_p = [p](const auto& x){ return !p(x); };
-  auto pos = std::stable_partition(begin(cs),end(cs),not_p); // move nodes to be deleted at the end
-  for_each(pos,end(cs),[this](tree& n){ deallocate_tree(n); });
-  cs.erase(pos,end(cs));
-}
 
 void factory::rm_child(tree& t, const tree& c) const {
   auto predicate = [&](const tree& child){ return &child==&c; };

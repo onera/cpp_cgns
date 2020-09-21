@@ -33,6 +33,15 @@ node_value view_as_node_value(std_e::multi_array<T0,T1>& x) {
   using T = typename std_e::multi_array<T0,T1>::value_type;
   return {to_string<T>(),std_e::convert_to<std::vector<I8>>(x.extent()),x.data()};
 }
+template<class T, ptrdiff_t N>
+node_value view_as_node_value_1(std_e::span<T,N> x) {
+  static_assert(!std::is_const_v<T>,"no way to ensure constness in CGNS tree");
+  return {to_string<T>(),{1,(I8)x.size()},x.data()};
+}
+template<class T>
+node_value view_as_node_value_1(cgns_vector<T> x) {
+  return view_as_node_value_1(std_e::make_span(x));
+}
 /// span/vector/md_array_view<T> -> node_value }
 
 /// node_value -> md_array_view<T> {

@@ -27,7 +27,7 @@ std::string GridLocation(const tree& t);
 template<class I, class Tree> auto 
 Rind(Tree& t) {
   auto& rind_node = get_child_by_label(t,"Rind_t");
-  STD_E_ASSERT(value(rind_node).data_type!=to_string<I>());
+  STD_E_ASSERT(value(rind_node).data_type==to_string<I>());
   I* e_ptr = (I*)value(rind_node).data;
   return std_e::make_span<2>(e_ptr);
 }
