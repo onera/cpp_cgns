@@ -1,5 +1,6 @@
 ## Global config ##
 cmake_minimum_required(VERSION 3.12)
+include(FetchContent)
 
 ### Boostrap project_utils ###
 if(USE_SUBMODULE_SOURCES)
@@ -38,7 +39,6 @@ project(
 
 
 ## Dependencies ##
-include(FetchContent)
 ### doctest ###
 FetchContent_Declare(
   doctest
