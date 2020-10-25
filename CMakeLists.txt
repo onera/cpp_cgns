@@ -50,6 +50,18 @@ if(NOT doctest_POPULATED)
   FetchContent_Populate(doctest)
   add_subdirectory(${doctest_SOURCE_DIR} ${doctest_BINARY_DIR})
 endif()
+### pybind11 ###
+FetchContent_Declare(
+  pybind11
+  GIT_REPOSITORY https://github.com/pybind/pybind11.git
+  GIT_TAG        v2.6
+)
+FetchContent_GetProperties(pybind11)
+if(NOT pybind11_POPULATED)
+  FetchContent_Populate(pybind11)
+  add_subdirectory(${pybind11_SOURCE_DIR} ${pybind11_BINARY_DIR})
+  #target_add_dependency(${PROJECT_NAME} ${pybind11_SOURCE_DIR} ${pybind11_BINARY_DIR})
+endif()
 
 
 ## Find files ##
@@ -67,26 +79,32 @@ list(FILTER test_files INCLUDE REGEX ".*\\.test\\.cpp$")
 
 
 ## Targets ##
+message(pybind11_SOURCE_DIR)
+message(${pybind11_SOURCE_DIR})
 add_library(${PROJECT_NAME} SHARED ${cpp_files})
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${include_dir}>
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+  $<BUILD_INTERFACE:${pybind11_SOURCE_DIR}/include>
 )
 
 target_add_dependency(${PROJECT_NAME} std_e)
 
+target_link_libraries(${PROJECT_NAME}
+  PUBLIC 
+    std_e::std_e
+    #pybind11::pybind11_headers
+)
 if(CMAKE_VERSION VERSION_LESS 3.14)
   target_add_thirdparty_dependency(${PROJECT_NAME} Python REQUIRED COMPONENTS Interpreter Development)
   target_link_libraries(${PROJECT_NAME}
     PUBLIC 
-      std_e::std_e
       Python::Python
   )
 else()
   target_add_thirdparty_dependency(${PROJECT_NAME} Python REQUIRED COMPONENTS Interpreter Development NumPy)
   target_link_libraries(${PROJECT_NAME}
     PUBLIC 
-      std_e::std_e
       Python::Python
       Python::NumPy
   )
@@ -96,22 +114,22 @@ endif()
 ## Install ##
 target_install(${PROJECT_NAME})
 
-## CPython interface
-add_library(py_${PROJECT_NAME} SHARED "${src_dir}/interop/py_${PROJECT_NAME}.cpp")
-target_link_libraries(py_${PROJECT_NAME}
-  PUBLIC 
-    cpp_cgns::cpp_cgns
-)
-set_target_properties(
-  py_${PROJECT_NAME}
-  PROPERTIES
-    PREFIX ""
-    OUTPUT_NAME "${PROJECT_NAME}"
-    LINKER_LANGUAGE C
-)
-install(TARGETS py_${PROJECT_NAME} EXPORT py_${PROJECT_NAME}Targets
-  LIBRARY DESTINATION py
-)
+### CPython interface # TODO DEL
+#add_library(py_${PROJECT_NAME} SHARED "${src_dir}/interop/py_${PROJECT_NAME}.cpp")
+#target_link_libraries(py_${PROJECT_NAME}
+#  PUBLIC 
+#    cpp_cgns::cpp_cgns
+#)
+#set_target_properties(
+#  py_${PROJECT_NAME}
+#  PROPERTIES
+#    PREFIX ""
+#    OUTPUT_NAME "${PROJECT_NAME}"
+#    LINKER_LANGUAGE C
+#)
+#install(TARGETS py_${PROJECT_NAME} EXPORT py_${PROJECT_NAME}Targets
+#  LIBRARY DESTINATION py
+#)
 
 
 ## Unit tests ##

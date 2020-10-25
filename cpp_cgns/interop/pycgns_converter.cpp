@@ -5,6 +5,7 @@
 #include "numpy_config.hpp"
 #include <algorithm>
 #include "cpp_cgns/allocator.hpp"
+//#include <pybind11/numpy.h>
 
 
 namespace cgns {
@@ -160,6 +161,9 @@ std::string get_py_name(PyObject* pytree) {
 void set_py_name(PyObject* pytree, const std::string& name) {
   PyList_SetItem(pytree,0,to_python_string(name));
 }
+void set_py_name(py::list pytree, const std::string& name) {
+  pytree[0] = to_python_string(name);
+}
 
 std::string get_py_label(PyObject* pytree) {
   return to_std_string(PyList_GetItem(pytree,3));
@@ -167,6 +171,10 @@ std::string get_py_label(PyObject* pytree) {
 void set_py_label(PyObject* pytree, const std::string& label) {
   PyObject* py_label = to_python_string(label);
   PyList_SetItem(pytree,3,py_label);
+}
+void set_py_label(py::list pytree, const std::string& label) {
+  PyObject* py_label = to_python_string(label);
+  pytree[3] = py_label;
 }
 
 node_value get_py_value(PyObject* pytree) {
@@ -188,30 +196,57 @@ void set_py_value(PyObject* pytree, node_value& value) { // NOTE: non const ref 
   }
   PyList_SetItem(pytree,1,py_value);
 }
+void set_py_value(py::list pytree, node_value& value) { // NOTE: non const ref because shared data
+  PyObject* py_value;
+  if (value.data_type=="MT") {
+    Py_INCREF(Py_None); // TODO not sure it is needed
+    py_value = Py_None;
+  } else {
+    py_value = view_as_numpy_array(value);
+  }
+  pytree[1] = py_value;
+}
 // cgns::tree attributes <-> pytree attributes }
 
+//
+//py::list py_tree() {
+//  return py::list(4);
+//}
+//
+//auto name(py::list t) {
+//  return t[0];
+//}
+//auto value(py::list t) {
+//  return t[1];
+//}
+//auto children(py::list t) {
+//  return t[2];
+//}
+//auto label(py::list t) {
+//  return t[3];
+//}
 
 // tree <-> pytree {
-PyObject* view_as_pytree(tree& t) {
+py::object view_as_pytree(tree& t) {
   _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault)
-  PyObject* pytree = PyList_New(4);
+  py::list pytree(4);
 
   set_py_name(pytree,t.name);
   set_py_label(pytree,t.label);
   set_py_value(pytree,t.value);
 
-  PyObject* py_children = PyList_New(t.children.size());
+  py::list py_children(t.children.size());
   for (size_t i=0; i<t.children.size(); ++i) {
-    PyObject* py_child = view_as_pytree(t.children[i]);
-    PyList_SetItem(py_children,i,py_child);
+    py::object py_child = view_as_pytree(t.children[i]);
+    py_children[i] = py_child;
   }
-  PyList_SetItem(pytree,2,py_children);
+  pytree[2] = py_children;
 
   return pytree;
 }
 
 
-tree view_as_cpptree(PyObject* pytree) {
+tree view_as_cpptree__impl(PyObject* pytree) {
   _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault) // TODO check
 
   std::string name = get_py_name(pytree);
@@ -223,10 +258,14 @@ tree view_as_cpptree(PyObject* pytree) {
   std::vector<tree> children(nb_children);
   for (int i=0; i<nb_children; ++i) {
     PyObject* py_child = PyList_GetItem(py_children,i);
-    children[i] = view_as_cpptree(py_child);
+    children[i] = view_as_cpptree__impl(py_child);
   }
 
   return {name,value,children,label};
+}
+
+tree view_as_cpptree(py::object pytree) {
+  return view_as_cpptree__impl(pytree.ptr());
 }
 // tree <-> pytree }
 
