@@ -15,7 +15,7 @@ class cgns_allocator;
 
 
 PYBIND11_EXPORT py::object view_as_pytree(tree& t);
-PYBIND11_EXPORT tree view_as_cpptree(py::object pytree);
+PYBIND11_EXPORT tree view_as_cpptree(py::list pytree);
 
 PyObject* pytree_with_transfered_ownership(tree& t, cgns_allocator& alloc);
 //void pytree_with_transfered_ownership_inplace(tree& t, cgns_allocator& alloc, PyObject* pytree);

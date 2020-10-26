@@ -6,6 +6,7 @@
 #include <algorithm>
 #include "cpp_cgns/allocator.hpp"
 //#include <pybind11/numpy.h>
+#include "std_e/log.hpp" // TODO
 
 
 namespace cgns {
@@ -208,64 +209,76 @@ void set_py_value(py::list pytree, node_value& value) { // NOTE: non const ref b
 }
 // cgns::tree attributes <-> pytree attributes }
 
-//
-//py::list py_tree() {
-//  return py::list(4);
-//}
-//
-//auto name(py::list t) {
-//  return t[0];
-//}
-//auto value(py::list t) {
-//  return t[1];
-//}
-//auto children(py::list t) {
-//  return t[2];
-//}
-//auto label(py::list t) {
-//  return t[3];
-//}
+
+
+
+py::list py_tree() {
+  return py::list(4);
+}
+
+auto name(py::list t) {
+  return t[0];
+}
+py::str name3(py::list t) {
+  return t[0];
+}
+void set_name4(py::list t, const std::string& cs) {
+  //py::str s = t[0];
+  //s = cs;
+  t[0] = cs;
+}
+auto value(py::list t) {
+  return t[1];
+}
+auto children(py::list t) {
+  return t[2];
+}
+auto label(py::list t) {
+  return t[3];
+}
+template<class T>
+std::string to_string3(T& x) {
+  return py::str(x);
+}
 
 // tree <-> pytree {
 py::object view_as_pytree(tree& t) {
   _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault)
-  py::list pytree(4);
+  auto pytree = py_tree();
 
-  set_py_name(pytree,t.name);
-  set_py_label(pytree,t.label);
-  set_py_value(pytree,t.value);
+  set_name4 (pytree, name (t));
+  label(pytree) = label(t);
+  set_py_value(pytree,value(t));
 
   py::list py_children(t.children.size());
   for (size_t i=0; i<t.children.size(); ++i) {
     py::object py_child = view_as_pytree(t.children[i]);
     py_children[i] = py_child;
   }
-  pytree[2] = py_children;
+  children(pytree) = py_children;
 
   return pytree;
 }
 
 
-tree view_as_cpptree__impl(PyObject* pytree) {
+tree view_as_cpptree(py::list pytree) {
   _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault) // TODO check
 
-  std::string name = get_py_name(pytree);
-  std::string label = get_py_label(pytree);
-  node_value value = get_py_value(pytree);
+  //auto xx = name(pytree);
+  //std::string name2 = to_string3(xx); //get_py_name(pytree.ptr());
+  std::string name2 = name3(pytree);
+  std::string label = get_py_label(pytree.ptr());
+  node_value value = get_py_value(pytree.ptr());
 
-  PyObject* py_children = PyList_GetItem(pytree,2);
-  int nb_children = PyList_Size(py_children);
+  py::list py_children = children(pytree);
+  int nb_children = py_children.size();
   std::vector<tree> children(nb_children);
   for (int i=0; i<nb_children; ++i) {
-    PyObject* py_child = PyList_GetItem(py_children,i);
-    children[i] = view_as_cpptree__impl(py_child);
+    py::list py_child = py_children[i];
+    children[i] = view_as_cpptree(py_child);
   }
 
-  return {name,value,children,label};
-}
-
-tree view_as_cpptree(py::object pytree) {
-  return view_as_cpptree__impl(pytree.ptr());
+  return {name2,value,children,label};
 }
 // tree <-> pytree }
 
