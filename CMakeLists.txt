@@ -1,31 +1,26 @@
 ## Global config ##
 cmake_minimum_required(VERSION 3.12)
-include(FetchContent)
 
-### Boostrap project_utils ###
-if(USE_SUBMODULE_SOURCES)
-  if(DEFINED ENV{PROJECT_ROOT})
-    set(PROJECT_ROOT $ENV{PROJECT_ROOT})
-  else()
-    set(PROJECT_ROOT ${CMAKE_SOURCE_DIR})
-  endif()
-  set(PROJECT_UTILS_DIR ${PROJECT_ROOT}/external/project_utils)
-else()
-  ### project_utils ###
-  FetchContent_Declare(
-    project_utils
-    GIT_REPOSITORY https://github.com/BerengerBerthoul/project_utils.git
-    GIT_TAG        1.0.1
-  )
-  FetchContent_GetProperties(project_utils)
-  if(NOT project_utils_POPULATED)
-    FetchContent_Populate(project_utils)
-  endif()
-  set(PROJECT_UTILS_DIR ${project_utils_SOURCE_DIR})
+if(NOT DEFINED PROJECT_ROOT)
+  set(PROJECT_ROOT ${CMAKE_SOURCE_DIR} CACHE PATH "Root directory, where the submodules are populated")
 endif()
 
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_UTILS_DIR}/scripts/cmake)
-include(target_add_dependency)
+macro(check_sub_repo_exists sub_repo_name)
+  set(sub_repo_path "${PROJECT_ROOT}/external/${sub_repo_name}")
+  file(GLOB sub_repo_files ${sub_repo_path}/*)
+  list(LENGTH sub_repo_files sub_repo_nb_files)
+  if(sub_repo_nb_files EQUAL 0)
+    message(FATAL_ERROR
+      "${PROJECT_ROOT}/external/${sub_repo_name} is empty.
+      Maybe you forgot to initialize it with \"git submodule update --init\""
+    )
+  endif()
+endmacro()
+
+check_sub_repo_exists(project_utils)
+set(PROJECT_UTILS_DIR ${PROJECT_ROOT}/external/project_utils)
+# Load commands target_add_dependency, target_add_thirdparty_dependency and target_install
+include(${PROJECT_UTILS_DIR}/scripts/cmake/target_add_dependency.cmake)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
@@ -39,18 +34,8 @@ project(
 
 
 ## Dependencies ##
-### doctest ###
-FetchContent_Declare(
-  doctest
-  GIT_REPOSITORY https://github.com/onqtam/doctest.git
-  GIT_TAG        2.4.0
-)
-FetchContent_GetProperties(doctest)
-if(NOT doctest_POPULATED)
-  FetchContent_Populate(doctest)
-  add_subdirectory(${doctest_SOURCE_DIR} ${doctest_BINARY_DIR})
-endif()
 ### pybind11 ###
+set(PYBIND11_INSTALL ON)
 FetchContent_Declare(
   pybind11
   GIT_REPOSITORY https://github.com/pybind/pybind11.git
@@ -60,7 +45,6 @@ FetchContent_GetProperties(pybind11)
 if(NOT pybind11_POPULATED)
   FetchContent_Populate(pybind11)
   add_subdirectory(${pybind11_SOURCE_DIR} ${pybind11_BINARY_DIR})
-  #target_add_dependency(${PROJECT_NAME} ${pybind11_SOURCE_DIR} ${pybind11_BINARY_DIR})
 endif()
 
 
@@ -79,21 +63,19 @@ list(FILTER test_files INCLUDE REGEX ".*\\.test\\.cpp$")
 
 
 ## Targets ##
-message(pybind11_SOURCE_DIR)
-message(${pybind11_SOURCE_DIR})
 add_library(${PROJECT_NAME} SHARED ${cpp_files})
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${include_dir}>
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
-  $<BUILD_INTERFACE:${pybind11_SOURCE_DIR}/include>
 )
 
+check_sub_repo_exists(std_e)
 target_add_dependency(${PROJECT_NAME} std_e)
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC 
     std_e::std_e
-    #pybind11::pybind11_headers
+    pybind11::pybind11_headers
 )
 if(CMAKE_VERSION VERSION_LESS 3.14)
   target_add_thirdparty_dependency(${PROJECT_NAME} Python REQUIRED COMPONENTS Interpreter Development)
@@ -113,23 +95,6 @@ endif()
 
 ## Install ##
 target_install(${PROJECT_NAME})
-
-### CPython interface # TODO DEL
-#add_library(py_${PROJECT_NAME} SHARED "${src_dir}/interop/py_${PROJECT_NAME}.cpp")
-#target_link_libraries(py_${PROJECT_NAME}
-#  PUBLIC 
-#    cpp_cgns::cpp_cgns
-#)
-#set_target_properties(
-#  py_${PROJECT_NAME}
-#  PROPERTIES
-#    PREFIX ""
-#    OUTPUT_NAME "${PROJECT_NAME}"
-#    LINKER_LANGUAGE C
-#)
-#install(TARGETS py_${PROJECT_NAME} EXPORT py_${PROJECT_NAME}Targets
-#  LIBRARY DESTINATION py
-#)
 
 
 ## Unit tests ##
