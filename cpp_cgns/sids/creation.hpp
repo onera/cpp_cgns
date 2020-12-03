@@ -85,7 +85,7 @@ struct factory {
 template<class I>
 tree factory::newOrdinal(I i) const {
   node_value val = create_node_value_1d({i},alloc());
-  return {"Ordinal", val, {}, "Ordinal_t"};
+  return {"Ordinal", "Ordinal_t", val, {}};
 }
 
 template<class Unary_predicate>

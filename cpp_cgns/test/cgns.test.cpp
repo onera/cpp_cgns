@@ -11,9 +11,9 @@ TEST_CASE("Hand-written tree construction") {
 
   tree t = {
     "MyArray", // name
+    "DataArray_t", // SIDS label
     {"R8",{data_size},values.data()}, // value
-    {}, // children (none here)
-    "DataArray_t" // SIDS label
+    {} // children (none here)
   };
 
   CHECK( t.name == "MyArray" );
@@ -35,18 +35,15 @@ TEST_CASE("Hand-written tree construction") {
     std::vector<I4> sub_values = {2,3,4,5,6,7};
     tree sub_t = {
       "SubArray",
+      "IndexArray_t",
       {"I4",{2,3},sub_values.data()}, // the user is responsible for giving 
                                       // the corrent data_type ("I4") 
                                       // and the correct dimension (here, 2 x 3)
-      {},
-      "IndexArray_t"
+      {}
     };
     emplace_child(t,std::move(sub_t));
 
     CHECK( t.children.size() == 1 );
     CHECK( t.children[0].name == "SubArray" );
   }
-
-
 }
-

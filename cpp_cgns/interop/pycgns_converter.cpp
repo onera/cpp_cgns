@@ -278,7 +278,7 @@ tree view_as_cpptree(py::list pytree) {
     children[i] = view_as_cpptree(py_child);
   }
 
-  return {name2,value,children,label};
+  return {name2,label,value,children};
 }
 // tree <-> pytree }
 

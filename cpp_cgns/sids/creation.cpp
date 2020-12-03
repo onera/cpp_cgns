@@ -13,24 +13,24 @@ namespace cgns {
 
 /// node creation {
 tree factory::newDataArray(const std::string& name, node_value value) const {
-  return {name, value, {}, "DataArray_t"};
+  return {name, "DataArray_t", value, {}};
 }
 tree factory::newUserDefinedData(const std::string& name, node_value value) const {
-  return {name, value, {}, "UserDefinedData_t"};
+  return {name, "UserDefinedData_t", value, {}};
 }
 tree factory::newUserDefinedData(const std::string& name, const std::string& val) const {
   node_value value = create_string_node_value(val,alloc());
-  return {name, value, {}, "UserDefinedData_t"};
+  return {name, "UserDefinedData_t", value, {}};
 }
 
 tree factory::newRootNode() const {
-  return {"CGNSTree", MT, {}, "CGNSTree_t"};
+  return {"CGNSTree", "CGNSTree_t", MT, {}};
 }
 
 tree factory::newCGNSVersionNode() const {
   R4 version = 3.1;
   node_value version_arr = create_node_value_1d({version},alloc());
-  return {"CGNSLibraryVersion", version_arr, {}, "CGNSLibraryVersion_t"};
+  return {"CGNSLibraryVersion", "CGNSLibraryVersion_t", version_arr, {}};
 }
 
 tree factory::newCGNSTree() const {
@@ -45,38 +45,38 @@ tree factory::newCGNSBase(const std::string& name, I4 cellDim, I4 physDim) const
   ptr[1] = physDim;
   node_value value = {to_string<I4>(),{2},ptr};
 
-  return {name, value, {}, "CGNSBase_t"};
+  return {name, "CGNSBase_t", value, {}};
 }
 
 tree factory::newUnstructuredZone(const std::string& name, const std::array<I4,3>& dims) const {
   node_value z_type_value = create_string_node_value("Unstructured",alloc());
-  tree z_type = {"ZoneType", z_type_value, {}, "ZoneType_t"};
+  tree z_type = {"ZoneType", "ZoneType_t", z_type_value, {}};
 
   node_value dim_value = create_node_value_1d(dims,alloc());
   dim_value.dims = {1,dim_value.dims[0]}; // required by SIDS file mapping (Zone_t)
-  return {name, dim_value, {z_type}, "Zone_t"};
+  return {name, "Zone_t", dim_value, {z_type}};
 }
 
 tree factory::newZoneBC() const {
-  return {std::string("ZoneBC"), MT, {}, "ZoneBC_t"};
+  return {"ZoneBC", "ZoneBC_t", MT, {}};
 }
 tree factory::newZoneGridConnectivity() const {
-  return {std::string("ZoneGridConnectivity"), MT, {}, "ZoneGridConnectivity_t"};
+  return {"ZoneGridConnectivity", "ZoneGridConnectivity_t", MT, {}};
 }
 
 tree factory::newGridCoordinates(const std::string& name) const {
-  return {name, MT, {}, "GridCoordinates_t"};
+  return {name, "GridCoordinates_t", MT, {}};
 }
 
 
 tree factory::newPointRange(I4 first, I4 last) const {
   node_value range_value = create_node_value_1d({first,last},alloc());
   range_value.dims = {1,2};
-  return {"PointRange", range_value, {}, "IndexRange_t"};
+  return {"PointRange", "IndexRange_t", range_value, {}};
 }
 tree factory::newElementRange(I4 first, I4 last) const {
   node_value range_value = create_node_value_1d({first,last},alloc());
-  return {"ElementRange", range_value, {}, "IndexRange_t"};
+  return {"ElementRange", "IndexRange_t", range_value, {}};
 }
 
 
@@ -87,7 +87,7 @@ tree factory::newElements(
   tree elts_conn_node = newDataArray("ElementConnectivity", view_as_node_value(conns));
   tree eltsRange = newElementRange(first,last);
   node_value elts_node_val = create_node_value_1d({type,nb_bnd_elts},alloc());
-  return {name, elts_node_val, {eltsRange,elts_conn_node}, "Elements_t"};
+  return {name, "Elements_t", elts_node_val, {eltsRange,elts_conn_node}};
 }
 tree factory::newHomogenousElements(
   const std::string& name, I4 type, md_array_view<I4,2> conns,
@@ -111,70 +111,70 @@ tree factory::newNfaceElements(const std::string& name, std_e::span<I4> conns, I
 tree factory::newPointList(const std::string& name, std_e::span<I4> pl) const {
   node_value pl_value = view_as_node_value(pl);
   pl_value.dims = {1,pl_value.dims[0]}; // required by SIDS (9.3: BC_t)
-  return {name, pl_value, {}, "IndexArray_t"};
+  return {name, "IndexArray_t", pl_value, {}};
 }
 tree factory::newBC(const std::string& name, const std::string& loc, std_e::span<I4> point_list) const {
   node_value bcType = create_string_node_value("FamilySpecified",alloc());
   tree location = newGridLocation(loc);
   tree point_list_node = newPointList("PointList",point_list);
-  return {name, bcType, {location,point_list_node}, "BC_t"};
+  return {name, "BC_t", bcType, {location,point_list_node}};
 }
 
 
 tree factory::newFlowSolution(const std::string& name, const std::string& gridLoc) const {
   tree loc = newGridLocation(gridLoc);
-  return {name, MT, {loc}, "FlowSolution_t"};
+  return {name, "FlowSolution_t", MT, {loc}};
 }
 tree factory::newRind(const std::vector<I4>& rind_planes) const {
   node_value value = create_node_value_1d(rind_planes,alloc());
-  return {"Rind", value, {}, "Rind_t"};
+  return {"Rind", "Rind_t", value, {}};
 }
 tree factory::newDiscreteData(const std::string& name, const std::string& gridLoc) const {
   tree loc = newGridLocation(gridLoc);
-  return {name, MT, {loc}, "DiscreteData_t"};
+  return {name, "DiscreteData_t", MT, {loc}};
 }
 tree factory::newZoneSubRegion(const std::string& name, int dim, const std::string& gridLoc) const {
   node_value dim_value = create_node_value_1d({dim},alloc());
   tree loc = newGridLocation(gridLoc);
-  return {name, dim_value, {loc}, "ZoneSubRegion_t"};
+  return {name, "ZoneSubRegion_t", dim_value, {loc}};
 }
 tree factory::newBCDataSet(const std::string& name, const std::string& val, const std::string& gridLoc) const {
   tree loc = newGridLocation(gridLoc);
   node_value value = create_string_node_value(val,alloc());
-  return {name, value, {loc}, "BCDataSet_t"};
+  return {name, "BCDataSet_t", value, {loc}};
 }
 tree factory::newBCData(const std::string& name) const {
-  return {name, MT, {}, "BCData_t"};
+  return {name, "BCData_t", MT, {}};
 }
 
 
 
 tree factory::newGridLocation(const std::string& loc) const {
   node_value location = create_string_node_value(loc,alloc());
-  return {"GridLocation",location,{},"GridLocation_t"};
+  return {"GridLocation","GridLocation_t",location,{}};
 }
 tree factory::newFamily(const std::string& name) const {
-  return {name, MT, {}, "Family_t"};
+  return {name, "Family_t", MT, {}};
 }
 tree factory::newFamilyBC(const std::string& famName) const {
   node_value famNameValue = create_string_node_value(famName,alloc());
-  return {"FamilyBC", famNameValue, {}, "FamilyBC_t"};
+  return {"FamilyBC", "FamilyBC_t", famNameValue, {}};
 }
 
 tree factory::newDescriptor(const std::string& name, const std::string& val) const {
   node_value value = create_string_node_value(val,alloc());
-  return {name, value, {}, "Descriptor_t"};
+  return {name, "Descriptor_t", value, {}};
 }
 
 tree factory::newGridConnectivityType(const std::string& gc_type) const {
   node_value gc_type_value = create_string_node_value(gc_type,alloc());
-  return {"GridConnectivityType",gc_type_value,{},"GridConnectivityType_t"};
+  return {"GridConnectivityType","GridConnectivityType_t",gc_type_value,{}};
 }
 tree factory::newGridConnectivity(const std::string& name, const std::string& z_donor_name, const std::string& loc, const std::string& connec_type) const {
   node_value z_donor_value = create_string_node_value(z_donor_name,alloc());
   tree location = newGridLocation(loc);
   tree grid_conn_type = newGridConnectivityType(connec_type);
-  return {name, z_donor_value, {location,grid_conn_type}, "GridConnectivity_t"};
+  return {name, "GridConnectivity_t", z_donor_value, {location,grid_conn_type}};
 }
 
 /// node creation }

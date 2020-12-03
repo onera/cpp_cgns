@@ -17,9 +17,6 @@ using I8 = std::int64_t;
 using R4 = float;
 using R8 = double;
 
-using g_idx_t = I8;
-using l_idx_t = I4;
-
 
 struct node_value {
   std::string data_type;
@@ -29,9 +26,9 @@ struct node_value {
 
 struct tree {
   std::string name;
+  std::string label;
   node_value value;
   std::vector<tree> children;
-  std::string label;
 };
 // core }
 

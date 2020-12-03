@@ -41,7 +41,7 @@ class fake_python_program {
       data[0] = 10;
       data[1] = 11;
       node_value value = {"I4",{sz},data};
-      return {"RootNode", value, {}, "UserDefinedData_t"};
+      return {"RootNode", "UserDefinedData_t", value, {}};
     }
   private:
     fake_python_allocator alloc;
@@ -57,9 +57,9 @@ tree create_node(cgns_allocator& alloc) {
 
   return {
     "my_node",
+    "UserDefinedData_t",
     {"I4",{sz},mem},
-    {}, // no children
-    "UserDefinedData_t"
+    {} // no children
   };
 }
 
@@ -103,9 +103,9 @@ TEST_CASE("cgns_allocation") {
       I8 nb_even = even_numbers.size();
       tree even_numbers_node = {
         "EvenNumbers",
+        "DataArray_t",
         {"I4",{nb_even},even_numbers.data()},
-        {},
-        "DataArray_t"
+        {}
       };
       emplace_child(t,std::move(even_numbers_node));
     } // close scope: the vector "even_numbers" does not exist anymore...
