@@ -4,6 +4,7 @@
 #include "cpp_cgns/cgns.hpp"
 #include "cpp_cgns/node_manip.hpp"
 #include "cpp_cgns/exception.hpp"
+#include "std_e/graph/algorithm/algo_nodes.hpp"
 
 
 namespace cgns {
@@ -34,6 +35,14 @@ template<class Tree>                   auto get_children_by_labels    (Tree& t, 
 template<class Tree>                   auto get_node_by_matching      (Tree& t, const std::string& gen_path) -> decltype(auto);
 template<class Tree>                   auto get_nodes_by_matching     (Tree& t, const std::string& gen_path) -> range_of_ref<Tree>;
 template<class Tree>                   auto get_nodes_by_matching     (Tree& t, const std::vector<std::string>& gen_paths) -> range_of_ref<Tree>;
+
+template<class Tree, class Unary_pred> auto get_node_by_predicate     (Tree& t, Unary_pred p)                -> decltype(auto);
+template<class Tree, class Unary_pred> auto get_nodes_by_predicate    (Tree& t, Unary_pred p)                -> range_of_ref<Tree>;
+
+template<class Tree>                   auto get_node_by_name          (Tree& t, const std::string& name )    -> decltype(auto);
+template<class Tree>                   auto get_node_by_label         (Tree& t, const std::string& label)    -> decltype(auto);
+template<class Tree>                   auto get_nodes_by_name         (Tree& t, const std::string& name )    -> range_of_ref<Tree>;
+template<class Tree>                   auto get_nodes_by_label        (Tree& t, const std::string& label)    -> range_of_ref<Tree>;
 
 template<class T, int N=1, class Tree> auto get_child_value_by_name   (Tree& t, const std::string& s);
 template<class T, int N=1, class Tree> auto get_child_value_by_label  (Tree& t, const std::string& s);
@@ -104,38 +113,72 @@ get_child_by_label(Tree& t, const std::string& label) -> decltype(auto) {
   return get_child_by_predicate(t,predicate,e);
 }
 
-// TODO get_nodes_by_matching: this implementation is ugly and slow (memory allocations and copies all the way) and should be replaced by a proper DFS
+
+//// get_nodes_by_matching {
+template<class Tree>
+// requires Tree==tree or Tree==const tree
+class visitor_for_matching_path {
+  public:
+    visitor_for_matching_path(const std::string& gen_path)
+      : identifiers(std_e::split(gen_path,'/'))
+      , depth(0)
+    {}
+
+    auto
+    pre(Tree& t) -> bool {
+      bool is_matching = identifiers[depth]==t.name || identifiers[depth]==t.label;
+      int max_depth = identifiers.size();
+      if (depth==max_depth-1 && is_matching) {
+        matching_nodes.push_back(t);
+      }
+      return depth < max_depth  &&  is_matching;
+    }
+
+    auto
+    post(Tree&) {}
+
+    auto
+    up(Tree&, Tree&) -> void {
+      --depth;
+    }
+    auto
+    down(Tree&, Tree&) -> void {
+      ++depth;
+    }
+
+    auto
+    retrieve_nodes() -> range_of_ref<Tree> {
+      return std::move(matching_nodes);
+    }
+  private:
+    std::vector<std::string> identifiers;
+    int depth;
+    range_of_ref<Tree> matching_nodes;
+};
+
+template<class Tree> auto
+get_nodes_by_matching(Tree& t, const std::string& gen_path) -> range_of_ref<Tree> {
+  visitor_for_matching_path<Tree> v(name(t)+'/'+gen_path);
+  graph::depth_first_prune_adjacencies(t,v);
+  return v.retrieve_nodes();
+}
+template<class Tree> auto
+get_node_by_matching(Tree& t, const std::string& gen_path) -> decltype(auto) {
+  visitor_for_matching_path<Tree> v(name(t)+'/'+gen_path);
+  graph::depth_first_find_adjacencies(t,v);
+  auto ts = v.retrieve_nodes();
+  if (ts.size() == 0) {
+    throw cgns_exception("No sub-tree matching \""+gen_path+"\" in tree \""+name(t)+"\"");
+  } else {
+    return ts[0].get();
+  }
+}
+
 template<class Array0, class Array1> constexpr auto
 append(Array0& x, const Array1& y)  {
   for (const auto& e : y) {
     x.push_back(e);
   }
-}
-template<class Tree> auto
-get_nodes_by_matching_impl(Tree& t, std::vector<std::string> identifiers_stack) -> range_of_ref<Tree> {
-  STD_E_ASSERT(identifiers_stack.size()>0);
-
-  auto current_id = identifiers_stack.back();
-  range_of_ref<Tree> nodes_matching_current_id = get_children_by_name_or_label(t,current_id);
-
-  if (identifiers_stack.size()==1) {
-    return nodes_matching_current_id;
-  } else {
-    identifiers_stack.pop_back();
-
-    range_of_ref<Tree> matching_nodes;
-    for (Tree& node : nodes_matching_current_id) {
-      append(matching_nodes,get_nodes_by_matching_impl(node,identifiers_stack));
-    }
-    return matching_nodes;
-  }
-}
-
-template<class Tree> auto
-get_nodes_by_matching(Tree& t, const std::string& gen_path) -> range_of_ref<Tree> {
-  auto identifiers = std_e::split(gen_path,'/');
-  std::reverse(begin(identifiers),end(identifiers));
-  return get_nodes_by_matching_impl(t,identifiers);
 }
 template<class Tree> auto
 get_nodes_by_matching(Tree& t, const std::vector<std::string>& gen_paths) -> range_of_ref<Tree> {
@@ -145,16 +188,30 @@ get_nodes_by_matching(Tree& t, const std::vector<std::string>& gen_paths) -> ran
   }
   return res;
 }
+//// get_nodes_by_matching }
 
-template<class Tree> auto
-get_node_by_matching(Tree& t, const std::string& gen_path) -> decltype(auto) {
-  range_of_ref<Tree> ts = get_nodes_by_matching(t,gen_path);
-  if (ts.size() == 0) {
-    throw cgns_exception("No sub-tree matching \""+gen_path+"\" in tree \""+name(t)+"\"");
-  } else {
-    return ts[0].get();
-  }
+
+//// get_nodes_by_predicate {
+template<class Tree, class Unary_pred> auto
+get_nodes_by_predicate(Tree& t, Unary_pred p) -> range_of_ref<Tree> {
+  range_of_ref<Tree> ts;
+  auto f = [&ts,p](auto& t){ if (p(t)) ts.push_back(t); };
+  graph::preorder_depth_first_scan_adjacencies(t,f);
+  return ts;
 }
+template<class Tree> auto
+get_nodes_by_name(Tree& t, const std::string& name) -> range_of_ref<Tree> {
+  auto predicate = [&](auto& child){ return is_of_name(child,name); };
+  return get_nodes_by_predicate(t,predicate);
+}
+template<class Tree> auto
+get_nodes_by_label(Tree& t, const std::string& label) -> range_of_ref<Tree> {
+  auto predicate = [&](auto& child){ return is_of_label(child,label); };
+  return get_nodes_by_predicate(t,predicate);
+}
+//// get_nodes_by_predicate }
+
+
 /// common searches }
 // tree search }
 

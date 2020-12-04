@@ -79,6 +79,19 @@ inline auto children(const tree& t) -> const std::vector<tree>& { return t.child
 /// access functions }
 
 
+/// graph interface {
+inline auto first_root(      tree& t) ->       tree* { return  &t   ; }
+inline auto first_root(const tree& t) -> const tree* { return  &t   ; }
+inline auto  last_root(      tree& t) ->       tree* { return (&t)+1; }
+inline auto  last_root(const tree& t) -> const tree* { return (&t)+1; }
+
+inline auto first_child(      tree& t) ->       tree* { return t.children.data()                    ; }
+inline auto first_child(const tree& t) -> const tree* { return t.children.data()                    ; }
+inline auto  last_child(      tree& t) ->       tree* { return t.children.data() + t.children.size(); }
+inline auto  last_child(const tree& t) -> const tree* { return t.children.data() + t.children.size(); }
+/// graph interface }
+
+
 /// range {
 using tree_ref = std::reference_wrapper<tree>;
 using tree_range = std::vector<tree_ref>;
