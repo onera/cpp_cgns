@@ -36,6 +36,7 @@ project(
 ## Dependencies ##
 ### pybind11 ###
 set(PYBIND11_INSTALL ON)
+include(FetchContent)
 FetchContent_Declare(
   pybind11
   GIT_REPOSITORY https://github.com/pybind/pybind11.git
