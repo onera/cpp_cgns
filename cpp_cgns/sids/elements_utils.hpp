@@ -84,7 +84,7 @@ using all_basic_3D_elements = std::integer_sequence<ElementType_t,TETRA_4,PYRA_5
 using all_homogenous_basic_2D_and_3D_elements = std::integer_sequence<ElementType_t,TRI_3,QUAD_4,TETRA_4,PYRA_5,PENTA_6,HEXA_8>;
 using all_basic_2D_and_3D_elements = std::integer_sequence<ElementType_t,TRI_3,QUAD_4,TETRA_4,PYRA_5,PENTA_6,HEXA_8,MIXED>;
 
-constexpr int number_of_nodes(int n) { return elements_traits[n].nb_nodes; };
+constexpr int number_of_nodes(int elt_type) { return elements_traits[elt_type].nb_nodes; };
 
 auto to_string(ElementType_t elt) -> std::string;
 

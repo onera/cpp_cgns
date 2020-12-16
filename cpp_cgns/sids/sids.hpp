@@ -6,3 +6,4 @@
 #include "cpp_cgns/sids/Multizone_Interface_Connectivity.hpp"
 
 #include "cpp_cgns/sids/utils.hpp"
+#include "cpp_cgns/sids/elements_utils.hpp"

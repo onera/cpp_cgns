@@ -214,22 +214,39 @@ get_nodes_by_label(Tree& t, const std::string& label) -> range_of_ref<Tree> {
 
 /// common searches }
 // tree search }
+template<class T, int N, class Tree> auto
+throw_if_incorrect_array_type(const Tree& x) -> void {
+  if (value(x).data_type!=to_string<T>()) {
+    throw cgns_exception("Value of node \""+name(x)+"\" is of type "+value(x).data_type
+                       + " but was asked to be of type "+to_string<T>());
+  }
+  if (N!=std_e::dynamic_size && int(value(x).dims.size())!=N) {
+    throw cgns_exception("Array rank of node \""+name(x)+"\" is "+std::to_string(value(x).dims.size())
+                       + " but was asked to be "+std::to_string(N));
+  }
+}
 
+
+// find and give value {
 template<class T, int N, class Tree> auto
 get_child_value_by_name(Tree& t, const std::string& s) {
   Tree& n = get_child_by_name(t,s);
+  throw_if_incorrect_array_type<T,N>(n);
   return view_as_array<T,N>(value(n));
 }
 template<class T, int N, class Tree> auto
 get_child_value_by_label(Tree& t, const std::string& s) {
   Tree& n = get_child_by_label(t,s);
+  throw_if_incorrect_array_type<T,N>(n);
   return view_as_array<T,N>(value(n));
 }
 template<class T, int N, class Tree> auto
 get_node_value_by_matching(Tree& t, const std::string& s) {
   Tree& n = get_node_by_matching(t,s);
+  throw_if_incorrect_array_type<T,N>(n);
   return view_as_array<T,N>(value(n));
 }
+// find and give value }
 
 
 } // cgns
