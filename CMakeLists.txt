@@ -35,7 +35,7 @@ project(
 
 ## Dependencies ##
 ### pybind11 ###
-set(PYBIND11_INSTALL ON)
+set(PYBIND11_INSTALL ON CACHE BOOL "cpp_cgns requires PyBind" FORCE)
 include(FetchContent)
 FetchContent_Declare(
   pybind11

@@ -59,6 +59,8 @@ struct factory {
 
     tree newUserDefinedData(const std::string& name, node_value value = MT) const;
     tree newUserDefinedData(const std::string& name, const std::string& val) const;
+    template<class T>
+    tree newUserDefinedData(const std::string& name, const T& val) const;
 
     template<class I>
     tree newOrdinal(I i) const;
@@ -106,6 +108,12 @@ void factory::rm_children_by_predicate(tree& t, Unary_predicate p) const {
   auto pos = std::stable_partition(begin(cs),end(cs),not_p); // move nodes to be deleted at the end
   for_each(pos,end(cs),[this](tree& n){ deallocate_tree(n); });
   cs.erase(pos,end(cs));
+}
+
+template<class T>
+tree factory::newUserDefinedData(const std::string& name, const T& val) const {
+  node_value value = create_node_value_1d({val},alloc());
+  return {name, "UserDefinedData_t", value, {}};
 }
 
 
