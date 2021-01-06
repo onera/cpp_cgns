@@ -21,7 +21,7 @@ enum connectivity_category {
 using all_connectivity_categories = std::make_integer_sequence<int,nb_connectivity_categories>;
 
 template<class I> auto 
-connectivity_category_of(const tree& e) -> connectivity_category;
+connectivity_category_of(const tree& elements_t) -> connectivity_category;
 
 constexpr auto
 is_interleaved(connectivity_category cat) -> bool {
@@ -34,7 +34,7 @@ size_of_type(I n) {
   if constexpr (cat==ngon || cat==interleaved_ngon || cat==nface || cat==interleaved_nface) {
     return n;
   } else if constexpr (cat==mixed || cat==interleaved_mixed) {
-    return number_of_nodes2(n);
+    return number_of_nodes(n);
   } else {
     throw cgns_exception("homogenous or unknown connectivity category");
   }

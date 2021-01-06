@@ -1,35 +1,52 @@
 #include "cpp_cgns/node_manip.hpp"
 
-#include "cpp_cgns/cgnslib.h"
+#include "cpp_cgns/sids/cgnslib.h"
 #include "std_e/utils/integer_range.hpp"
 
 
 namespace cgns {
 
 
-void correct_bc_data_arrays_according_to_SIDS(tree& bcdata_node);
+auto
+correct_bc_data_arrays_according_to_SIDS(tree& bcdata_node) -> void;
 
-ElementType_t element_type(tree& elements_node);
-std_e::integer_closed_range_ref<I4> element_range(tree& element_node);
-md_array_view<I4,2> regular_elements_connectivities(tree& elements_node);
+auto
+nb_of_elements(tree& elements_node) -> I8;
 
 
-bool compare_by_range(tree& elts_node0, tree& elts_node1);
-bool equal_by_elt_type(tree& elts_node0, tree& elts_node1);
-bool compare_by_elt_type(tree& elts_node0, tree& elts_node1);
+auto 
+element_type(const tree& elements_node) -> ElementType_t;
+auto
+element_range(const tree& element_node) -> std_e::integer_closed_range<I8>;
 
-template<class I>
-bool is_boundary(const md_array_view<I,2>& parent_elts, I i);
+template<class I> auto
+element_range(tree& element_node) -> std_e::integer_closed_range_ref<I>;
+template<class I> auto
+regular_elements_connectivities(tree& elements_node) -> md_array_view<I,2>;
 
-template<class Array2>
-// requires Array2 is Array, size==2, value_type==Integer
-bool face_is_boundary(const Array2& parent_elts) {
+
+auto
+compare_by_range(const tree& elts_node0, const tree& elts_node1) -> bool;
+auto
+equal_by_elt_type(const tree& elts_node0, const tree& elts_node1) -> bool;
+auto
+compare_by_elt_type(const tree& elts_node0, const tree& elts_node1) -> bool;
+
+
+template<class I> auto
+is_boundary(const md_array_view<I,2>& parent_elts, I i) -> bool;
+
+template<class Array> auto
+// requires Array, size==2, value_type==Integer
+face_is_boundary(const Array& parent_elts) -> bool {
   return (parent_elts[0]==0) || (parent_elts[1]==0); // 0 means no parent element, as per CGNS SIDS 7.3
 }
 
 
-auto elts_ranges_are_contiguous(const tree_range& elt_pools) -> bool;
-auto elts_types_are_unique(const tree_range& elt_pools) -> bool;
+auto
+elts_ranges_are_contiguous(const tree_range& elt_pools) -> bool;
+auto
+elts_types_are_unique(const tree_range& elt_pools) -> bool;
 
 
 } // cgns

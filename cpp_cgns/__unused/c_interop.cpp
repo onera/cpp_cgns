@@ -1,5 +1,5 @@
 #include "cpp_cgns/cgns.hpp"
-#include "cpp_cgns/interop/c_interop.hpp"
+#include "cpp_cgns/__unused/c_interop.hpp"
 #include <algorithm>
 
 

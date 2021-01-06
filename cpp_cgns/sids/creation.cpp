@@ -3,7 +3,7 @@
 #include <functional>
 #include "std_e/multi_array/utils.hpp"
 #include "cpp_cgns/exception.hpp"
-#include "cpp_cgns/cgnslib.h"
+#include "cpp_cgns/sids/cgnslib.h"
 
 
 namespace cgns {

@@ -36,32 +36,23 @@ struct tree {
 // utility {
 
 /// basic type to_string {
-template<class T> std::string to_string()     { return "Unknown CGNS data_type"; };
-template<> inline std::string to_string<C1>() { return "C1"; }
-template<> inline std::string to_string<I4>() { return "I4"; }
-template<> inline std::string to_string<I8>() { return "I8"; }
-template<> inline std::string to_string<R4>() { return "R4"; }
-template<> inline std::string to_string<R8>() { return "R8"; }
-template<> inline std::string to_string<const C1>() { return "C1"; }
-template<> inline std::string to_string<const I4>() { return "I4"; }
-template<> inline std::string to_string<const I8>() { return "I8"; }
-template<> inline std::string to_string<const R4>() { return "R4"; }
-template<> inline std::string to_string<const R8>() { return "R8"; }
-
-//size_t size_of(const std::string& data_type) {
-//  if (data_type=="C1") return sizeof(char);
-//  if (data_type=="I4") return sizeof(std::int32_t);
-//  if (data_type=="I8") return sizeof(std::int64_t);
-//  if (data_type=="R4") return sizeof(float);
-//  if (data_type=="R8") return sizeof(double);
-//  throw;
-//}
+template<class T> auto to_string          () -> std::string { return "Unknown CGNS data_type"; };
+template<> inline auto to_string<      C1>() -> std::string { return "C1"; }
+template<> inline auto to_string<const C1>() -> std::string { return "C1"; }
+template<> inline auto to_string<      I4>() -> std::string { return "I4"; }
+template<> inline auto to_string<const I4>() -> std::string { return "I4"; }
+template<> inline auto to_string<      I8>() -> std::string { return "I8"; }
+template<> inline auto to_string<const I8>() -> std::string { return "I8"; }
+template<> inline auto to_string<      R4>() -> std::string { return "R4"; }
+template<> inline auto to_string<const R4>() -> std::string { return "R4"; }
+template<> inline auto to_string<      R8>() -> std::string { return "R8"; }
+template<> inline auto to_string<const R8>() -> std::string { return "R8"; }
 /// basic type to_string }
 
 
-/// empty node {
+/// empty node value {
 const node_value MT = {"MT",{0},nullptr};
-/// empty node }
+/// empty node value }
 
 
 /// access functions {
@@ -80,10 +71,10 @@ inline auto children(const tree& t) -> const std::vector<tree>& { return t.child
 
 
 /// graph interface {
-inline auto first_root(      tree& t) ->       tree* { return  &t   ; }
-inline auto first_root(const tree& t) -> const tree* { return  &t   ; }
-inline auto  last_root(      tree& t) ->       tree* { return (&t)+1; }
-inline auto  last_root(const tree& t) -> const tree* { return (&t)+1; }
+inline auto  first_root(      tree& t) ->       tree* { return  &t   ; }
+inline auto  first_root(const tree& t) -> const tree* { return  &t   ; }
+inline auto   last_root(      tree& t) ->       tree* { return (&t)+1; }
+inline auto   last_root(const tree& t) -> const tree* { return (&t)+1; }
 
 inline auto first_child(      tree& t) ->       tree* { return t.children.data()                    ; }
 inline auto first_child(const tree& t) -> const tree* { return t.children.data()                    ; }
@@ -93,15 +84,15 @@ inline auto  last_child(const tree& t) -> const tree* { return t.children.data()
 
 
 /// range {
-using tree_ref = std::reference_wrapper<tree>;
-using tree_range = std::vector<tree_ref>;
-
-using const_tree_ref = std::reference_wrapper<const tree>;
-using const_tree_range = std::vector<const_tree_ref>;
-
 template<class Tree> using ref = std::reference_wrapper<Tree>;
 template<class Tree> using range = std::vector<Tree>;
 template<class Tree> using range_of_ref = range<ref<Tree>>;
+
+using tree_ref       = ref<      tree>;
+using const_tree_ref = ref<const tree>;
+
+using tree_range       = range_of_ref<      tree>;
+using const_tree_range = range_of_ref<const tree>;
 /// range }
 
 

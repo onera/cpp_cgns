@@ -6,7 +6,7 @@
 #include "std_e/future/contract.hpp"
 #include "cpp_cgns/exception.hpp"
 #include "cpp_cgns/tree_manip.hpp"
-#include "cpp_cgns/cgnslib.h"
+#include "cpp_cgns/sids/cgnslib.h"
 #include "cpp_cgns/sids/Hierarchical_Structures.hpp"
 
 
@@ -19,8 +19,9 @@ namespace cgns {
 template<class I, class Tree> auto
 ElementType_ElementSizeBoundary(Tree& e) {
   STD_E_ASSERT(label(e)=="Elements_t");
-  if (value(e).data_type!="I4")
-    throw cgns_exception("CGNS requires zone dimensions to be of type \"I4\""); // TODO I8 (and ssqq)
+  auto I_str = to_string<I>();
+  if (value(e).data_type!=I_str)
+    throw cgns_exception("CGNS requires zone dimensions to be of type \""+I_str+"\"");
   I* e_ptr = (I*)value(e).data;
   return std_e::make_span<2>(e_ptr);
 }
@@ -37,7 +38,7 @@ ElementSizeBoundary(Tree& e) -> I& {
   return ElementType_ElementSizeBoundary<I>(e)[1];
 }
 
-bool is_boundary_partitionned_element_pool(const tree& e);
+auto is_boundary_partitionned_element_pool(const tree& e) -> bool;
 
 template<class I, class Tree> auto 
 ElementRange(Tree& e) {

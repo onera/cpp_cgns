@@ -5,6 +5,7 @@
 #include "cpp_cgns/node_manip.hpp"
 #include "cpp_cgns/exception.hpp"
 #include "std_e/graph/algorithm/algo_nodes.hpp"
+#include "std_e/utils/concatenate.hpp"
 
 
 namespace cgns {
@@ -48,6 +49,14 @@ template<class T, int N=1, class Tree> auto get_child_value_by_name   (Tree& t, 
 template<class T, int N=1, class Tree> auto get_child_value_by_label  (Tree& t, const std::string& s);
 template<class T, int N=1, class Tree> auto get_node_value_by_matching(Tree& t, const std::string& s);
 // searches }
+
+
+// actions {
+inline auto
+deep_copy(const tree& /*t */, cgns_allocator& /* alloc */) -> tree {
+  throw std_e::not_implemented_exception();
+}
+// actions }
 
 
 // ====================== impl ======================
@@ -173,18 +182,11 @@ get_node_by_matching(Tree& t, const std::string& gen_path) -> decltype(auto) {
     return ts[0].get();
   }
 }
-
-template<class Array0, class Array1> constexpr auto
-append(Array0& x, const Array1& y)  {
-  for (const auto& e : y) {
-    x.push_back(e);
-  }
-}
 template<class Tree> auto
 get_nodes_by_matching(Tree& t, const std::vector<std::string>& gen_paths) -> range_of_ref<Tree> {
   range_of_ref<Tree> res;
   for (const auto& gen_path : gen_paths) {
-    append(res,get_nodes_by_matching(t,gen_path));
+    std_e::append(res,get_nodes_by_matching(t,gen_path));
   }
   return res;
 }

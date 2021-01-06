@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include "cpp_cgns/cgnslib.h"
+#include "cpp_cgns/sids/cgnslib.h"
 #include "cpp_cgns/cgns.hpp"
 #include "cpp_cgns/tree_manip.hpp"
 #include "std_e/future/contract.hpp"
