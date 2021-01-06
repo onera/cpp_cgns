@@ -3,7 +3,6 @@
 #include <functional>
 #include "std_e/multi_array/utils.hpp"
 #include "cpp_cgns/exception.hpp"
-#include "cpp_cgns/sids/cgnslib.h"
 
 
 namespace cgns {
@@ -39,23 +38,6 @@ tree factory::newCGNSTree() const {
   return t;
 }
 
-tree factory::newCGNSBase(const std::string& name, I4 cellDim, I4 physDim) const {
-  I4* ptr = allocate<I4>(alloc(),2);
-  ptr[0] = cellDim;
-  ptr[1] = physDim;
-  node_value value = {to_string<I4>(),{2},ptr};
-
-  return {name, "CGNSBase_t", value, {}};
-}
-
-tree factory::newUnstructuredZone(const std::string& name, const std::array<I4,3>& dims) const {
-  node_value z_type_value = create_string_node_value("Unstructured",alloc());
-  tree z_type = {"ZoneType", "ZoneType_t", z_type_value, {}};
-
-  node_value dim_value = create_node_value_1d(dims,alloc());
-  dim_value.dims = {1,dim_value.dims[0]}; // required by SIDS file mapping (Zone_t)
-  return {name, "Zone_t", dim_value, {z_type}};
-}
 
 tree factory::newZoneBC() const {
   return {"ZoneBC", "ZoneBC_t", MT, {}};
@@ -69,74 +51,15 @@ tree factory::newGridCoordinates(const std::string& name) const {
 }
 
 
-tree factory::newPointRange(I4 first, I4 last) const {
-  node_value range_value = create_node_value_1d({first,last},alloc());
-  range_value.dims = {1,2};
-  return {"PointRange", "IndexRange_t", range_value, {}};
-}
-tree factory::newElementRange(I4 first, I4 last) const {
-  node_value range_value = create_node_value_1d({first,last},alloc());
-  return {"ElementRange", "IndexRange_t", range_value, {}};
-}
-
-
-tree factory::newElements(
-  const std::string& name, I4 type, std_e::span<I4> conns,
-  I4 first, I4 last, I4 nb_bnd_elts) const
-{
-  tree elts_conn_node = newDataArray("ElementConnectivity", view_as_node_value(conns));
-  tree eltsRange = newElementRange(first,last);
-  node_value elts_node_val = create_node_value_1d({type,nb_bnd_elts},alloc());
-  return {name, "Elements_t", elts_node_val, {eltsRange,elts_conn_node}};
-}
-tree factory::newHomogenousElements(
-  const std::string& name, I4 type, md_array_view<I4,2> conns,
-  I4 first, I4 last, I4 nb_bnd_elts) const
-{
-  I8 conn_dim = {conns.extent(0)*conns.extent(1)};
-  auto conn_1d = std_e::make_span(conns.data(),conn_dim);
-  return newElements(name,type,conn_1d,first,last,nb_bnd_elts);
-}
-
-tree factory::newNgonElements(const std::string& name, std_e::span<I4> conns, I4 first, I4 last, I4 nb_bnd_elts) const {
-  I4 ngon_type = NGON_n;
-  return newElements(name,ngon_type,conns,first,last,nb_bnd_elts);
-}
-tree factory::newNfaceElements(const std::string& name, std_e::span<I4> conns, I4 first, I4 last) const {
-  I4 nface_type = NFACE_n;
-  return newElements(name,nface_type,conns,first,last,0);
-}
-
-
-tree factory::newPointList(const std::string& name, std_e::span<I4> pl) const {
-  node_value pl_value = view_as_node_value(pl);
-  pl_value.dims = {1,pl_value.dims[0]}; // required by SIDS (9.3: BC_t)
-  return {name, "IndexArray_t", pl_value, {}};
-}
-tree factory::newBC(const std::string& name, const std::string& loc, std_e::span<I4> point_list) const {
-  node_value bcType = create_string_node_value("FamilySpecified",alloc());
-  tree location = newGridLocation(loc);
-  tree point_list_node = newPointList("PointList",point_list);
-  return {name, "BC_t", bcType, {location,point_list_node}};
-}
 
 
 tree factory::newFlowSolution(const std::string& name, const std::string& gridLoc) const {
   tree loc = newGridLocation(gridLoc);
   return {name, "FlowSolution_t", MT, {loc}};
 }
-tree factory::newRind(const std::vector<I4>& rind_planes) const {
-  node_value value = create_node_value_1d(rind_planes,alloc());
-  return {"Rind", "Rind_t", value, {}};
-}
 tree factory::newDiscreteData(const std::string& name, const std::string& gridLoc) const {
   tree loc = newGridLocation(gridLoc);
   return {name, "DiscreteData_t", MT, {loc}};
-}
-tree factory::newZoneSubRegion(const std::string& name, int dim, const std::string& gridLoc) const {
-  node_value dim_value = create_node_value_1d({dim},alloc());
-  tree loc = newGridLocation(gridLoc);
-  return {name, "ZoneSubRegion_t", dim_value, {loc}};
 }
 tree factory::newBCDataSet(const std::string& name, const std::string& val, const std::string& gridLoc) const {
   tree loc = newGridLocation(gridLoc);
@@ -146,7 +69,6 @@ tree factory::newBCDataSet(const std::string& name, const std::string& val, cons
 tree factory::newBCData(const std::string& name) const {
   return {name, "BCData_t", MT, {}};
 }
-
 
 
 tree factory::newGridLocation(const std::string& loc) const {
@@ -176,7 +98,6 @@ tree factory::newGridConnectivity(const std::string& name, const std::string& z_
   tree grid_conn_type = newGridConnectivityType(connec_type);
   return {name, "GridConnectivity_t", z_donor_value, {location,grid_conn_type}};
 }
-
 /// node creation }
 
 /// node removal {
