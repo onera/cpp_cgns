@@ -1,5 +1,6 @@
+// trial 0.
 //
-//// TODO dispatch by type
+//// TODO dispatch_I4_I8 by type
 //struct {
 //  static constexpr auto runtime  = std_e::make_array("I4","I8");
 //  static constexpr auto comptime = std  ::  tuple   ( I4 , I8 );
@@ -41,7 +42,8 @@
 //  );
 //}
 
-// TODO dispatch by type
+// trial 1.
+// TODO dispatch_I4_I8 by type
 struct {
   static constexpr auto runtime  = std_e::make_array("I4","I8");
   static constexpr auto comptime = std  ::  tuple   ( I4 , I8 );
@@ -82,3 +84,67 @@ element_type(const tree& elements_node) -> ElementType_t {
     }
   );
 }
+
+
+// trial 2.
+template<class id_type, class F, class... Args> auto
+dispatch_I4_I8(const id_type& id, F f, Args&&... args) {
+  if (id=="I4") {
+    return f(I4{},FWD(args)...);
+  }
+  if (id=="I8") {
+    return f(I8{},FWD(args)...);
+  }
+}
+
+template<class I> auto
+element_type__impl(const tree& elements_node) -> ElementType_t {
+  auto val = view_as_span<I>(elements_node.value);
+  return (ElementType_t)val[0]; // from SIDS File Mapping Manual, Elements_t
+}
+
+auto
+element_type(const tree& elements_node) -> ElementType_t {
+  STD_E_ASSERT(elements_node.label=="Elements_t");
+  auto id_type = elements_node.value.data_type;
+  return dispatch_I4_I8(
+    id_type,
+    [&elements_node]<class I>(I type_tag){ 
+      return element_type__impl<I>(elements_node);
+    }
+  );
+}
+
+// trial 3.
+template<class F, class Tree> auto
+// requires Tree is tree or const tree
+dispatch_I4_I8(F f, Tree& t) {
+  auto type = t.value.data_type;
+  if (type=="I4") {
+    return f(I4{},FWD(args)...);
+  }
+  if (type=="I8") {
+    return f(I8{},FWD(args)...);
+  }
+  throw cgns_exception("dispatch_I4_I8 expects an integer data_type");
+}
+
+template<class I> auto
+element_type__impl(I, const tree& elements_node) -> ElementType_t {
+  auto val = view_as_span<I>(elements_node.value);
+  return (ElementType_t)val[0]; // from SIDS File Mapping Manual, Elements_t
+}
+
+auto
+element_type(const tree& elements_node) -> ElementType_t {
+  STD_E_ASSERT(elements_node.label=="Elements_t");
+  return dispatch_I4_I8(
+    LIFT(element_type__impl),
+    elements_node
+  );
+}
+
+
+
+
+

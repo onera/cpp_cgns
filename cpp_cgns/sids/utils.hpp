@@ -19,9 +19,8 @@ element_type(const tree& elements_node) -> ElementType_t;
 auto
 element_range(const tree& element_node) -> std_e::integer_closed_range<I8>;
 
-template<class I> auto
-element_range(tree& element_node) -> std_e::integer_closed_range_ref<I>;
-template<class I> auto
+
+template<class I, class Tree> auto
 regular_elements_connectivities(tree& elements_node) -> md_array_view<I,2>;
 
 

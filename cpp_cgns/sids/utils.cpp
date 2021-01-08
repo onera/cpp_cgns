@@ -2,7 +2,9 @@
 #include "cpp_cgns/sids/utils.hpp"
 #include "cpp_cgns/tree_manip.hpp"
 #include "cpp_cgns/sids/elements_utils.hpp"
+#include "cpp_cgns/dispatch.hpp"
 #include "std_e/multi_array/utils.hpp"
+#include "std_e/base/lift.hpp"
 
 
 namespace cgns {
@@ -17,60 +19,52 @@ correct_bc_data_arrays_according_to_SIDS(tree& bcdata_node) -> void {
   }
 }
 
-auto
-nb_of_elements(const tree& elements_node) -> I8 {
-  STD_E_ASSERT(elements_node.label=="Elements_t");
-  return length(element_range(elements_node));
-}
-
-
-// TODO dispatch by type
-auto
-element_type(const tree& elements_node) -> ElementType_t {
-  STD_E_ASSERT(elements_node.label=="Elements_t");
-  if (elements_node.value.data_type=="I4") {
-    auto val = view_as_span<I4>(elements_node.value);
-    return (ElementType_t)val[0]; // from SIDS File Mapping Manual, Elements_t
-  } else if (elements_node.value.data_type=="I8") {
-    auto val = view_as_span<I8>(elements_node.value);
-    return (ElementType_t)val[0]; // from SIDS File Mapping Manual, Elements_t
-  } else {
-    throw cgns_exception("Elements_t value must be an integer");
-  }
-}
-auto
-element_range(const tree& elements_node) -> std_e::integer_closed_range<I8> {
-  STD_E_ASSERT(elements_node.label=="Elements_t");
-  const tree& elt_range_node = get_child_by_name(elements_node, "ElementRange");
-  if (elt_range_node.value.data_type=="I4") {
-    auto elt_range = view_as_span<I4>(elt_range_node.value);
-    return {elt_range[0],elt_range[1]};
-  } else if (elements_node.value.data_type=="I8") {
-    auto elt_range = view_as_span<I8>(elt_range_node.value);
-    return {elt_range[0],elt_range[1]};
-  } else {
-    throw cgns_exception("Elements_t value must be an integer");
-  }
-}
-
-template<class I> auto
-element_range(tree& elements_node) -> std_e::integer_closed_range_ref<I> {
-  STD_E_ASSERT(elements_node.label=="Elements_t");
-  tree& elt_range_node = get_child_by_name(elements_node, "ElementRange");
-  auto elt_range = view_as_span<I>(elt_range_node.value);
-  return {elt_range[0],elt_range[1]};
-}
-template<class I> auto
-regular_elements_connectivities(tree& elements_node) -> md_array_view<I,2> {
+template<class I, class Tree> auto
+regular_elements_connectivities(Tree& elements_node) -> md_array_view<I,2> {
   STD_E_ASSERT(elements_node.label=="Elements_t");
   ElementType_t elt_type = element_type(elements_node);
   I8 nb_nodes_for_elt_type = number_of_nodes(elt_type);
   I8 nb_elts = nb_of_elements(elements_node);
-  tree& element_connectivity_node = get_child_by_name(elements_node, "ElementConnectivity");
+  Tree& element_connectivity_node = get_child_by_name(elements_node, "ElementConnectivity");
 
   node_value elt_conn_val = element_connectivity_node.value;
   elt_conn_val.dims = {nb_nodes_for_elt_type,nb_elts};
   return view_as_md_array<I,2>(elt_conn_val);;
+}
+
+
+template<class I> auto
+element_type__impl(I, const tree& elements_node) -> ElementType_t {
+  return (ElementType_t) ElementType<I>(elements_node);
+}
+auto
+element_type(const tree& elements_node) -> ElementType_t {
+  STD_E_ASSERT(elements_node.label=="Elements_t");
+  return dispatch_I4_I8(
+    LIFT(element_type__impl),
+    elements_node
+  );
+}
+
+template<class I> auto
+element_range__impl(I, const tree& elements_node) -> std_e::integer_closed_range<I8> {
+  auto elt_range = ElementRange<I>(elements_node);
+  return {elt_range[0],elt_range[1]};
+}
+auto
+element_range(const tree& elements_node) -> std_e::integer_closed_range<I8> {
+  STD_E_ASSERT(elements_node.label=="Elements_t");
+  return dispatch_I4_I8(
+    LIFT(element_range__impl),
+    elements_node
+  );
+}
+
+
+auto
+nb_of_elements(const tree& elements_node) -> I8 {
+  STD_E_ASSERT(elements_node.label=="Elements_t");
+  return length(element_range(elements_node));
 }
 
 
