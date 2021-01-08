@@ -4,6 +4,7 @@
 #include "std_e/utils/string.hpp"
 #include "std_e/multi_array/utils.hpp"
 #include "std_e/base/not_implemented_exception.hpp"
+#include "cpp_cgns/dispatch.hpp"
 #include <algorithm>
 
 
@@ -55,6 +56,39 @@ auto to_string(const tree& t, int threshold) -> std::string {
   return to_string_impl(t,"",threshold);
 }
 /// to_string }
+
+
+// comparison {
+auto same_node_data(const node_value& x, const node_value& y) -> bool {
+  return
+      x.data_type==y.data_type
+   && x.dims==y.dims
+   && x.data==y.data;
+}
+
+
+template<class T> auto
+equal_node_data__impl(T, const node_value& x, const node_value& y) {
+  I8 sz = std_e::cartesian_product_size(x.dims);
+  auto x_ptr = (T*)x.data;
+  auto y_ptr = (T*)y.data;
+  return std::equal(x_ptr,x_ptr+sz,y_ptr);
+}
+
+auto equal_node_data(const node_value& x, const node_value& y) -> bool {
+  bool same_shape = x.data_type==y.data_type
+                 && x.dims==y.dims;
+  if (!same_shape) return false;
+  if (x.data==y.data) return true;
+
+  // Note: a bit-wise comparison is not enought
+  //       because it does not work for floating point types
+  return dispatch_on_data_type(
+    x.data_type,
+    [&x,&y](auto type){ return equal_node_data__impl(type,x,y); }
+  );
+}
+// comparison }
 
 
 } // cgns

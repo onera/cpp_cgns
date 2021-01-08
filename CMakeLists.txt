@@ -59,6 +59,7 @@ file(GLOB_RECURSE cpp_and_test_files
 )
 set(cpp_files ${cpp_and_test_files})
 list(FILTER cpp_files EXCLUDE REGEX ".*\\.test\\.cpp$")
+list(FILTER cpp_files EXCLUDE REGEX ".*\\.pybind\\.cpp$")
 set(test_files ${cpp_and_test_files})
 list(FILTER test_files INCLUDE REGEX ".*\\.test\\.cpp$")
 
@@ -112,6 +113,7 @@ if(CPP_CGNS_ENABLE_TEST)
       ${PROJECT_NAME}
     PRIVATE
       doctest::doctest
+      pybind11::embed
   )
   add_test(NAME ${PROJECT_NAME}_unit_tests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_unit_tests)
 endif()

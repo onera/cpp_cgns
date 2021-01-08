@@ -49,7 +49,7 @@ struct factory {
     template<class I>
     tree newCGNSBase(const std::string& name, I cellDim, I physDim) const;
     template<class I>
-    tree newUnstructuredZone(const std::string& name, const std::array<I,3>& dims = {0,0,0}) const;
+    tree newUnstructuredZone(const std::string& name, const I(&dims)[3] = {0,0,0}) const;
     template<class I>
     tree newZoneSubRegion(const std::string& name, I dim, const std::string& gridLoc) const;
     template<class I>
@@ -59,6 +59,8 @@ struct factory {
 
     template<class I>
     tree newElements(const std::string& name, I type, std_e::span<I> connectivity, I first, I last, I nb_bnd_elts = 0) const;
+    template<class I>
+    tree newElements(const std::string& name, ElementType_t type, std_e::span<I> connectivity, I first, I last, I nb_bnd_elts = 0) const;
     template<class I>
     tree newHomogenousElements(const std::string& name, I type, md_array_view<I,2> connectivity, I first, I last, I nb_bnd_elts=0) const;
     template<class I>
@@ -117,11 +119,13 @@ tree factory::newCGNSBase(const std::string& name, I cellDim, I physDim) const {
 }
 
 template<class I>
-tree factory::newUnstructuredZone(const std::string& name, const std::array<I,3>& dims) const {
+tree factory::newUnstructuredZone(const std::string& name, const I(&dims)[3]) const {
   node_value z_type_value = create_string_node_value("Unstructured",alloc());
   tree z_type = {"ZoneType", "ZoneType_t", z_type_value, {}};
 
-  node_value dim_value = create_node_value_1d(dims,alloc());
+  const I* dims_ptr = dims;
+  auto dims_span = std_e::make_span(dims_ptr,3);
+  node_value dim_value = create_node_value_1d(dims_span,alloc());
   dim_value.dims = {1,dim_value.dims[0]}; // required by SIDS file mapping (Zone_t)
   return {name, "Zone_t", dim_value, {z_type}};
 }
@@ -156,6 +160,14 @@ tree factory::newElements(
   node_value elts_node_val = create_node_value_1d({type,nb_bnd_elts},alloc());
   return {name, "Elements_t", elts_node_val, {eltsRange,elts_conn_node}};
 }
+template<class I>
+tree factory::newElements(
+  const std::string& name, ElementType_t type, std_e::span<I> conns,
+  I first, I last, I nb_bnd_elts) const
+{
+  return newElements(name,(I)type,conns,first,last,nb_bnd_elts);
+}
+
 template<class I>
 tree factory::newHomogenousElements(
   const std::string& name, I type, md_array_view<I,2> conns,

@@ -114,6 +114,32 @@ TEST_CASE("View node_value as span") {
   CHECK( x[2] == 44 );
 }
 
+
+TEST_CASE("same_node_data and equal_node_data") {
+  std::vector<int> v0 = {10,3,4,1,5};
+  std::vector<int> v1 = {10,3,4,1,5};
+  std::vector<int> v2 = {10,3,4,1,15};
+
+  node_value x0 = {"I4",{5},v0.data()};
+  node_value x1 = {"I4",{3},v0.data()};
+  node_value x2 = {"R4",{5},v0.data()};
+  node_value x3 = {"I4",{5},v1.data()};
+  node_value x4 = {"I4",{5},v2.data()};
+
+  CHECK(  same_node_data(x0,x0) );
+  CHECK( !same_node_data(x0,x1) );
+  CHECK( !same_node_data(x0,x2) );
+  CHECK( !same_node_data(x0,x3) );
+  CHECK( !same_node_data(x0,x4) );
+
+  CHECK(  equal_node_data(x0,x0) );
+  CHECK( !equal_node_data(x0,x1) );
+  CHECK( !equal_node_data(x0,x2) );
+  CHECK(  equal_node_data(x0,x3) );
+  CHECK( !equal_node_data(x0,x4) );
+}
+
+
 /* TODO
  * allocate small arrays
 node_value create_node_value_1d(const Range& r, cgns_allocator& alloc) {

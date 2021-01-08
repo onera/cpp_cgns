@@ -109,6 +109,11 @@ auto to_string(const node_value& x, int threshold = default_threshold_to_print_w
 auto to_string(const tree& t, int threshold = default_threshold_to_print_whole_array) -> std::string;
 // to_string }
 
+// comparison {
+auto same_node_data(const node_value& x, const node_value& y) -> bool;
+auto equal_node_data(const node_value& x, const node_value& y) -> bool;
+// comparison }
+
 // node_value creation from "small" arrays {
 template<class Range> auto
 create_node_value_1d__impl(const Range& r, cgns_allocator& alloc) -> node_value {
