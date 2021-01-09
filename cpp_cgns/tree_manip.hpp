@@ -51,6 +51,12 @@ template<class T, int N=1, class Tree> auto get_node_value_by_matching(Tree& t, 
 // searches }
 
 
+// comparisons {
+auto operator==(const tree& x, const tree& y) -> bool;
+auto operator!=(const tree& x, const tree& y) -> bool;
+// comparisons }
+
+
 // actions {
 inline auto
 deep_copy(const tree& /*t */, cgns_allocator& /* alloc */) -> tree {
@@ -130,17 +136,17 @@ class visitor_for_matching_path {
   public:
     visitor_for_matching_path(const std::string& gen_path)
       : identifiers(std_e::split(gen_path,'/'))
+      , max_depth(identifiers.size()-1)
       , depth(0)
     {}
 
     auto
     pre(Tree& t) -> bool {
       bool is_matching = identifiers[depth]==t.name || identifiers[depth]==t.label;
-      int max_depth = identifiers.size();
-      if (depth==max_depth-1 && is_matching) {
+      if (is_matching && depth==max_depth) {
         matching_nodes.push_back(t);
       }
-      return depth < max_depth  &&  is_matching;
+      return !is_matching || depth > max_depth; // continue if not matching or gen_path reached the end 
     }
 
     auto
@@ -160,7 +166,9 @@ class visitor_for_matching_path {
       return std::move(matching_nodes);
     }
   private:
-    std::vector<std::string> identifiers;
+    const std::vector<std::string> identifiers;
+    const int max_depth;
+
     int depth;
     range_of_ref<Tree> matching_nodes;
 };

@@ -32,4 +32,53 @@ bool has_child_of_label(const tree& t, const std::string& label) {
 /// common predicates }
 
 
+
+
+//// tree comparisons {
+//class visitor_for_tree_equality {
+//  public:
+//    visitor_for_matching_path(const tree& y)
+//      , y(y)
+//    {}
+//
+//    auto
+//    pre(const tree& x) -> bool {
+//      bool is_matching = identifiers[depth]==t.name || identifiers[depth]==t.label;
+//      int max_depth = identifiers.size();
+//      if (depth==max_depth-1 && is_matching) {
+//        matching_nodes.push_back(t);
+//      }
+//      return depth < max_depth  &&  is_matching;
+//    }
+//
+//    auto
+//    post(const tree&) {}
+//
+//    auto
+//    up(const tree&, const tree&) -> void {
+//      --depth;
+//    }
+//    auto
+//    down(const tree&, const tree&) -> void {
+//      ++depth;
+//    }
+//
+//  private:
+//    const tree& y;
+//};
+//
+//auto
+//operator==(const tree& x, const tree& y) -> bool {
+//  visitor_for_tree_equality v(y);
+//  bool end_reached = graph::depth_first_find_adjacencies(x,v) == ;
+//  return end_reached;
+//}
+//
+//auto
+//operator!=(const tree& x, const tree& y) -> bool {
+//  return !(x==y);
+//}
+//// tree comparisons }
+
+
 } // cgns

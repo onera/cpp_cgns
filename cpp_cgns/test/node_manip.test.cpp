@@ -132,11 +132,11 @@ TEST_CASE("same_node_data and equal_node_data") {
   CHECK( !same_node_data(x0,x3) );
   CHECK( !same_node_data(x0,x4) );
 
-  CHECK(  equal_node_data(x0,x0) );
-  CHECK( !equal_node_data(x0,x1) );
-  CHECK( !equal_node_data(x0,x2) );
-  CHECK(  equal_node_data(x0,x3) );
-  CHECK( !equal_node_data(x0,x4) );
+  CHECK( x0==x0 );
+  CHECK( x0!=x1 );
+  CHECK( x0!=x2 );
+  CHECK( x0==x3 );
+  CHECK( x0!=x4 );
 }
 
 

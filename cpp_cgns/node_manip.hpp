@@ -111,7 +111,8 @@ auto to_string(const tree& t, int threshold = default_threshold_to_print_whole_a
 
 // comparison {
 auto same_node_data(const node_value& x, const node_value& y) -> bool;
-auto equal_node_data(const node_value& x, const node_value& y) -> bool;
+auto operator==(const node_value& x, const node_value& y) -> bool;
+auto operator!=(const node_value& x, const node_value& y) -> bool;
 // comparison }
 
 // node_value creation from "small" arrays {

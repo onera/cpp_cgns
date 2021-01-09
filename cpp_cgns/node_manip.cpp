@@ -75,7 +75,7 @@ equal_node_data__impl(T, const node_value& x, const node_value& y) {
   return std::equal(x_ptr,x_ptr+sz,y_ptr);
 }
 
-auto equal_node_data(const node_value& x, const node_value& y) -> bool {
+auto operator==(const node_value& x, const node_value& y) -> bool {
   bool same_shape = x.data_type==y.data_type
                  && x.dims==y.dims;
   if (!same_shape) return false;
@@ -87,6 +87,9 @@ auto equal_node_data(const node_value& x, const node_value& y) -> bool {
     x.data_type,
     [&x,&y](auto type){ return equal_node_data__impl(type,x,y); }
   );
+}
+auto operator!=(const node_value& x, const node_value& y) -> bool {
+  return !(x==y);
 }
 // comparison }
 
