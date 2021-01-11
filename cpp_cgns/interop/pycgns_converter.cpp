@@ -6,7 +6,7 @@
 #include <algorithm>
 #include "cpp_cgns/allocator.hpp"
 #include "cpp_cgns/node_manip.hpp"
-//#include <pybind11/numpy.h>
+#include <pybind11/numpy.h>
 #include "std_e/log.hpp" // TODO
 
 
@@ -220,14 +220,6 @@ py::list py_tree() {
 auto name(py::list t) {
   return t[0];
 }
-py::str name3(py::list t) {
-  return t[0];
-}
-void set_name4(py::list t, const std::string& cs) {
-  //py::str s = t[0];
-  //s = cs;
-  t[0] = cs;
-}
 auto value(py::list t) {
   return t[1];
 }
@@ -238,8 +230,57 @@ auto label(py::list t) {
   return t[3];
 }
 template<class T>
-std::string to_string3(T& x) {
+std::string to_string_from_py(const T& x) {
   return py::str(x);
+}
+
+// data_type <-> numpy type {
+struct cgns_numpy_type {
+  std::string cgns_type;
+  std::string numpy_type;
+};
+const std::vector<cgns_numpy_type> cgns_numpy_types = {
+  {"C1" , "int8"},
+  {"I4" , "int32"},
+  {"I8" , "int64"},
+  {"R4" , "f4"},
+  {"R8" , "f8"},
+};
+auto numpy_type_to_data_type(py::dtype type) -> std::string {
+  auto numpy_type = std::string(py::str(type));
+  auto matching_numpy_type = [numpy_type](auto x){ return x.numpy_type==numpy_type; };
+  auto pos = std::find_if(begin(cgns_numpy_types),end(cgns_numpy_types),matching_numpy_type);
+  if (pos==end(cgns_numpy_types)) {
+    throw cgns_exception("Unknown type \""+numpy_type+"\"");
+  } else {
+    return pos->cgns_type;
+  }
+}
+node_value view_as_node2(py::array numpy_array) {
+  // TODO
+  //if (!PyArray_IS_F_CONTIGUOUS(numpy_array)) {
+  //  throw cgns_exception("In python/CGNS, numpy array must be contiguous and fortran-ordered");
+  //}
+
+  auto type = numpy_array.dtype();
+  std::string data_type = numpy_type_to_data_type(type);
+
+  ssize_t nb_dims = numpy_array.ndim();
+
+  const ssize_t* dims_ptr = numpy_array.shape();
+  std::vector<I8> dims(nb_dims);
+  std::copy_n(dims_ptr,nb_dims,begin(dims));
+
+  void* data = numpy_array.mutable_data();
+  return {data_type,dims,data};
+}
+node_value get_py_value2(py::list t) {
+  auto val = value(t);
+  if (val.is_none()) {
+    return MT;
+  } else {
+    return view_as_node2(val);
+  }
 }
 
 // tree <-> pytree {
@@ -247,7 +288,7 @@ py::object view_as_pytree(tree& t) {
   _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault)
   auto pytree = py_tree();
 
-  set_name4 (pytree, name (t));
+  name (pytree) = name (t);
   label(pytree) = label(t);
   set_py_value(pytree,value(t));
 
@@ -265,11 +306,10 @@ py::object view_as_pytree(tree& t) {
 tree view_as_cpptree(py::list pytree) {
   _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault) // TODO check
 
-  //auto xx = name(pytree);
-  //std::string name2 = to_string3(xx); //get_py_name(pytree.ptr());
-  std::string name2 = name3(pytree);
-  std::string label = get_py_label(pytree.ptr());
-  node_value value = get_py_value(pytree.ptr());
+  std::string name2  = to_string_from_py(name (pytree));
+  std::string label2 = to_string_from_py(label(pytree));
+  //node_value value = get_py_value(pytree.ptr());
+  node_value value = get_py_value2(pytree);
 
   py::list py_children = children(pytree);
   int nb_children = py_children.size();
@@ -279,7 +319,7 @@ tree view_as_cpptree(py::list pytree) {
     children[i] = view_as_cpptree(py_child);
   }
 
-  return {name2,label,value,children};
+  return {name2,label2,value,children};
 }
 // tree <-> pytree }
 

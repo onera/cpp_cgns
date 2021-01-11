@@ -160,24 +160,24 @@ conversion_cpp_test_case2(factory F) -> tree {
   return b;
 }
 
-//TEST_CASE("view_as_cpptree") {
-//  py::scoped_interpreter guard;
-//  cgns_allocator alloc;
-//
-//  auto cpp_tree = conversion_cpp_test_case(factory(&alloc));
-//  auto py_tree = conversion_py_test_case();
-//
-//  auto cpp_tree_from_py = view_as_cpptree(py_tree);
-//  CHECK( cpp_tree_from_py == cpp_tree );
-//}
-
-
-TEST_CASE("view_as_pytree") {
+TEST_CASE("view_as_cpptree") {
   py::scoped_interpreter guard;
   cgns_allocator alloc;
 
   auto cpp_tree = conversion_cpp_test_case(factory(&alloc));
+  auto py_tree = conversion_py_test_case();
 
-  auto py_tree_from_cpp = view_as_pytree(cpp_tree);
-  CHECK( view_as_cpptree(py_tree_from_cpp) == cpp_tree );
+  auto cpp_tree_from_py = view_as_cpptree(py_tree);
+  CHECK( cpp_tree_from_py == cpp_tree );
 }
+
+
+//TEST_CASE("view_as_pytree") {
+//  py::scoped_interpreter guard;
+//  cgns_allocator alloc;
+//
+//  auto cpp_tree = conversion_cpp_test_case(factory(&alloc));
+//
+//  auto py_tree_from_cpp = view_as_pytree(cpp_tree);
+//  CHECK( view_as_cpptree(py_tree_from_cpp) == cpp_tree );
+//}
