@@ -51,12 +51,6 @@ template<class T, int N=1, class Tree> auto get_node_value_by_matching(Tree& t, 
 // searches }
 
 
-// comparisons {
-auto operator==(const tree& x, const tree& y) -> bool;
-auto operator!=(const tree& x, const tree& y) -> bool;
-// comparisons }
-
-
 // actions {
 inline auto
 deep_copy(const tree& /*t */, cgns_allocator& /* alloc */) -> tree {

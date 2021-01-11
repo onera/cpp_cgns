@@ -70,7 +70,7 @@ inline auto children(const tree& t) -> const std::vector<tree>& { return t.child
 /// access functions }
 
 
-/// graph interface {
+/// rooted graph interface {
 inline auto  first_root(      tree& t) ->       tree* { return  &t   ; }
 inline auto  first_root(const tree& t) -> const tree* { return  &t   ; }
 inline auto   last_root(      tree& t) ->       tree* { return (&t)+1; }
@@ -80,7 +80,7 @@ inline auto first_child(      tree& t) ->       tree* { return t.children.data()
 inline auto first_child(const tree& t) -> const tree* { return t.children.data()                    ; }
 inline auto  last_child(      tree& t) ->       tree* { return t.children.data() + t.children.size(); }
 inline auto  last_child(const tree& t) -> const tree* { return t.children.data() + t.children.size(); }
-/// graph interface }
+/// rooted graph interface }
 
 
 /// range {
@@ -110,6 +110,21 @@ void emplace_children(tree& t, std::vector<tree>&& cs) {
   }
 }
 /// children }
+
+/// comparison {
+//// node_value {
+auto same_node_data(const node_value& x, const node_value& y) -> bool;
+auto operator==(const node_value& x, const node_value& y) -> bool;
+auto operator!=(const node_value& x, const node_value& y) -> bool;
+//// node_value }
+
+//// tree {
+auto same_tree_structure(const tree& x, const tree& y) -> bool;
+auto operator==(const tree& x, const tree& y) -> bool;
+auto operator!=(const tree& x, const tree& y) -> bool;
+//// tree }
+/// comparison }
+
 
 // utility }
 
