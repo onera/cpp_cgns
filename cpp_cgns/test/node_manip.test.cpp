@@ -1,5 +1,6 @@
 #include "std_e/unit_test/doctest.hpp"
 #include "cpp_cgns/node_manip.hpp"
+#include "std_e/log.hpp"
 
 
 using namespace cgns;
@@ -115,30 +116,18 @@ TEST_CASE("View node_value as span") {
 }
 
 
-TEST_CASE("same_node_data and equal_node_data") {
-  std::vector<int> v0 = {10,3,4,1,5};
-  std::vector<int> v1 = {10,3,4,1,5};
-  std::vector<int> v2 = {10,3,4,1,15};
+TEST_CASE("node_value to string") {
+  std::vector<I4> v0 = {0,1,2};
+  std::vector<I4> v1 = {5,6,7,8};
 
-  node_value x0 = {"I4",{5},v0.data()};
-  node_value x1 = {"I4",{3},v0.data()};
-  node_value x2 = {"R4",{5},v0.data()};
-  node_value x3 = {"I4",{5},v1.data()};
-  node_value x4 = {"I4",{5},v2.data()};
+  node_value val0 = {"I4",{3}  ,v0.data()};
+  node_value val1 = {"I4",{1,3},v0.data()};
+  node_value val2 = {"I4",{2,2},v1.data()};
 
-  CHECK(  same_node_data(x0,x0) );
-  CHECK( !same_node_data(x0,x1) );
-  CHECK( !same_node_data(x0,x2) );
-  CHECK( !same_node_data(x0,x3) );
-  CHECK( !same_node_data(x0,x4) );
-
-  CHECK( x0==x0 );
-  CHECK( x0!=x1 );
-  CHECK( x0!=x2 );
-  CHECK( x0==x3 );
-  CHECK( x0!=x4 );
+  CHECK ( to_string(val0) == "[0;1;2]" );
+  CHECK ( to_string(val1) == "[0,1,2]" );
+  CHECK ( to_string(val2) == "[5,7;6,8]" );
 }
-
 
 /* TODO
  * allocate small arrays
@@ -147,6 +136,4 @@ node_value create_node_value_1d(std::initializer_list<T> l, cgns_allocator& allo
 node_value create_string_node_value(const std::string& s, cgns_allocator& alloc) {
 
  * allocate_md_array
- * to_string
- * deep_copy
  */

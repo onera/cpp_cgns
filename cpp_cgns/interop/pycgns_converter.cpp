@@ -94,7 +94,7 @@ struct data_type_typenum {
 
 const std::vector<data_type_typenum> data_types_typenums = {
   {"MT" , NPY_NOTYPE },
-  {"C1" , NPY_STRING },
+  {"C1" , NPY_BYTE},
   //{"C1" , NPY_BYTE   }, // C1 -> NPY_BYTE (we would like C1 -> NPY_STRING, but then "ValueError: data type must provide an itemsize")
   //{"C1" , NPY_STRING }, // NPY_STRING -> C1 (this is what we want)
   {"I4" , NPY_INT32  },
