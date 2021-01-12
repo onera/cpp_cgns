@@ -92,3 +92,23 @@ PYBIND_TEST_CASE("view_as_node_value") {
     }
   }
 }
+
+PYBIND_TEST_CASE("to_np_array") {
+  std::vector<I4> v = {0,1,2,3,4,5};
+  node_value val = {"I4",{2,3},v.data()};
+
+  py::array np_arr = to_np_array(val);
+
+  // Check the data is right
+  CHECK( std::string(py::str(np_arr.dtype())) == "int32" );
+  CHECK( np_arr.ndim() == 2 );
+  CHECK( np_arr.shape()[0] == 2 );
+  CHECK( np_arr.shape()[1] == 3 );
+  auto np_arr_data = (I4*)np_arr.data();
+  CHECK( np_arr_data[0] == 0 );
+  CHECK( np_arr_data[1] == 1 );
+  CHECK( np_arr_data[2] == 2 );
+
+  // Check the data is shared
+  CHECK( np_arr.data() == v.data() );
+}
