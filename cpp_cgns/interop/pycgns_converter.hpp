@@ -22,8 +22,8 @@ class cgns_allocator;
 
 PYBIND11_EXPORT auto view_as_cpptree(py::list pytree) -> tree;
 
-PYBIND11_EXPORT auto view_as_pytree(tree& t) -> py::object;
-PYBIND11_EXPORT auto pytree_with_transfered_ownership(tree& t, cgns_allocator& alloc) -> py::object;
+PYBIND11_EXPORT auto view_as_pytree(tree& t) -> py::list;
+PYBIND11_EXPORT auto pytree_with_transfered_ownership(tree& t, cgns_allocator& alloc) -> py::list;
 
 PYBIND11_EXPORT auto update_and_transfer_ownership2(tree& t, cgns_allocator& alloc, py::list pytree) -> void;
 

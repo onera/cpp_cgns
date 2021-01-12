@@ -9,6 +9,7 @@
 namespace cgns {
 
 
+// TODO create an abstract allocator class and make cpp_cgns function use it as the interface
 class cgns_allocator final {
   public:
     cgns_allocator() = default;
@@ -17,23 +18,26 @@ class cgns_allocator final {
     cgns_allocator(cgns_allocator&&) = default;
     cgns_allocator& operator=(cgns_allocator&&) = default;
 
-    template<class T>
-    T* allocate(size_t n) {
+    template<class T> auto
+    allocate(size_t n) -> T* {
       size_t sz = n*sizeof(T);
       void* ptr = malloc(sz);
       owned_ptrs.push_back(ptr);
       return (T*)ptr;
     }
 
-    auto position_in_owned_ptrs(void* ptr) {
+    auto
+    position_in_owned_ptrs(void* ptr) {
       return std::find(begin(owned_ptrs),end(owned_ptrs),ptr);
     }
-    bool owns_memory(void* ptr) {
+    auto
+    owns_memory(void* ptr) -> bool {
       return position_in_owned_ptrs(ptr)!=end(owned_ptrs);
     }
 
     // conditionnal deallocation: only deallocate if has allocated the memory
-    bool deallocate(void* ptr) {
+    auto
+    deallocate(void* ptr) -> bool {
       auto pos = position_in_owned_ptrs(ptr);
       if (pos!=end(owned_ptrs)) {
         free(ptr);
@@ -43,7 +47,8 @@ class cgns_allocator final {
       return false;
     }
 
-    bool release_if_owner(void* ptr) {
+    auto
+    release_if_owner(void* ptr) -> bool {
       auto pos = position_in_owned_ptrs(ptr);
       if (pos!=end(owned_ptrs)) {
         owned_ptrs.erase(pos);
@@ -51,6 +56,11 @@ class cgns_allocator final {
       } else {
         return false;
       }
+    }
+    
+    auto
+    memory_destructor_function() const -> void(*)(void*) {
+      return free;
     }
 
     ~cgns_allocator() {
@@ -62,18 +72,18 @@ class cgns_allocator final {
     std::vector<void*> owned_ptrs;
 };
 
-inline
-bool operator==(const cgns_allocator& x, const cgns_allocator& y) {
+inline auto
+operator==(const cgns_allocator& x, const cgns_allocator& y) -> bool {
   return &x==&y; // since they are not copyable, only way to be equal is by equal address
 }
-inline
-bool operator!=(const cgns_allocator& x, const cgns_allocator& y) {
+inline auto
+operator!=(const cgns_allocator& x, const cgns_allocator& y) -> bool {
   return !(x==y);
 }
 
 
-template<class T>
-T* allocate(cgns_allocator& a, size_t n) {
+template<class T> auto
+allocate(cgns_allocator& a, size_t n) -> T* {
   return a.template allocate<T>(n);
 }
 
@@ -107,28 +117,30 @@ class cgns_std_allocator {
     {}
 
   // alloc/dealloc
-    T* allocate(size_t n) {
+    auto
+    allocate(size_t n) -> T* {
       STD_E_ASSERT(alloc!=nullptr);
       return cgns::allocate<T>(*alloc,n);
     }
 
-    void deallocate(T*, size_t) noexcept {
+    auto
+    deallocate(T*, size_t) noexcept -> void {
       // do nothing: deallocation should be done by the cgns_allocator
     }
 
   // comparisons
-    template <class T0, class T1> friend
-    bool operator==(const cgns_std_allocator<T0>& x, const cgns_std_allocator<T1>& y);
+    template <class T0, class T1> friend auto
+    operator==(const cgns_std_allocator<T0>& x, const cgns_std_allocator<T1>& y) -> bool;
   private:
     cgns_allocator* alloc;
 };
 
-template <class T0, class T1> inline
-bool operator==(const cgns_std_allocator<T0>& x, const cgns_std_allocator<T1>& y) {
+template <class T0, class T1> auto
+operator==(const cgns_std_allocator<T0>& x, const cgns_std_allocator<T1>& y) -> bool {
   return *x.alloc==*y.alloc;
 }
-template <class T0, class T1> inline
-bool operator!=(const cgns_std_allocator<T0>& x, const cgns_std_allocator<T1>& y) {
+template <class T0, class T1> auto
+operator!=(const cgns_std_allocator<T0>& x, const cgns_std_allocator<T1>& y) -> bool {
   return !(x==y);
 }
 
