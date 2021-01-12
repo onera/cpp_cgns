@@ -6,10 +6,6 @@
 namespace cpp_cgns {
   namespace detail {
     extern const pybind11::scoped_interpreter python_interpreter;
-    //auto init_python_interpreter() -> bool;
-    //const bool python_interpreter_status = init_python_interpreter();
-    // since python_interpreter_status is a global,
-    // its initialization will trigger init_python_interpreter() before main
   }
 }
 

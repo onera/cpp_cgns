@@ -1,12 +1,10 @@
 #include "cpp_cgns/interop/pycgns_converter.hpp"
 
 #include <algorithm>
-#include "pybind11/numpy.h"
 #include "std_e/future/contract.hpp"
 
-#include "cpp_cgns/cgns.hpp"
-#include "cpp_cgns/exception.hpp"
 #include "cpp_cgns/allocator.hpp"
+#include "cpp_cgns/interop/node_value_conversion.hpp"
 
 
 namespace cgns {
@@ -39,66 +37,7 @@ auto label(py::list t) {
 // Python/CGNS tree }
 
 
-// data_type <-> numpy type {
-struct cgns_numpy_type {
-  std::string cgns_type;
-  std::string np_type;
-};
-const std::vector<cgns_numpy_type> cgns_numpy_types = {
-  {"C1" , "int8"},
-  {"I4" , "int32"},
-  {"I8" , "int64"},
-  {"R4" , "f4"},
-  {"R8" , "f8"},
-};
-
-auto
-numpy_type_to_cgns_type(py::dtype type) -> std::string {
-  auto np_type = std::string(py::str(type));
-  auto matching_numpy_type = [np_type](auto x){ return x.np_type==np_type; };
-  auto pos = std::find_if(begin(cgns_numpy_types),end(cgns_numpy_types),matching_numpy_type);
-  if (pos==end(cgns_numpy_types)) {
-    throw cgns_exception("Unknown numpy type \""+np_type+"\"");
-  } else {
-    return pos->cgns_type;
-  }
-}
-auto
-cgns_type_to_numpy_type(const std::string& cgns_type) -> std::string {
-  auto matching_data_type = [&cgns_type](auto x){ return x.cgns_type==cgns_type; };
-  auto pos = std::find_if(begin(cgns_numpy_types),end(cgns_numpy_types),matching_data_type);
-  if (pos==end(cgns_numpy_types)) {
-    throw cgns_exception("Unknown cgns data type \""+cgns_type+"\"");
-  } else {
-    return pos->np_type;
-  }
-}
-// data_type <-> numpy type }
-
-
 // py value <-> node_value {
-/// py value -> node_value {
-auto
-view_as_node_value(py::array np_arr) -> node_value {
-  if (!(np_arr.flags() & py::array::f_style)) {
-    throw cgns_exception("In python/CGNS, numpy array must be contiguous and fortran-ordered");
-  }
-
-  auto type = np_arr.dtype();
-  auto data_type = numpy_type_to_cgns_type(type);
-
-  auto n_dim = np_arr.ndim();
-
-  auto dims_ptr = np_arr.shape();
-  std::vector<I8> dims(n_dim);
-  std::copy_n(dims_ptr,n_dim,begin(dims));
-
-  // TODO
-  //ELOG(np_arr.writeable());
-  //void* data = np_arr.mutable_data();
-  void* data = (void*)np_arr.data();
-  return {data_type,dims,data};
-}
 auto
 to_node_value(py::object value) -> node_value {
   if (value.is_none()) {
@@ -107,31 +46,9 @@ to_node_value(py::object value) -> node_value {
     return view_as_node_value(value);
   }
 }
-/// py value -> node_value }
-
-/// node_value -> py value {
-auto
-to_np_array(node_value& n, py::handle capsule = py::handle()) {
-  auto np_type = cgns_type_to_numpy_type(n.data_type);
-  auto dt = py::dtype(np_type);
-  auto strides = py::detail::f_strides(n.dims, dt.itemsize());
-  return py::array(dt,n.dims,strides,n.data,capsule);
-}
 
 auto
-capsule_to_free_node_value_memory(node_value& n, cgns_allocator& alloc) {
-  // SEE https://stackoverflow.com/a/52737023/1583122
-  // SEE https://stackoverflow.com/a/44682603/1583122
-  return py::capsule(n.data, alloc.memory_destructor_function());
-}
-auto
-to_owning_np_array(node_value& n, cgns_allocator& alloc) {
-  auto capsule = capsule_to_free_node_value_memory(n,alloc);
-  return to_np_array(n,capsule);
-}
-
-auto
-to_py_value(node_value& value) -> py::object { // NOTE: non const ref because shared data
+to_py_value(node_value& value) -> py::object {
   if (value.data_type=="MT") {
     return py::none();
   } else {
@@ -139,14 +56,14 @@ to_py_value(node_value& value) -> py::object { // NOTE: non const ref because sh
   }
 }
 auto
-to_owning_py_value(node_value& val, cgns_allocator& alloc) -> py::object { // NOTE: non const ref because shared data
-  if (val.data_type=="MT") {
+to_owning_py_value(node_value& value, cgns_allocator& alloc) -> py::object {
+  if (value.data_type=="MT") {
     return py::none();
   } else {
-    return to_owning_np_array(val,alloc);
+    py::capsule capsule(value.data, alloc.memory_destructor_function());
+    return to_np_array(value,capsule);
   }
 }
-/// node_value -> py value }
 // py value <-> node_value }
 
 
@@ -196,7 +113,9 @@ to_np_array_with_transfered_ownership(node_value& n, cgns_allocator& alloc) {
   if (alloc.release_if_owner(n.data)) {
     return to_owning_py_value(n,alloc);
   } else { // case where memory was allocated by another allocator
-    return to_py_value(n); // can't transfer since we don't know the allocator
+    // return a view because can't transfer to python
+    // since we don't know the allocator that did the allocation
+    return to_py_value(n);
   }
 }
 

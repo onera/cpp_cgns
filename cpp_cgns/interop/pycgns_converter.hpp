@@ -1,14 +1,14 @@
 #pragma once
 
 
-//#define PY_SSIZE_T_CLEAN
-//#include <Python.h>
 #include "cpp_cgns/cgns.hpp"
-#include <pybind11/pybind11.h>
-namespace py = pybind11;
+#include "pybind11/pybind11.h"
 
 
 namespace cgns {
+
+
+namespace py = pybind11;
 
 // Fwd decl
 class cgns_allocator;

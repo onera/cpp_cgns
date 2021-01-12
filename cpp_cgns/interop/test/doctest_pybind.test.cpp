@@ -1,4 +1,4 @@
-#include "cpp_cgns/interop/test/pybind_test_utils.hpp"
+#include "cpp_cgns/interop/test/doctest_pybind.hpp"
 
 namespace cpp_cgns {
   namespace detail {
