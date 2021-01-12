@@ -172,12 +172,12 @@ TEST_CASE("view_as_cpptree") {
 }
 
 
-//TEST_CASE("view_as_pytree") {
-//  py::scoped_interpreter guard;
-//  cgns_allocator alloc;
-//
-//  auto cpp_tree = conversion_cpp_test_case(factory(&alloc));
-//
-//  auto py_tree_from_cpp = view_as_pytree(cpp_tree);
-//  CHECK( view_as_cpptree(py_tree_from_cpp) == cpp_tree );
-//}
+TEST_CASE("view_as_pytree") {
+  py::scoped_interpreter guard;
+  cgns_allocator alloc;
+
+  auto cpp_tree = conversion_cpp_test_case(factory(&alloc));
+
+  auto py_tree_from_cpp = view_as_pytree(cpp_tree);
+  CHECK( view_as_cpptree(py_tree_from_cpp) == cpp_tree );
+}
