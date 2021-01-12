@@ -81,6 +81,8 @@ struct factory {
 
     template<class T>
     tree newUserDefinedData(const std::string& name, const T& val) const;
+    template<class I, int N>
+    tree newDataArray(const std::string& name, const I(&arr)[N]) const;
 
     // removal
     bool deallocate_node_value(node_value& val) const;
@@ -108,8 +110,8 @@ struct factory {
 // ====================== impl ======================
 
 /// node creation {
-template<class I>
-tree factory::newCGNSBase(const std::string& name, I cellDim, I physDim) const {
+template<class I> auto factory::
+newCGNSBase(const std::string& name, I cellDim, I physDim) const -> tree {
   I* ptr = allocate<I>(alloc(),2);
   ptr[0] = cellDim;
   ptr[1] = physDim;
@@ -118,8 +120,8 @@ tree factory::newCGNSBase(const std::string& name, I cellDim, I physDim) const {
   return {name, "CGNSBase_t", value, {}};
 }
 
-template<class I>
-tree factory::newUnstructuredZone(const std::string& name, const I(&dims)[3]) const {
+template<class I> auto factory::
+newUnstructuredZone(const std::string& name, const I(&dims)[3]) const -> tree {
   node_value z_type_value = create_string_node_value("Unstructured",alloc());
   tree z_type = {"ZoneType", "ZoneType_t", z_type_value, {}};
 
@@ -129,104 +131,114 @@ tree factory::newUnstructuredZone(const std::string& name, const I(&dims)[3]) co
   dim_value.dims = {1,dim_value.dims[0]}; // required by SIDS file mapping (Zone_t)
   return {name, "Zone_t", dim_value, {z_type}};
 }
-template<class I>
-tree factory::newZoneSubRegion(const std::string& name, I dim, const std::string& gridLoc) const {
+template<class I> auto factory::
+newZoneSubRegion(const std::string& name, I dim, const std::string& gridLoc) const -> tree {
   node_value dim_value = create_node_value_1d({dim},alloc());
   tree loc = newGridLocation(gridLoc);
   return {name, "ZoneSubRegion_t", dim_value, {loc}};
 }
 
 
-template<class I>
-tree factory::newPointRange(I first, I last) const {
+template<class I> auto factory::
+newPointRange(I first, I last) const -> tree {
   node_value range_value = create_node_value_1d({first,last},alloc());
   range_value.dims = {1,2};
   return {"PointRange", "IndexRange_t", range_value, {}};
 }
-template<class I>
-tree factory::newElementRange(I first, I last) const {
+template<class I> auto factory::
+newElementRange(I first, I last) const -> tree {
   node_value range_value = create_node_value_1d({first,last},alloc());
   return {"ElementRange", "IndexRange_t", range_value, {}};
 }
 
 
-template<class I>
-tree factory::newElements(
+template<class I> auto factory::
+newElements(
   const std::string& name, I type, std_e::span<I> conns,
   I first, I last, I nb_bnd_elts) const
+-> tree
 {
   tree elts_conn_node = newDataArray("ElementConnectivity", view_as_node_value(conns));
   tree eltsRange = newElementRange(first,last);
   node_value elts_node_val = create_node_value_1d({type,nb_bnd_elts},alloc());
   return {name, "Elements_t", elts_node_val, {eltsRange,elts_conn_node}};
 }
-template<class I>
-tree factory::newElements(
+template<class I> auto factory::
+newElements(
   const std::string& name, ElementType_t type, std_e::span<I> conns,
   I first, I last, I nb_bnd_elts) const
+-> tree 
 {
   return newElements(name,(I)type,conns,first,last,nb_bnd_elts);
 }
 
-template<class I>
-tree factory::newHomogenousElements(
+template<class I> auto factory::
+newHomogenousElements(
   const std::string& name, I type, md_array_view<I,2> conns,
   I first, I last, I nb_bnd_elts) const
-{
+-> tree {
   I8 conn_dim = {conns.extent(0)*conns.extent(1)};
   auto conn_1d = std_e::make_span(conns.data(),conn_dim);
   return newElements(name,type,conn_1d,first,last,nb_bnd_elts);
 }
 
-template<class I>
-tree factory::newNgonElements(const std::string& name, std_e::span<I> conns, I first, I last, I nb_bnd_elts) const {
+template<class I> auto factory::
+newNgonElements(const std::string& name, std_e::span<I> conns, I first, I last, I nb_bnd_elts) const -> tree {
   I ngon_type = NGON_n;
   return newElements(name,ngon_type,conns,first,last,nb_bnd_elts);
 }
-template<class I>
-tree factory::newNfaceElements(const std::string& name, std_e::span<I> conns, I first, I last) const {
+template<class I> auto factory::
+newNfaceElements(const std::string& name, std_e::span<I> conns, I first, I last) const -> tree {
   I nface_type = NFACE_n;
   return newElements(name,nface_type,conns,first,last,0);
 }
 
 
-template<class I>
-tree factory::newPointList(const std::string& name, std_e::span<I> pl) const {
+template<class I> auto factory::
+newPointList(const std::string& name, std_e::span<I> pl) const -> tree {
   node_value pl_value = view_as_node_value(pl);
   pl_value.dims = {1,pl_value.dims[0]}; // required by SIDS (9.3: BC_t)
   return {name, "IndexArray_t", pl_value, {}};
 }
-template<class I>
-tree factory::newBC(const std::string& name, const std::string& loc, std_e::span<I> point_list) const {
+template<class I> auto factory::
+newBC(const std::string& name, const std::string& loc, std_e::span<I> point_list) const -> tree {
   node_value bcType = create_string_node_value("FamilySpecified",alloc());
   tree location = newGridLocation(loc);
   tree point_list_node = newPointList("PointList",point_list);
   return {name, "BC_t", bcType, {location,point_list_node}};
 }
 
-template<class I>
-tree factory::newRind(const std::vector<I>& rind_planes) const {
+template<class I> auto factory::
+newRind(const std::vector<I>& rind_planes) const -> tree {
   node_value value = create_node_value_1d(rind_planes,alloc());
   return {"Rind", "Rind_t", value, {}};
 }
 
-template<class I>
-tree factory::newOrdinal(I i) const {
+template<class I> auto factory::
+newOrdinal(I i) const -> tree {
   node_value val = create_node_value_1d({i},alloc());
   return {"Ordinal", "Ordinal_t", val, {}};
 }
 
-template<class T>
-tree factory::newUserDefinedData(const std::string& name, const T& val) const {
+template<class T> auto factory::
+newUserDefinedData(const std::string& name, const T& val) const -> tree {
   node_value value = create_node_value_1d({val},alloc());
   return {name, "UserDefinedData_t", value, {}};
+}
+
+template<class T, int N> auto factory::
+newDataArray(const std::string& name, const T(&arr)[N]) const -> tree {
+  const T* arr_ptr = arr;
+  auto arr_span = std_e::make_span(arr_ptr,N);
+  node_value value = create_node_value_1d(arr_span,alloc());
+  return {name, "DataArray_t", value, {}};
 }
 /// node creation }
 
 
 /// node removal {
-template<class Unary_predicate>
-void factory::rm_child_by_predicate(tree& t, Unary_predicate p) const {
+template<class Unary_predicate> auto factory::
+rm_child_by_predicate(tree& t, Unary_predicate p) const -> void {
   auto& cs = t.children;
   auto pos = std::find_if(begin(cs),end(cs),p);
   if (pos==end(cs)) {
@@ -236,8 +248,8 @@ void factory::rm_child_by_predicate(tree& t, Unary_predicate p) const {
     cs.erase(pos);
   }
 }
-template<class Unary_predicate>
-void factory::rm_children_by_predicate(tree& t, Unary_predicate p) const {
+template<class Unary_predicate> auto factory::
+rm_children_by_predicate(tree& t, Unary_predicate p) const -> void {
   auto& cs = t.children;
   auto not_p = [p](const auto& x){ return !p(x); };
   auto pos = std::stable_partition(begin(cs),end(cs),not_p); // move nodes to be deleted at the end

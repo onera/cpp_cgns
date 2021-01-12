@@ -288,11 +288,11 @@ node_value get_py_value2(py::list t) {
 }
 
 
-py::array view_as_numpy_array2(node_value& n) {
+py::array view_as_numpy_array2(node_value& n, py::handle capsule = py::handle()) {
   auto numpy_type = cgns_type_to_numpy_type(n.data_type);
   auto dt = py::dtype(numpy_type);
   auto strides = py::detail::f_strides(n.dims, dt.itemsize());
-  return py::array(dt,n.dims,strides,n.data);
+  return py::array(dt,n.dims,strides,n.data,capsule);
 }
 void set_py_value2(py::list pytree, node_value& value) { // NOTE: non const ref because shared data
   py::object py_value;
@@ -327,7 +327,6 @@ py::object view_as_pytree(tree& t) {
 tree view_as_cpptree(py::list pytree) {
   std::string name2  = to_string_from_py(name (pytree));
   std::string label2 = to_string_from_py(label(pytree));
-  //node_value value = get_py_value(pytree.ptr());
   node_value value = get_py_value2(pytree);
 
   py::list py_children = children(pytree);
@@ -343,95 +342,94 @@ tree view_as_cpptree(py::list pytree) {
 // tree <-> pytree }
 
 
-//// tree -> pytree with ownership transfer {
-//// SEE https://stackoverflow.com/a/52737023/1583122
-//void capsule_cleanup_by_free(PyObject* capsule) {
-//  void* memory = PyCapsule_GetPointer(capsule, NULL);
-//  free(memory); // because cgns_allocator uses malloc/free
-//}
-//PyObject* make_owning_numpy_array(node_value& n) {
-//  PyObject* np_arr = view_as_numpy_array(n);
-//  PyObject* capsule = PyCapsule_New(n.data, NULL, capsule_cleanup_by_free);
-//  PyArray_SetBaseObject((PyArrayObject*) np_arr, capsule);
-//  return np_arr;
-//}
-//
-//PyObject* pytree_with_transfered_ownership(tree& t, cgns_allocator& alloc) {
-//  // creates a pytree from t
-//  // if t memory was allocated with alloc,
-//  //   then we release the ownship from alloc
-//  //   and create a numpy array owning it (PyArray_SimpleNewFromData && cleanup capsule)
-//  // if not, we only create a non-owning numpy array (PyArray_SimpleNewFromData)
-//
-//  _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault)
-//  PyObject* pytree = PyList_New(4);
-//
-//  set_py_name(pytree,t.name);
-//  set_py_label(pytree,t.label);
-//
-//  if (alloc.release_if_owner(t.value.data)) {
-//    PyObject* py_value = make_owning_numpy_array(t.value);
-//    PyList_SetItem(pytree,1,py_value);
-//  } else {
-//    set_py_value(pytree,t.value);
-//  }
-//
-//  PyObject* py_children = PyList_New(t.children.size());
-//  for (size_t i=0; i<t.children.size(); ++i) {
-//    PyObject* py_child = pytree_with_transfered_ownership(t.children[i],alloc);
-//    PyList_SetItem(py_children,i,py_child);
-//  }
-//  PyList_SetItem(pytree,2,py_children);
-//
-//  return pytree;
-//}
-//
-//
-//// TODO DEL the other (but test that it does not break anything!)
-//void update_and_transfer_ownership2(tree& t, cgns_allocator& alloc, PyObject* pytree) {
-//  // preconditions:
-//  //   - nodes similar in t and pytree have the same order
-//  //     (in other words, t nodes were never reordered)
-//  //   - nodes are identified by name (no renaming in t)
-//
-//  _import_array(); // IMPORTANT needed for Numpy C API initialization (else: segfault)
-//
-//  STD_E_ASSERT(name(t)==get_py_name(pytree));
-//  STD_E_ASSERT(label(t)==get_py_label(pytree));
-//
-//  if (!same_node_data(t.value,get_py_value(pytree))) {
-//    // TODO factor with pytree_with_transfered_ownership(t.children[i],alloc,py_child);
-//    if (alloc.release_if_owner(t.value.data)) {
-//      PyObject* py_value = make_owning_numpy_array(t.value);
-//      PyList_SetItem(pytree,1,py_value);
-//    } else {
-//      set_py_value(pytree,t.value);
-//    }
-//  }
-//
-//  PyObject* py_children = PyList_GetItem(pytree,2);
-//  int nb_children = t.children.size();
-//  int i = 0;
-//  int i_py = 0;
-//  while (i_py < PyList_Size(py_children)) {
-//    PyObject* py_child = PyList_GetItem(py_children,i_py);
-//    if (i<nb_children && t.children[i].name==get_py_name(py_child)) {
-//      update_and_transfer_ownership2(t.children[i],alloc,py_child);
-//      ++i;
-//      ++i_py;
-//    } else { // since t and pytree have the same order
-//             // it means an item has been removed in t
-//             // and this should be propagated to pytree
-//      PyList_SetSlice(py_children, i_py, i_py+1, NULL); // rm item at i_py
-//      Py_DECREF(py_child); // TODO check
-//    }
-//  }
-//  for (; i<nb_children; ++i) {
-//    PyObject* py_child = pytree_with_transfered_ownership(t.children[i],alloc);
-//    PyList_Append(py_children,py_child);
-//    Py_DECREF(py_child); // TODO check
-//  }
-//}
-//// tree -> pytree with ownership transfer }
+// tree -> pytree with ownership transfer {
+// SEE https://stackoverflow.com/a/52737023/1583122
+void capsule_cleanup_by_free(PyObject* capsule) {
+  void* memory = PyCapsule_GetPointer(capsule, NULL);
+  free(memory); // because cgns_allocator uses malloc/free
+}
+py::array make_owning_numpy_array(node_value& n) {
+  auto capsule = py::capsule(n.data, capsule_cleanup_by_free);
+  return view_as_numpy_array2(n,capsule);
+}
+void set_py_value2_owner(py::list pytree, node_value& value) { // NOTE: non const ref because shared data
+  py::object py_value;
+  if (value.data_type=="MT") {
+    py_value = py::none();
+  } else {
+    py_value = make_owning_numpy_array(value);
+  }
+  pytree[1] = py_value;
+  //value(pytree) = py_value;
+}
+
+py::object pytree_with_transfered_ownership(tree& t, cgns_allocator& alloc) {
+  // creates a pytree from t
+  // if t memory was allocated with alloc,
+  //   then we release the ownship from alloc
+  //   and create a numpy array owning it (PyArray_SimpleNewFromData && cleanup capsule)
+  // if not, we only create a non-owning numpy array (PyArray_SimpleNewFromData)
+
+  auto pytree = py_tree();
+
+  name (pytree) = name (t);
+  label(pytree) = label(t);
+
+  if (alloc.release_if_owner(t.value.data)) {
+    set_py_value2_owner(pytree,value(t));
+  } else {
+    set_py_value2(pytree,value(t));
+  }
+
+  py::list py_children(t.children.size());
+  for (size_t i=0; i<t.children.size(); ++i) {
+    py::object py_child = pytree_with_transfered_ownership(t.children[i],alloc);
+    py_children[i] = py_child;
+  }
+  children(pytree) = py_children;
+
+  return pytree;
+}
+
+
+void update_and_transfer_ownership2(tree& t, cgns_allocator& alloc, py::list pytree) {
+  // preconditions:
+  //   - nodes similar in t and pytree have the same order
+  //     (in other words, t nodes were never reordered)
+  //   - nodes are identified by name (no renaming in t)
+  STD_E_ASSERT(name (t)==name (pytree));
+  STD_E_ASSERT(label(t)==label(pytree));
+
+  if (!same_node_data(value(t),get_py_value2(pytree))) {
+    // TODO factor with pytree_with_transfered_ownership(t.children[i],alloc,py_child);
+    if (alloc.release_if_owner(t.value.data)) {
+      set_py_value2_owner(pytree,value(t));
+    } else {
+      set_py_value2(pytree,value(t));
+    }
+  }
+
+  py::list py_children = children(pytree);
+  int nb_children = t.children.size();
+  int i = 0;
+  int i_py = 0;
+  while (i_py < py_children.size()) {
+    auto py_child = py_children[i_py];
+    if (i<nb_children && name(t.children[i])==to_string_from_py(name(py_child))) {
+      update_and_transfer_ownership2(t.children[i],alloc,py_child);
+      ++i;
+      ++i_py;
+    } else { // since t and pytree have the same order
+             // it means an item has been removed in t
+             // and this should be propagated to pytree
+      PyList_SetSlice(py_children.ptr(), i_py, i_py+1, NULL); // rm item at i_py TODO pybind API
+    }
+  }
+  for (; i<nb_children; ++i) {
+    py::object py_child = pytree_with_transfered_ownership(t.children[i],alloc);
+    py_children.append(py_child);
+  }
+}
+// tree -> pytree with ownership transfer }
 
 } // cgns

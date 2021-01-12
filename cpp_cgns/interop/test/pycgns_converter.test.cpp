@@ -11,7 +11,8 @@ namespace py = pybind11;
 
 
 auto
-conversion_cpp_test_case(factory F) -> tree {
+conversion_cpp_test_case(cgns_allocator& alloc) -> tree {
+  factory F(&alloc);
   tree b = F.newCGNSBase("Base",2,2);
     tree z0 = F.newUnstructuredZone("Z0",{5,3,0});
       auto elt_con_z0 = make_cgns_vector({1,2,3, 2,3,4, 3,4,5},F.alloc());
@@ -144,7 +145,8 @@ conversion_py_test_case() -> py::list {
 
 
 auto
-conversion_cpp_test_case2(factory F) -> tree {
+conversion_cpp_test_case2(cgns_allocator& alloc) -> tree {
+  factory F(&alloc);
   tree b = F.newCGNSBase("Base",2,2);
     tree z0 = F.newUnstructuredZone("Z0",{5,3,0});
       auto elt_con_z0 = make_cgns_vector({1,2,3, 2,3,4, 3,4,5},F.alloc());
@@ -160,24 +162,69 @@ conversion_cpp_test_case2(factory F) -> tree {
   return b;
 }
 
-TEST_CASE("view_as_cpptree") {
-  py::scoped_interpreter guard;
-  cgns_allocator alloc;
 
-  auto cpp_tree = conversion_cpp_test_case(factory(&alloc));
-  auto py_tree = conversion_py_test_case();
+//TEST_CASE("view_as_cpptree") {
+//  py::scoped_interpreter guard;
+//  cgns_allocator alloc;
+//
+//  auto cpp_tree = conversion_cpp_test_case(alloc;
+//  auto py_tree = conversion_py_test_case();
+//
+//  auto cpp_tree_from_py = view_as_cpptree(py_tree);
+//  CHECK( cpp_tree_from_py == cpp_tree );
+//}
+//
+//
+//TEST_CASE("view_as_pytree") {
+//  py::scoped_interpreter guard;
+//  cgns_allocator alloc;
+//
+//  auto cpp_tree = conversion_cpp_test_case(alloc);
+//  auto py_tree_from_cpp = view_as_pytree(cpp_tree);
+//
+//  CHECK( view_as_cpptree(py_tree_from_cpp) == cpp_tree );
+//}
 
-  auto cpp_tree_from_py = view_as_cpptree(py_tree);
-  CHECK( cpp_tree_from_py == cpp_tree );
+
+//TEST_CASE("pytree_with_transfered_ownership") {
+//  py::scoped_interpreter guard;
+//  py::list py_tree;
+//
+//  {
+//    cgns_allocator alloc;
+//    auto cpp_tree = conversion_cpp_test_case(alloc);
+//    py_tree = pytree_with_transfered_ownership(cpp_tree,alloc);
+//  } // At this point, alloc is destroyed, but the memory it was holding has been transfered to Python
+//
+//  cgns_allocator check_alloc;
+//  auto expected_cpp_tree = conversion_cpp_test_case(check_alloc);
+//  CHECK( view_as_cpptree(py_tree) == expected_cpp_tree);
+//}
+
+auto
+my_test_operation(tree& t, cgns_allocator& alloc) {
+  factory F(&alloc);
+  emplace_child(t,F.newDataArray("MyData",{0,1,2}));
 }
 
-
-TEST_CASE("view_as_pytree") {
+TEST_CASE("update_and_transfer_ownership") {
   py::scoped_interpreter guard;
-  cgns_allocator alloc;
+ 
+  // Typical workflow :
+  /// 0. Start with a tree in Python
+  auto py_tree = conversion_py_test_case();
+  { /// 1. Call a binary module (here represented by this opening scope)
+    /// 2. Convert from a py_tree
+    auto cpp_tree = view_as_cpptree(py_tree);
+    /// 3. Permform operations that add nodes (hence, memory) to the C++ tree
+    cgns_allocator alloc;
+    my_test_operation(cpp_tree,alloc);
+    /// 4. Update the py_tree and give it the ownership
+    update_and_transfer_ownership2(cpp_tree,alloc,py_tree);
+  } /// 5. Return to Python. At this point, alloc is destroyed, but the memory it was holding has been transfered to Python
 
-  auto cpp_tree = conversion_cpp_test_case(factory(&alloc));
-
-  auto py_tree_from_cpp = view_as_pytree(cpp_tree);
-  CHECK( view_as_cpptree(py_tree_from_cpp) == cpp_tree );
+  cgns_allocator check_alloc;
+  auto expected_cpp_tree = conversion_cpp_test_case(check_alloc);
+  my_test_operation(expected_cpp_tree,check_alloc);
+  CHECK( view_as_cpptree(py_tree) == expected_cpp_tree );
 }
