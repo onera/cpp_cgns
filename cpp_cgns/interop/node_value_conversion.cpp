@@ -60,10 +60,7 @@ view_as_node_value(py::array np_arr) -> node_value {
   std::vector<I8> dims(n_dim);
   std::copy_n(dims_ptr,n_dim,begin(dims));
 
-  // TODO
-  //ELOG(np_arr.writeable());
-  //void* data = np_arr.mutable_data();
-  void* data = (void*)np_arr.data();
+  void* data = np_arr.mutable_data();
   return {data_type,dims,data};
 }
 auto
