@@ -6,7 +6,7 @@ Installation
 Dependencies
 ------------
 
-`cpp_cgns` is a C++17 library. It depends on `std_e`, which is header-only (provides generic algorithms and multi-dimensional array facilities). Python interoperability (`cpp_cgns/interop` folder) requires Python and Numpy.
+**C++/CGNS** is a C++17 library. It depends on **std_e**, (provides generic algorithms and multi-dimensional array facilities). Python interoperability (`cpp_cgns/interop` folder) requires Python and Numpy.
 
 The build process requires:
 

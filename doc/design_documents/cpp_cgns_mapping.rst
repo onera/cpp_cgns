@@ -31,7 +31,7 @@ Discussion of the design choices
 
 * The :cpp:`tree` structure is a compromise between simplicity, interoperability and convenience.
     * The :cpp:`node_value` data structure holds a :cpp:`void` pointer. Regarding CGNS, data values can be of type :cpp:`C1 (char)`, :cpp:`I4 (int32)`, :cpp:`I8`, :cpp:`R4 (float)`, :cpp:`R8`. We refrained ourselves from using :cpp:`union` or :cpp:`std::variant` which would not bring more type safety, but would certainly bring more complexity.
-    * A node value is a list of dimensions and a pointer to memory, not directly a multi-dimensionnal array class. Indeed, using such a class would be too complex without any further knowledge of the node: what will be the type of the data? should the number of dimensions be fixed? does this class manages the memory? [Note: python/CGNS has not the first two problems because of dynamic typing]. Note that conversion between :cpp:`node_value` and multidimensional arrays is provided through external functions.
+    * A node value is a list of dimensions and a pointer to memory, not directly a multi-dimensionnal array class. Indeed, using such a class would be too complex without any further knowledge of the node: what will be the type of the data? should the number of dimensions be fixed? does this class manages the memory? [Note: Python/CGNS has not the first two problems because of dynamic typing]. Note that conversion between :cpp:`node_value` and multidimensional arrays is provided through external functions.
     * We use :cpp:`std::string` and :cpp:`std::vector` for simplicity and convenience. Regarding interoperability, it could be a problem if we want to exchange with C or Fortran users, but we feel like not using these two basic classes would be to much of a burden.
 
 * Use cases where the tree is not "a simple tree in memory" can't be addressed easily with this approach:
@@ -46,4 +46,4 @@ As far as interoperability is concerned, the user is free to create and handle t
 Acknowledgements
 ----------------
 
-The design of the C++/CGNS mapping is based on `python/CGNS <https://github.com/pyCGNS/pyCGNS>`_. Tree manipulation functions are based on `Cassiopee <http://elsa.onera.fr/Cassiopee/>`_.
+The design of the C++/CGNS mapping is based on `Python/CGNS <https://github.com/pyCGNS/pyCGNS>`_. Tree manipulation functions are based on `Cassiopee <http://elsa.onera.fr/Cassiopee/>`_.

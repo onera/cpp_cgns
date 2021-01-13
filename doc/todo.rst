@@ -10,3 +10,5 @@ names in pycgns_converter.hpp
 cgns_allocator -> make an abstract base
 
 check python strings
+
+doc: automatic generation of interface

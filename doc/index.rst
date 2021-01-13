@@ -1,6 +1,6 @@
 .. container:: indexpage
 
-  cpp_cgns
+  C++/CGNS
 
 .. container:: twocol
 

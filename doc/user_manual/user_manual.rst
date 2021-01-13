@@ -6,28 +6,6 @@ User Manual
 
 .. currentmodule:: cpp_cgns
 
-
-Mathematical conventions
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-Indices start at zero
-"""""""""""""""""""""
-
-Regarding index conventions, zero is superior to one:
-
-* `Edsger W. Dijkstra - Why numbering should start at zero <http://www.cs.utexas.edu/users/EWD/transcriptions/EWD08xx/EWD831.html>`_
-* `Stack exchange discussion <https://softwareengineering.stackexchange.com/q/110804/149159>`_.
-
-Intervals are [semi-open)
-"""""""""""""""""""""""""
-
-[Semi-open) intervals allow to represent positions between elements (there are ``n+1`` positions in a range of size ``n``).
-
-Relation with the SIDS
-""""""""""""""""""""""
-
-The SIDS does not adopt these conventions: CGNS indices start at one and intervals are close. **cpp_cgns** only uses these conventions when forced to (e.g. with :cpp:`cgns::factory::newElementRange`). Otherwise, the C/STL conventions are maintained.
-
 .. _memory_management:
 
 Memory management
@@ -85,7 +63,7 @@ For example, imagine a scenario where the file reading (i.e. building of the tre
 
 NOTES: 
 
-* there is no mechanism for memory ownership transfers. We don't have any use case for now. It should be easily possible for C/C++ programs, and also possible from/to python.
+* Memory ownership can be reclaimed from an allocator (e.g. to transfer the ownership to Python or to another allocator). For that, use the member function :cpp:`cgns_allocator::release_if_owner(void* ptr)` that will tell the allocator that it does not own :cpp:`ptr` anymore (and hence cannot deallocate it). Now that you have the memory, you need a function that can deallocate it and is matching the one of the allocator. You can ask such a function with member function :cpp:`cgns_allocator::memory_destructor_function()`.
 * a :cpp:`cgns_allocator` is not a :cpp:`std` compliant allocator since it needs to allocate several memory types for the tree (e.g. :cpp:`I4`, :cpp:`R8`...). Its :cpp:`allocate` function is templated by the type to allocate, hence it does not match the :cpp:`std` allocator specification. A  :cpp:`std` compliant convenience class :cpp:`cgns_std_allocator` is provided that associates a :cpp:`cgns_allocator` with a type (e.g. :cpp:`I4` or :cpp:`R8`). It can be used e.g. with a :cpp:`cgns_vector`: an `std::vector` using this :cpp:`cgns_std_allocator` as its allocator.
 * if a :cpp:`cgns_allocator` is asked to deallocate memory it does not own, it does nothing. This is the expected behavior: if a program does not hold the memory of a node, it isn't responsible for deallocating its memory.                                        
 * DO NOT create two CGNS nodes pointing to the same memory. It is unsupported (e.g. deallocating data from one node will deallocate silently on the other node). But fundamentally the meaning is dubious: if two nodes share the same memory, why are there two nodes in the first place? Using the CGNS tree as a DAG is possible within the SIDS (e.g. through use of families) so it should not be done at the node memory level.
