@@ -158,11 +158,10 @@ update_and_transfer_ownership2(tree& t, cgns_allocator& alloc, py::list py_tree)
   }
 
   py::list py_children = children(py_tree);
-  int py_n_child = py_children.size();
   int n_child = t.children.size();
   int i = 0;
   int i_py = 0;
-  while (i_py < py_n_child) {
+  while (i_py < (int)py_children.size()) { // NOTE: py_children.size() updated in the body of the loop, so do not store before
     auto py_child = py_children[i_py];
     if (i<n_child && name(t.children[i])==to_string_from_py(name(py_child))) {
       update_and_transfer_ownership2(t.children[i],alloc,py_child);
@@ -171,7 +170,7 @@ update_and_transfer_ownership2(tree& t, cgns_allocator& alloc, py::list py_tree)
     } else { // since t and py_tree have the same order
              // it means an item has been removed in t
              // and this should be propagated to py_tree
-      PyList_SetSlice(py_children.ptr(), i_py, i_py+1, NULL); // rm item at i_py TODO pybind API
+      py_children.attr("pop")(i_py);
     }
   }
   for (; i<n_child; ++i) {

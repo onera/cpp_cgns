@@ -2,6 +2,7 @@
 
 #include "cpp_cgns/interop/pycgns_converter.hpp"
 #include "cpp_cgns/sids/creation.hpp"
+#include "cpp_cgns/tree_manip.hpp"
 #include "pybind11/numpy.h"
 
 
@@ -182,6 +183,8 @@ auto
 my_test_operation(tree& t, cgns_allocator& alloc) {
   factory F(&alloc);
   emplace_child(t,F.newDataArray("MyData",{0,1,2}));
+  tree& z0 = get_child_by_name(t,"Z0");
+  F.rm_child_by_name(z0,"ZoneType");
 }
 
 PYBIND_TEST_CASE("update_and_transfer_ownership") {
