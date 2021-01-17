@@ -113,7 +113,7 @@ if(CPP_CGNS_ENABLE_TEST)
     PRIVATE
       doctest::doctest
   )
-  add_test(NAME ${PROJECT_NAME}_unit_tests COMMAND ${PROJECT_NAME}_unit_tests)
+  add_test(NAME ${PROJECT_NAME}_unit_tests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_unit_tests)
 endif()
 
 option(CPP_CGNS_ENABLE_COVERAGE "Enable coverage for ${PROJECT_NAME}" OFF)
