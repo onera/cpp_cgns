@@ -38,7 +38,7 @@ std::string to_complete_string(const node_value& x) {
 std::string to_string(const node_value& x, int threshold) {
   if (x.data_type=="MT") return "MT";
   if (x.data_type=="C1") return std::string((const char*)x.data,x.dims[0]);
-  if (std_e::cartesian_product_size(x.dims)<threshold) return to_complete_string(x);
+  if (std_e::cartesian_product_size(x.dims)<=threshold) return to_complete_string(x);
   else return "{"+x.data_type+":"+dims_to_string(x.dims)+"}";
 }
 

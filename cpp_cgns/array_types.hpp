@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "cpp_cgns/cgns.hpp"
 #include "cpp_cgns/allocator.hpp"
 #include "std_e/multi_array/multi_array.hpp"
 
