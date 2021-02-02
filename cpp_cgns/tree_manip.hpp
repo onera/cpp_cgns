@@ -175,9 +175,11 @@ get_nodes_by_matching(Tree& t, const std::string& gen_path) -> range_of_ref<Tree
 }
 template<class Tree> auto
 get_node_by_matching(Tree& t, const std::string& gen_path) -> decltype(auto) {
-  visitor_for_matching_path<Tree> v(name(t)+'/'+gen_path);
-  graph::depth_first_find_adjacencies(t,v);
-  auto ts = v.retrieve_nodes();
+  // TODO the commented code is bugged (wrong predicate in visitor_for_matching_path.pre)
+  //visitor_for_matching_path<Tree> v(name(t)+'/'+gen_path);
+  //graph::depth_first_find_adjacencies(t,v);
+  //auto ts = v.retrieve_nodes();
+  auto ts = get_nodes_by_matching(t,gen_path);
   if (ts.size() == 0) {
     throw cgns_exception("No sub-tree matching \""+gen_path+"\" in tree \""+name(t)+"\"");
   } else {

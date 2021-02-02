@@ -59,7 +59,7 @@ PYBIND_TEST_CASE("view_as_node_value") {
     }
     SUBCASE("C1") {
       std::vector<char> v = {'a','b','c'};
-      auto np_array = py::array(py::dtype("b"),3,v.data());
+      auto np_array = py::array(py::dtype("|S1"),3,v.data());
       
       auto val = view_as_node_value(np_array);
       CHECK( val.data_type == "C1" );

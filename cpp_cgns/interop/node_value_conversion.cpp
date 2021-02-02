@@ -13,7 +13,7 @@ struct cgns_numpy_type {
   std::string np_type;
 };
 const std::vector<cgns_numpy_type> cgns_numpy_types = {
-  {"C1" , "int8"},
+  {"C1" , "|S1"},
   {"I4" , "int32"},
   {"I8" , "int64"},
   {"R4" , "float32"},

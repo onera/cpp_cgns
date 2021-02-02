@@ -60,7 +60,7 @@ py_tree_example() -> py::list {
 
       py::list z0_type(4);
       z0_type[0] = "ZoneType";
-      z0_type[1] = py::array(py::dtype("b"),12,"Unstructured");
+      z0_type[1] = py::array(py::dtype("|S1"),12,"Unstructured");
       z0_type[2] = py::list();
       z0_type[3] = "ZoneType_t";
 
@@ -101,7 +101,7 @@ py_tree_example() -> py::list {
 
       py::list z1_type(4);
       z1_type[0] = "ZoneType";
-      z1_type[1] = py::array(py::dtype("b"),12,"Unstructured");
+      z1_type[1] = py::array(py::dtype("|S1"),12,"Unstructured");
       z1_type[2] = py::list();
       z1_type[3] = "ZoneType_t";
 
