@@ -149,8 +149,8 @@ update_and_transfer_ownership2(tree& t, cgns_allocator& alloc, py::list py_tree)
   //   - nodes similar in t and py_tree have the same order
   //     (in other words, t nodes were never reordered)
   //   - nodes are identified by name (no renaming in t)
-  STD_E_ASSERT(name (t)==name (py_tree));
-  STD_E_ASSERT(label(t)==label(py_tree));
+  STD_E_ASSERT(name (t)==to_string_from_py(name (py_tree)));
+  STD_E_ASSERT(label(t)==to_string_from_py(label(py_tree)));
 
   bool node_data_was_coming_from_python = same_node_data(value(t),to_node_value(value(py_tree)));
   if (!node_data_was_coming_from_python) {
