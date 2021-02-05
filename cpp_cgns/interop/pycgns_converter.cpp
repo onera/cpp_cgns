@@ -70,7 +70,7 @@ to_owning_py_value(node_value& value, cgns_allocator& alloc) -> py::object {
 // tree <-> py_tree {
 /// no ownership transfer {
 auto
-view_as_cpptree(py::list py_tree) -> tree {
+to_cpp_tree(py::list py_tree) -> tree {
   std::string  name_ = to_string_from_py(name (py_tree));
   std::string label_ = to_string_from_py(label(py_tree));
   node_value  value_ = to_node_value    (value(py_tree));
@@ -80,14 +80,14 @@ view_as_cpptree(py::list py_tree) -> tree {
   std::vector<tree> children_(n_child);
   for (int i=0; i<n_child; ++i) {
     py::list py_child = py_children[i];
-    children_[i] = view_as_cpptree(py_child);
+    children_[i] = to_cpp_tree(py_child);
   }
 
   return {name_,label_,value_,children_};
 }
 
 auto
-view_as_pytree(tree& t) -> py::list {
+to_py_tree(tree& t) -> py::list {
   auto py_tree = new_py_tree();
 
   name (py_tree) = name (t);
@@ -97,7 +97,7 @@ view_as_pytree(tree& t) -> py::list {
   int n_child = t.children.size();
   py::list py_children(n_child);
   for (int i=0; i<n_child; ++i) {
-    py::object py_child = view_as_pytree(t.children[i]);
+    py::object py_child = to_py_tree(t.children[i]);
     py_children[i] = py_child;
   }
   children(py_tree) = py_children;
@@ -120,7 +120,7 @@ to_np_array_with_transfered_ownership(node_value& n, cgns_allocator& alloc) {
 }
 
 auto
-pytree_with_transfered_ownership(tree& t, cgns_allocator& alloc) -> py::list {
+to_owning_py_tree(tree& t, cgns_allocator& alloc) -> py::list {
   // creates a py_tree from t
   // if t memory was allocated with alloc,
   //   then we release the ownship from alloc
@@ -135,7 +135,7 @@ pytree_with_transfered_ownership(tree& t, cgns_allocator& alloc) -> py::list {
   int n_child = t.children.size();
   py::list py_children(n_child);
   for (int i=0; i<n_child; ++i) {
-    auto py_child = pytree_with_transfered_ownership(t.children[i],alloc);
+    auto py_child = to_owning_py_tree(t.children[i],alloc);
     py_children[i] = py_child;
   }
   children(py_tree) = py_children;
@@ -144,7 +144,7 @@ pytree_with_transfered_ownership(tree& t, cgns_allocator& alloc) -> py::list {
 }
 
 auto
-update_and_transfer_ownership2(tree& t, cgns_allocator& alloc, py::list py_tree) -> void {
+update_and_transfer_ownership_to_py_tree(tree& t, cgns_allocator& alloc, py::list py_tree) -> void {
   // preconditions:
   //   - nodes similar in t and py_tree have the same order
   //     (in other words, t nodes were never reordered)
@@ -164,7 +164,7 @@ update_and_transfer_ownership2(tree& t, cgns_allocator& alloc, py::list py_tree)
   while (i_py < (int)py_children.size()) { // NOTE: py_children.size() updated in the body of the loop, so do not store before
     auto py_child = py_children[i_py];
     if (i<n_child && name(t.children[i])==to_string_from_py(name(py_child))) {
-      update_and_transfer_ownership2(t.children[i],alloc,py_child);
+      update_and_transfer_ownership_to_py_tree(t.children[i],alloc,py_child);
       ++i;
       ++i_py;
     } else { // since t and py_tree have the same order
@@ -174,7 +174,7 @@ update_and_transfer_ownership2(tree& t, cgns_allocator& alloc, py::list py_tree)
     }
   }
   for (; i<n_child; ++i) {
-    auto py_child = pytree_with_transfered_ownership(t.children[i],alloc);
+    auto py_child = to_owning_py_tree(t.children[i],alloc);
     py_children.append(py_child);
   }
 }

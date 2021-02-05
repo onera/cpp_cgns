@@ -13,14 +13,14 @@ namespace py = pybind11;
 auto
 cpp_tree_example(cgns_allocator& alloc) -> tree {
   factory F(&alloc);
-  tree b = F.newCGNSBase("Base",2,2);
-    tree z0 = F.newUnstructuredZone("Z0",{5,3,0});
+  tree b = F.new_CGNSBase("Base",2,2);
+    tree z0 = F.new_UnstructuredZone("Z0",{5,3,0});
       auto elt_con_z0 = make_cgns_vector({1,2,3, 2,3,4, 3,4,5},F.alloc());
-      emplace_child( z0 , F.newElements("tris", TRI_3, std_e::make_span(elt_con_z0), 1, 3) );
+      emplace_child( z0 , F.new_Elements("tris", TRI_3, std_e::make_span(elt_con_z0), 1, 3) );
 
-    tree z1 = F.newUnstructuredZone("Z1",{7,4,0});
+    tree z1 = F.new_UnstructuredZone("Z1",{7,4,0});
       auto elt_con_z1 = make_cgns_vector({5,6,7, 1,2,3, 2,3,4, 3,4,5},F.alloc());
-      emplace_child( z1 , F.newElements("tris", TRI_3, std_e::make_span(elt_con_z1), 1, 4) );
+      emplace_child( z1 , F.new_Elements("tris", TRI_3, std_e::make_span(elt_con_z1), 1, 4) );
 
     emplace_child(b,std::move(z0));
     emplace_child(b,std::move(z1));
@@ -151,7 +151,7 @@ PYBIND_TEST_CASE("view_as_cpptree") {
   auto cpp_tree = cpp_tree_example(alloc);
   auto py_tree = py_tree_example();
 
-  auto cpp_tree_from_py = view_as_cpptree(py_tree);
+  auto cpp_tree_from_py = to_cpp_tree(py_tree);
   CHECK( cpp_tree_from_py == cpp_tree );
 }
 
@@ -160,9 +160,9 @@ PYBIND_TEST_CASE("view_as_pytree") {
   cgns_allocator alloc;
 
   auto cpp_tree = cpp_tree_example(alloc);
-  auto py_tree_from_cpp = view_as_pytree(cpp_tree);
+  auto py_tree_from_cpp = to_py_tree(cpp_tree);
 
-  CHECK( view_as_cpptree(py_tree_from_cpp) == cpp_tree );
+  CHECK( to_cpp_tree(py_tree_from_cpp) == cpp_tree );
 }
 
 
@@ -171,18 +171,18 @@ PYBIND_TEST_CASE("pytree_with_transfered_ownership") {
   {
     cgns_allocator alloc;
     auto cpp_tree = cpp_tree_example(alloc);
-    py_tree = pytree_with_transfered_ownership(cpp_tree,alloc);
+    py_tree = to_owning_py_tree(cpp_tree,alloc);
   } // At this point, alloc is destroyed, but the memory it was holding has been transfered to Python
 
   cgns_allocator check_alloc;
   auto expected_cpp_tree = cpp_tree_example(check_alloc);
-  CHECK( view_as_cpptree(py_tree) == expected_cpp_tree);
+  CHECK( to_cpp_tree(py_tree) == expected_cpp_tree);
 }
 
 auto
 my_test_operation(tree& t, cgns_allocator& alloc) {
   factory F(&alloc);
-  emplace_child(t,F.newDataArray("MyData",{0,1,2}));
+  emplace_child(t,F.new_DataArray("MyData",{0,1,2}));
   tree& z0 = get_child_by_name(t,"Z0");
   F.rm_child_by_name(z0,"ZoneType");
 }
@@ -193,16 +193,16 @@ PYBIND_TEST_CASE("update_and_transfer_ownership") {
   auto py_tree = py_tree_example();
   { /// 1. Call a binary module (here represented by this opening scope)
     /// 2. Convert from a py_tree
-    auto cpp_tree = view_as_cpptree(py_tree);
+    auto cpp_tree = to_cpp_tree(py_tree);
     /// 3. Permform operations that add nodes (hence, memory) to the C++ tree
     cgns_allocator alloc;
     my_test_operation(cpp_tree,alloc);
     /// 4. Update the py_tree and give it the ownership
-    update_and_transfer_ownership2(cpp_tree,alloc,py_tree);
+    update_and_transfer_ownership_to_py_tree(cpp_tree,alloc,py_tree);
   } /// 5. Return to Python. At this point, alloc is destroyed, but the memory it was holding has been transfered to Python
 
   cgns_allocator check_alloc;
   auto expected_cpp_tree = cpp_tree_example(check_alloc);
   my_test_operation(expected_cpp_tree,check_alloc);
-  CHECK( view_as_cpptree(py_tree) == expected_cpp_tree );
+  CHECK( to_cpp_tree(py_tree) == expected_cpp_tree );
 }
