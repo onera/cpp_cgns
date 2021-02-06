@@ -1,18 +1,13 @@
 #pragma once
 
 
-#include "std_e/future/contract.hpp"
-#include <string>
-#include <vector>
-#include <memory>
+#include "cpp_cgns/buffer_base.hpp"
 
 
-namespace cgns {
+namespace std_e {
 
 
-using deallocator_function = void(*)(void*);
-
-class data_buffer {
+class buffer {
   public:
     virtual auto is_owner() const -> bool = 0;
     virtual auto release() -> bool = 0;
@@ -21,11 +16,11 @@ class data_buffer {
     virtual auto data()       ->       void* = 0;
     virtual auto data() const -> const void* = 0;
 
-    virtual ~data_buffer() {}
+    virtual ~buffer() {}
 };
 
 
-class non_owning_buffer : public data_buffer {
+class non_owning_buffer : public buffer {
   private:
     void* ptr;
   public:
@@ -44,7 +39,7 @@ class non_owning_buffer : public data_buffer {
 
 
 template<deallocator_function dealloc>
-class owning_buffer : public data_buffer {
+class owning_buffer : public buffer {
   private:
     void* ptr;
     bool owns;
@@ -78,7 +73,7 @@ class owning_buffer : public data_buffer {
       owns = false;
     }
 
-  // data_buffer interface
+  // buffer interface
     auto is_owner() const -> bool override {
       return owns;
     }
@@ -94,28 +89,4 @@ class owning_buffer : public data_buffer {
 };
 
 
-struct malloc_allocator {
-  static auto
-  allocate(size_t n) -> void* {
-    return malloc(n);
-  }
-  static auto
-  deallocate(void* ptr) -> void {
-    free(ptr);
-  }
-
-  using buffer_type = owning_buffer<free>;
-};
-
-inline auto
-operator==(const malloc_allocator& x, const malloc_allocator& y) -> bool {
-  return true; // no state
-  //return &x==&y; // since they are not copyable, only way to be equal is by equal address
-}
-inline auto
-operator!=(const malloc_allocator& x, const malloc_allocator& y) -> bool {
-  return !(x==y);
-}
-
-
-} // cgns
+} // std_e

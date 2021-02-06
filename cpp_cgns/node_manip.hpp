@@ -26,7 +26,7 @@ namespace cgns {
 //  return {to_string<T>(), {1,(I8)x.size()}, x.data()};
 //}
 //template<class T> auto
-//view_as_node_value_1(cgns_vector<T> x) -> node_value {
+//view_as_node_value_1(buffer_vector<T> x) -> node_value {
 //  return view_as_node_value_1(std_e::make_span(x));
 //}
 
@@ -35,8 +35,8 @@ make_node_value__(std::string dt, std::vector<I8> dims, Data_buffer&& buffer) ->
   return {std::move(dt),std::move(dims),std::make_unique<std::decay_t<Data_buffer>>(std::forward<Data_buffer>(buffer))};
 }
 template<class T> auto
-make_node_value(cgns_vector<T>&& x) -> node_value {
-  return make_node_value__(to_string<T>(), {(I8)x.size()}, std::move(x.get_allocator()).retrieve_buffer());
+make_node_value(std_e::buffer_vector<T>&& x) -> node_value {
+  return make_node_value__(to_string<T>(), {(I8)x.size()}, std_e::to_buffer(std::move(x)));
 }
 template<class T> auto
 make_node_value(std::initializer_list<T> l) -> node_value {

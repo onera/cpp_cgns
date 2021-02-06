@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 #include <functional> // for std::reference_wrapper
-#include "cpp_cgns/data_buffer.hpp"
+#include "cpp_cgns/buffer.hpp"
 
 
 namespace cgns {
@@ -23,7 +23,7 @@ using R8 = double;
 struct node_value {
   std::string data_type; // TODO enum
   std::vector<I8> dims;
-  std::unique_ptr<data_buffer> buffer;
+  std::unique_ptr<std_e::buffer> buffer;
 };
 inline auto
 data(node_value& x) -> void* {
