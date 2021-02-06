@@ -5,124 +5,129 @@
 
 using namespace cgns;
 
+TEST_CASE("Create node value") {
+  SUBCASE("one dimension") {
+    node_value val = make_node_value({42,43,44});
 
-// TODO factorize with std_e::multi_array test
-TEST_CASE("View multi_array as cgns node_value") {
-  std_e::dyn_multi_array<I4,2> x = {
-    {2,3,4},
-    {5,6,7}
-  };
-  node_value val = view_as_node_value(x);
-
-
-  SUBCASE("data is stored in fortran order") {
-    CHECK( val.data_type == "I4" );
-    CHECK( val.dims == std::vector<I8>{2,3} );
-    CHECK( ((I4*)val.data)[0] == 2 );
-    CHECK( ((I4*)val.data)[1] == 5 );
-    CHECK( ((I4*)val.data)[2] == 3 );
-    CHECK( ((I4*)val.data)[3] == 6 );
-    CHECK( ((I4*)val.data)[4] == 4 );
-    CHECK( ((I4*)val.data)[5] == 7 );
+    SUBCASE("direct access") {
+      CHECK( val.data_type == "I4" );
+      CHECK( val.dims == std::vector<I8>{3} );
+      CHECK( ((I4*)data(val))[0] == 42 );
+      CHECK( ((I4*)data(val))[1] == 43 );
+      CHECK( ((I4*)data(val))[2] == 44 );
+    }
+    SUBCASE("view as span") {
+      auto x = view_as_span<I4>(val); // the user must give the type (I4)
+      CHECK( x[0] == 42 );
+      CHECK( x[1] == 43 );
+      CHECK( x[2] == 44 );
+    }
   }
 
-  SUBCASE("data is shared") {
-    ((I4*)val.data)[2] = 42;
-    x(1,0) = 43;
+  SUBCASE("multiple dimensions") {
+    node_value val = make_node_value({{2,3,4},{5,6,7}});
 
-    CHECK( ((I4*)val.data)[0] == 2 );
-    CHECK( ((I4*)val.data)[1] == 43);
-    CHECK( ((I4*)val.data)[2] == 42);
-    CHECK( ((I4*)val.data)[3] == 6 );
-    CHECK( ((I4*)val.data)[4] == 4 );
-    CHECK( ((I4*)val.data)[5] == 7 );
+    SUBCASE("direct access") {
+      CHECK( val.data_type == "I4" );
+      CHECK( val.dims == std::vector<I8>{3,2} );
+      // data is stored in Fortran order (as CGNS arrays)
+      CHECK( ((I4*)data(val))[0] == 2 );
+      CHECK( ((I4*)data(val))[1] == 5 );
+      CHECK( ((I4*)data(val))[2] == 3 );
+      CHECK( ((I4*)data(val))[3] == 6 );
+      CHECK( ((I4*)data(val))[4] == 4 );
+      CHECK( ((I4*)data(val))[5] == 7 );
+    }
 
-    CHECK( x(0,0) == 2 );
-    CHECK( x(1,0) == 43);
-    CHECK( x(0,1) == 42);
-    CHECK( x(1,1) == 6 );
-    CHECK( x(0,2) == 4 );
-    CHECK( x(1,2) == 7 );
+    SUBCASE("view as md_array_view") {
+      auto x = view_as_md_array<I4,2>(val); // the user must give the type (I4) and the rank (2) of the array
+
+      CHECK( x(0,0) == 2 );
+      CHECK( x(1,0) == 3 );
+      CHECK( x(0,1) == 4 );
+      CHECK( x(1,1) == 5 );
+      CHECK( x(0,2) == 6 );
+      CHECK( x(1,2) == 7 );
+    }
   }
 }
 
-TEST_CASE("View cgns_vector as cgns node_value") {
-  cgns_allocator alloc;
-  auto x = make_cgns_vector({42,43,44},alloc);
 
-  node_value val = view_as_node_value(x);
+TEST_CASE("View as node_value") {
+  SUBCASE("one dimension") {
+    std::vector<I4> v = {42,43,44};
+    node_value val = view_as_node_value(v);
 
-  SUBCASE("data is stored") {
     CHECK( val.data_type == "I4" );
     CHECK( val.dims == std::vector<I8>{3} );
-    CHECK( ((I4*)val.data)[0] == 42 );
-    CHECK( ((I4*)val.data)[1] == 43 );
-    CHECK( ((I4*)val.data)[2] == 44 );
+    CHECK( ((I4*)data(val))[0] == 42 );
+    CHECK( ((I4*)data(val))[1] == 43 );
+    CHECK( ((I4*)data(val))[2] == 44 );
   }
 
-  SUBCASE("data is shared") {
-    x[1] = 50;
-    ((I4*)val.data)[2] = 51;
+  SUBCASE("multiple dimensions") {
+    std_e::dyn_multi_array<I4,2> x = {
+      {2,3,4},
+      {5,6,7}
+    };
+    node_value val = view_as_node_value(x);
 
-    CHECK( ((I4*)val.data)[0] == 42);
-    CHECK( ((I4*)val.data)[1] == 50);
-    CHECK( ((I4*)val.data)[2] == 51);
+    SUBCASE("data is stored in fortran order") {
+      CHECK( val.data_type == "I4" );
+      CHECK( val.dims == std::vector<I8>{2,3} );
+      CHECK( ((I4*)data(val))[0] == 2 );
+      CHECK( ((I4*)data(val))[1] == 5 );
+      CHECK( ((I4*)data(val))[2] == 3 );
+      CHECK( ((I4*)data(val))[3] == 6 );
+      CHECK( ((I4*)data(val))[4] == 4 );
+      CHECK( ((I4*)data(val))[5] == 7 );
+    }
 
-    CHECK( x[0] == 42);
-    CHECK( x[1] == 50);
-    CHECK( x[2] == 51);
-  }
-}
+    SUBCASE("data is shared") {
+      ((I4*)data(val))[2] = 42;
+      x(1,0) = 43;
 
+      CHECK( ((I4*)data(val))[0] == 2 );
+      CHECK( ((I4*)data(val))[1] == 43);
+      CHECK( ((I4*)data(val))[2] == 42);
+      CHECK( ((I4*)data(val))[3] == 6 );
+      CHECK( ((I4*)data(val))[4] == 4 );
+      CHECK( ((I4*)data(val))[5] == 7 );
 
-TEST_CASE("View node_value as md_array_view") {
-  std::vector<I4> values = {2,3,4,5,6,7};
-  node_value val = {"I4",{2,3},values.data()};
-
-  auto x = view_as_md_array<I4,2>(val); // the user must give the type (I4) and the rank (2) of the array
-
-  SUBCASE("data is stored in fortran order") {
-    CHECK( x(0,0) == 2 );
-    CHECK( x(1,0) == 3 );
-    CHECK( x(0,1) == 4 );
-    CHECK( x(1,1) == 5 );
-    CHECK( x(0,2) == 6 );
-    CHECK( x(1,2) == 7 );
-  }
-
-  SUBCASE("data is shared") {
-    x(1,0) = 42;
-    ((I4*)val.data)[2] = 43;
-
-    CHECK( x(0,0) == 2 );
-    CHECK( x(1,0) == 42);
-    CHECK( x(0,1) == 43);
-    CHECK( x(1,1) == 5 );
-    CHECK( x(0,2) == 6 );
-    CHECK( x(1,2) == 7 );
+      CHECK( x(0,0) == 2 );
+      CHECK( x(1,0) == 43);
+      CHECK( x(0,1) == 42);
+      CHECK( x(1,1) == 6 );
+      CHECK( x(0,2) == 4 );
+      CHECK( x(1,2) == 7 );
+    }
   }
 }
 
-TEST_CASE("View node_value as span") {
-  std::vector<I4> values = {42,43,44};
-  I8 data_size = values.size();
-  node_value val = {"I4",{data_size},values.data()};
 
-  auto x = view_as_span<I4>(val); // the user must give the type (I4)
+TEST_CASE("Create node value from cgns_vector") {
+  cgns_vector<I4> v;
 
-  CHECK( x[0] == 42 );
-  CHECK( x[1] == 43 );
-  CHECK( x[2] == 44 );
+  // use vector features (here, automatic growth with push_back)
+  v.push_back(0);
+  v.push_back(1);
+  v.push_back(2);
+
+  // once done, create a node_value from it
+  node_value val = make_node_value(std::move(v));
+
+  CHECK( val.data_type == "I4" );
+  CHECK( val.dims == std::vector<I8>{3} );
+  CHECK( ((I4*)data(val))[0] == 0 );
+  CHECK( ((I4*)data(val))[1] == 1 );
+  CHECK( ((I4*)data(val))[2] == 2 );
 }
 
 
 TEST_CASE("node_value to string") {
-  std::vector<I4> v0 = {0,1,2};
-  std::vector<I4> v1 = {5,6,7,8};
-
-  node_value val0 = {"I4",{3}  ,v0.data()};
-  node_value val1 = {"I4",{1,3},v0.data()};
-  node_value val2 = {"I4",{2,2},v1.data()};
+  auto val0 = make_node_value({0,1,2});
+  auto val1 = make_node_value({{0},{1},{2}});
+  auto val2 = make_node_value({{5,6},{7,8}});
 
   CHECK ( to_string(val0) == "[0;1;2]" );
   CHECK ( to_string(val1) == "[0,1,2]" );

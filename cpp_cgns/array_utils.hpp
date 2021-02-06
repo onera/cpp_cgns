@@ -8,18 +8,18 @@ namespace cgns {
 
 
 // cgns_vector {
-template<class T> auto
-make_cgns_vector(cgns_allocator& alloc) {
-  return cgns_vector<T>(cgns_std_allocator<T>(&alloc));
+template<class T, class Allocator = malloc_buffer> auto
+make_cgns_vector(Allocator alloc = {}) {
+  return cgns_vector<T>(cgns_std_allocator<T,Allocator>(std::move(alloc)));
 }
 
-template<class T> auto
-make_cgns_vector(size_t n, cgns_allocator& alloc) {
+template<class T, class Allocator = malloc_buffer> auto
+make_cgns_vector(size_t n, Allocator alloc = {}) {
   return cgns_vector<T>(n,cgns_std_allocator<T>(&alloc));
 }
 
-template<class T> auto
-make_cgns_vector(std::initializer_list<T> l, cgns_allocator& alloc) {
+template<class T, class Allocator = malloc_buffer> auto
+make_cgns_vector(std::initializer_list<T> l, Allocator alloc = {}) {
   return cgns_vector<T>(l,cgns_std_allocator<T>(&alloc));
 }
 // cgns_vector }
@@ -27,20 +27,19 @@ make_cgns_vector(std::initializer_list<T> l, cgns_allocator& alloc) {
 
 // md_array {
 /// returns view since the memory is owned by the allocator
-template<class T, int rank> auto
-allocate_md_array(std_e::multi_index<I8,rank> dims, cgns_allocator& alloc) {
+template<class T, int rank, class Allocator = malloc_buffer> auto
+make_md_array(std_e::multi_index<I8,rank> dims, Allocator alloc = {}) {
   std_e::dyn_shape<I8,rank> shape(std::move(dims));
   I8 sz = shape.size();
-  T* ptr = allocate<T>(alloc,sz);
-  std_e::span<T> mem_view {ptr,sz};
-  return md_array_view<T,rank>(mem_view,shape);
+  auto mem = make_cgns_vector(sz,alloc);
+  return md_array<T,rank>(mem,shape);
 }
 
+//template<class T, class Allocator = malloc_buffer> auto
+//make_md_array(std::initializer_list<std::initializer_list<T>> ll, Allocator alloc = {}) {
 template<class T> auto
-make_md_array(std::initializer_list<std::initializer_list<T>> ll, cgns_allocator& alloc) {
-  I8 sz = ll.size() * std::begin(ll)->size();
-  T* ptr = allocate<T>(alloc,sz);
-  return md_array_view<T,2>(ll,ptr);
+make_md_array(std::initializer_list<std::initializer_list<T>> ll) {
+  return md_array<T,2>(ll); // TODO extend std_e::multi_array to take an allocator
 }
 // md_array }
 

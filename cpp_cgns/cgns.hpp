@@ -3,7 +3,9 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 #include <functional> // for std::reference_wrapper
+#include "cpp_cgns/data_buffer.hpp"
 
 
 namespace cgns {
@@ -19,10 +21,18 @@ using R8 = double;
 
 
 struct node_value {
-  std::string data_type;
+  std::string data_type; // TODO enum
   std::vector<I8> dims;
-  void* data;
+  std::unique_ptr<data_buffer> buffer;
 };
+inline auto
+data(node_value& x) -> void* {
+  return x.buffer->data();
+}
+inline auto
+data(const node_value& x) -> const void* {
+  return x.buffer->data();
+}
 
 struct tree {
   std::string name;

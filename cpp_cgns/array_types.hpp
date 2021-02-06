@@ -11,7 +11,7 @@ namespace cgns {
 
 constexpr int dyn_rank = std_e::dynamic_size;
 
-template<class T> using cgns_vector = std::vector<T, cgns_std_allocator<T>>;
+template<class T> using cgns_vector = std::vector<T, cgns_std_allocator<T,malloc_buffer>>; // TODO
 
 template<class T, int rank> using md_array_view = std_e::dyn_multi_array_view<T,rank,I8>;
 
