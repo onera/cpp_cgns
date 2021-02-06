@@ -10,11 +10,13 @@
 namespace cgns {
 
 
+using deallocator_function = void(*)(void*);
+
 class data_buffer {
   public:
     virtual auto is_owner() const -> bool = 0;
     virtual auto release() -> bool = 0;
-    virtual auto deallocator_function() const -> void(*)(void*) = 0;
+    virtual auto deallocator() const -> deallocator_function = 0;
 
     virtual auto data()       ->       void* = 0;
     virtual auto data() const -> const void* = 0;
@@ -24,90 +26,94 @@ class data_buffer {
 
 
 class non_owning_buffer : public data_buffer {
+  private:
+    void* ptr;
   public:
     non_owning_buffer(void* ptr)
       : ptr(ptr)
     {}
 
-    auto is_owner() const -> bool { return false; }
-    auto release() -> bool { return false; }
-    auto deallocator_function() const -> void(*)(void*) { return no_op_deallocator; }
+    auto is_owner() const -> bool override { return false; }
+    auto release() -> bool override { return false; }
+    auto deallocator() const -> deallocator_function override { return [](void*){}; }
 
-    auto data()       ->       void* { return ptr; }
-    auto data() const -> const void* { return ptr; }
-  private:
-    static auto no_op_deallocator(void*) -> void {}
-    void* ptr;
+    auto data()       ->       void* override { return ptr; }
+    auto data() const -> const void* override { return ptr; }
 };
 
-class malloc_buffer : public data_buffer {
+
+
+template<deallocator_function dealloc>
+class owning_buffer : public data_buffer {
   private:
     void* ptr;
     bool owns;
   public:
-  // alloc/dealloc
-    auto allocate(size_t n) -> void* {
-      deallocate();
-      owns = true;
-      ptr = malloc(n);
-      return ptr;
-    }
-    auto deallocate() -> void {
-      if (is_owner()) {
-        free(ptr);
-      }
-      owns = false;
-    }
-
   // ctors / assign / dtor
-    malloc_buffer()
-      : ptr(nullptr)
-      , owns(false)
-    {}
-    malloc_buffer(size_t n)
-      : ptr(malloc(n))
+    owning_buffer(void* ptr)
+      : ptr(ptr)
       , owns(true)
     {}
 
-    malloc_buffer(const malloc_buffer&) = delete;
-    malloc_buffer& operator=(const malloc_buffer&) = delete;
+    owning_buffer(const owning_buffer&) = delete;
+    owning_buffer& operator=(const owning_buffer&) = delete;
 
-    malloc_buffer(malloc_buffer&& old)
+    owning_buffer(owning_buffer&& old)
       : ptr(old.ptr)
       , owns(old.owns)
     {
       old.owns = false;
     }
-    malloc_buffer& operator=(malloc_buffer&& old) {
+    owning_buffer& operator=(owning_buffer&& old) {
       ptr = old.ptr;
       owns = old.owns;
       old.owns = false;
       return *this;
     }
 
-    ~malloc_buffer() {
-      deallocate();
+    ~owning_buffer() {
+      if (is_owner()) {
+        dealloc(ptr);
+      }
+      owns = false;
     }
 
   // data_buffer interface
-    auto is_owner() const -> bool { return owns; }
-    auto release() -> bool {
+    auto is_owner() const -> bool override {
+      return owns;
+    }
+    auto release() -> bool override {
       bool was_owner = owns;
       owns = false;
       return was_owner;
     }
-    auto deallocator_function() const -> void(*)(void*) { return free; }
+    auto deallocator() const -> deallocator_function override { return dealloc; }
 
-    auto data()       ->       void* { return ptr; }
-    auto data() const -> const void* { return ptr; }
+    auto data()       ->       void* override { return ptr; }
+    auto data() const -> const void* override { return ptr; }
+};
+
+
+struct malloc_allocator {
+  static auto
+  allocate(size_t n) -> void* {
+    return malloc(n);
+  }
+  static auto
+  deallocate(void* ptr) -> void {
+    free(ptr);
+  }
+
+  using buffer_type = owning_buffer<free>;
 };
 
 inline auto
-operator==(const malloc_buffer& x, const malloc_buffer& y) -> bool {
-  return &x==&y; // since they are not copyable, only way to be equal is by equal address
+operator==(const malloc_allocator& x, const malloc_allocator& y) -> bool {
+  return true; // no state
+  //return &x==&y; // since they are not copyable, only way to be equal is by equal address
 }
 inline auto
-operator!=(const malloc_buffer& x, const malloc_buffer& y) -> bool {
+operator!=(const malloc_allocator& x, const malloc_allocator& y) -> bool {
   return !(x==y);
 }
 

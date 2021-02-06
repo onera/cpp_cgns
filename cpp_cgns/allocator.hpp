@@ -15,7 +15,7 @@ namespace cgns {
   Can be used as a std::vector allocator.
   Allocation/Deallocation is delegated to the Allocator.
 */
-template<class T, class Allocator = malloc_buffer> // TODO del default
+template<class T, class Allocator = malloc_allocator> // TODO del default
 // requires Allocator::allocate(size_t)/deallocate()
 class cgns_std_allocator {
   public:
@@ -28,11 +28,9 @@ class cgns_std_allocator {
 
   // ctors
     explicit
-    cgns_std_allocator() = default;
-
-    explicit
-    cgns_std_allocator(Allocator&& allocator)
+    cgns_std_allocator(Allocator&& allocator = {})
       : allocator(std::move(allocator))
+      , owner(true)
     {}
 
   // alloc/dealloc
@@ -43,18 +41,21 @@ class cgns_std_allocator {
 
     auto
     deallocate(T*, size_t) noexcept -> void {
-      allocator.deallocate();
+      if (owner) {
+        allocator.deallocate();
+      }
     }
 
     auto
-    retrieve_buffer() && -> Allocator { // "&&" means: this function can only be called on a temporary
-      return std::move(allocator);
+    release_ownership() && -> void {
+      owner = false;
     }
   // comparisons
     template <class T0, class T1, class A> friend auto
     operator==(const cgns_std_allocator<T0,A>& x, const cgns_std_allocator<T1,A>& y) -> bool;
   private:
     Allocator allocator;
+    bool owner;
 };
 
 template <class T0, class T1, class A> auto
@@ -64,6 +65,16 @@ operator==(const cgns_std_allocator<T0,A>& x, const cgns_std_allocator<T1,A>& y)
 template <class T0, class T1, class A> auto
 operator!=(const cgns_std_allocator<T0,A>& x, const cgns_std_allocator<T1,A>& y) -> bool {
   return !(x==y);
+}
+
+
+template<class T> using cgns_vector = std::vector<T, cgns_std_allocator<T,malloc_allocator>>; // TODO
+
+template<class T, class Allocator> auto
+to_buffer(cgns_vector<T,Allocator>&& x) {
+  using buffer_type = typename Allocator::buffer_type;
+  x.release_ownership();
+  return buffer_type(x.data());
 }
 
 
