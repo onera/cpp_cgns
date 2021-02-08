@@ -1,122 +1,114 @@
 #include "std_e/unit_test/doctest.hpp"
+
 #include "cpp_cgns/cgns.hpp"
-#include "cpp_cgns/allocator.hpp"
-#include "cpp_cgns/array_utils.hpp"
+#include "cpp_cgns/node_manip.hpp"
+#include "std_e/log.hpp"
 
 
 using namespace cgns;
 
 
 // for the tests below, fake_python_allocator represent an external allocation strategy (e.g. Python third-party library)
-class fake_python_allocator final {
-  public:
-    fake_python_allocator() = default;
-    fake_python_allocator(const fake_python_allocator&) = delete;
-    fake_python_allocator& operator=(const fake_python_allocator&) = delete;
-    fake_python_allocator(fake_python_allocator&&) = default;
-    fake_python_allocator& operator=(fake_python_allocator&&) = default;
+constexpr auto fake_python_alloc = malloc; // imagine this is the Python allocation function
+constexpr auto fake_python_dealloc = free;
+using fake_python_allocator = std_e::buffer_allocator<fake_python_alloc,fake_python_dealloc>;
 
-    template<class T>
-    T* allocate(size_t n) {
-      size_t sz = n*sizeof(T);
-      void* ptr = malloc(sz);
-      ptrs.push_back(ptr);
-      return (T*)ptr;
-    }
-
-    ~fake_python_allocator() {
-      for (auto& ptr : ptrs) {
-        free(ptr);
-      }
-    }
-  private:
-    std::vector<void*> ptrs;
-};
+constexpr auto my_test_alloc = malloc; // imagine that this is a specific allocator (GPU...)
+constexpr auto my_test_dealloc = free;
+using my_test_allocator = std_e::buffer_allocator<my_test_alloc,my_test_dealloc>;
 
 class fake_python_program {
   public:
-    tree create_tree() {
-      int sz = 2;
-      I4* data = alloc.template allocate<I4>(sz);
-      data[0] = 10;
-      data[1] = 11;
-      node_value value = {"I4",{sz},data};
-      return {"RootNode", "UserDefinedData_t", value, {}};
+    auto
+    create_tree() -> tree {
+      return {"RootNode", "UserDefinedData_t", make_node_value({10,11},fake_python_allocator{})};
+    }
+
+    auto
+    aquire_ptr(void* ptr, std_e::deallocator_function dealloc_fun) -> void {
+      acquired_ptrs.push_back(ptr);
+      acquired_ptr_deallocators.push_back(dealloc_fun);
+    }
+
+    ~fake_python_program() {
+      int sz = acquired_ptrs.size();
+      for (int i=0; i<sz; ++i) {
+        void* ptr = acquired_ptrs[i];
+        auto dealloc = acquired_ptr_deallocators[i];
+        dealloc(ptr);
+      }
     }
   private:
-    fake_python_allocator alloc;
+    std::vector<void*> acquired_ptrs;
+    std::vector<std_e::deallocator_function> acquired_ptr_deallocators;
 };
 
 
-tree create_node(cgns_allocator& alloc) {
-  int sz = 3;
-  I4* mem = allocate<I4>(alloc,sz);
-  mem[0] = 42;
-  mem[1] = 43;
-  mem[2] = 44;
-
+auto
+create_node(my_test_allocator& alloc) -> tree {
   return {
     "my_node",
     "UserDefinedData_t",
-    {"I4",{sz},mem},
-    {} // no children
+    make_node_value({42,43,44},alloc)
   };
 }
 
-TEST_CASE("cgns_allocation") {
+TEST_CASE("memory transfer") {
   fake_python_program py;
   tree t = py.create_tree();
 
-  cgns_allocator alloc;
+  my_test_allocator alloc;
   emplace_child(
     t,
     create_node(alloc)
   );
 
-  SUBCASE("memory ownship") {
-    CHECK( t.children[0].name == "my_node" );
+  tree& sub_node = t.children[0];
+  CHECK( sub_node.name == "my_node" );
 
-    CHECK_FALSE( alloc.owns_memory(t.value.data)             );
-    CHECK      ( alloc.owns_memory(t.children[0].value.data) );
+  auto& buf = sub_node.value.buffer;
+  CHECK( buf.is_owner() );
 
-    alloc.deallocate(t.value.data); // does nothing since does not own
-    alloc.deallocate(t.children[0].value.data);
+  // release memory
+  buf.release();
+  // make Python own the memory now
+  py.aquire_ptr(buf.data(),buf.deallocator());
 
-    CHECK_FALSE( alloc.owns_memory(t.value.data)             );
-    CHECK_FALSE( alloc.owns_memory(t.children[0].value.data) );
-  }
-
-  SUBCASE("cgns_vector") {
-    std::vector<I4> some_numbers = {0,1,2,3,4,5,6,7,8};
-    
-    { // open scope
-      auto even_numbers = make_cgns_vector<I4>(alloc);
-      auto is_even = [](I4 i){ return i%2==0; };
-      
-      // here we need a vector: we want to grow it efficiently because we don't know how to precompute the size
-      std::copy_if(
-        begin(some_numbers),end(some_numbers),
-        std::back_inserter(even_numbers),
-        is_even
-      );
-      
-      I8 nb_even = even_numbers.size();
-      tree even_numbers_node = {
-        "EvenNumbers",
-        "DataArray_t",
-        {"I4",{nb_even},even_numbers.data()},
-        {}
-      };
-      emplace_child(t,std::move(even_numbers_node));
-    } // close scope: the vector "even_numbers" does not exist anymore...
-
-    CHECK( t.children[1].name == "EvenNumbers" );
-    CHECK( alloc.owns_memory(t.children[1].value.data) ); // ... however, the memory is owned by the cgns_allocator, hence still valid
-    CHECK( ((I4*)t.children[1].value.data)[0] == 0 );
-    CHECK( ((I4*)t.children[1].value.data)[1] == 2 );
-    CHECK( ((I4*)t.children[1].value.data)[2] == 4 );
-    CHECK( ((I4*)t.children[1].value.data)[3] == 6 );
-    CHECK( ((I4*)t.children[1].value.data)[4] == 8 );
-  }
+  // not owner but the memory is still here
+  CHECK_FALSE( buf.is_owner() );
+  I4* i_ptr = (I4*)buf.data();
+  CHECK( *i_ptr   == 42 );
+  CHECK( *i_ptr+1 == 43 );
+  CHECK( *i_ptr+2 == 44 );
 }
 
+
+TEST_CASE("use buffer_vector then tranfer to cgns node") {
+  std::vector<I4> some_numbers = {0,1,2,3,4,5,6,7,8};
+
+  auto even_numbers = std_e::make_buffer_vector<I4>(my_test_allocator{});
+  auto is_even = [](I4 i){ return i%2==0; };
+
+  // here we need a vector: we want to grow it efficiently because we can't precompute the size efficiently
+  std::copy_if(
+    begin(some_numbers),end(some_numbers),
+    std::back_inserter(even_numbers),
+    is_even
+  );
+
+  I8 nb_even = even_numbers.size();
+  tree even_numbers_node = {
+    "EvenNumbers",
+    "DataArray_t",
+    make_node_value(std::move(even_numbers)) // the data and mem ownership of "even_numbers" has been transfered to the buffer
+  };
+
+  auto& buf = even_numbers_node.value.buffer;
+  CHECK( buf.is_owner() );
+  I4* ptr = (I4*)buf.data();
+  CHECK( ptr[0] == 0 );
+  CHECK( ptr[1] == 2 );
+  CHECK( ptr[2] == 4 );
+  CHECK( ptr[3] == 6 );
+  CHECK( ptr[4] == 8 );
+}

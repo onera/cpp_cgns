@@ -52,10 +52,10 @@ template<class T, int N=1, class Tree> auto get_node_value_by_matching(Tree& t, 
 
 
 // actions {
-inline auto
-deep_copy(const tree& /*t */, cgns_allocator& /* alloc */) -> tree {
-  throw std_e::not_implemented_exception();
-}
+//inline auto
+//deep_copy(const tree& /*t */, cgns_allocator& /* alloc */) -> tree {
+//  throw std_e::not_implemented_exception();
+//}
 // actions }
 
 

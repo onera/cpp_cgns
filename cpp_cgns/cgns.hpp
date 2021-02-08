@@ -1,11 +1,14 @@
 #pragma once
 
 
+#include <initializer_list>
+#include <iterator>
 #include <string>
-#include <vector>
 #include <memory>
 #include <functional> // for std::reference_wrapper
-#include "cpp_cgns/buffer.hpp"
+#include "std_e/buffer/buffer.hpp"
+#include "std_e/buffer/polymorphic_buffer.hpp"
+#include "std_e/utils/vector.hpp"
 
 
 namespace cgns {
@@ -23,15 +26,15 @@ using R8 = double;
 struct node_value {
   std::string data_type; // TODO enum
   std::vector<I8> dims;
-  std::unique_ptr<std_e::buffer> buffer;
+  std_e::polymorphic_buffer buffer;
 };
 inline auto
 data(node_value& x) -> void* {
-  return x.buffer->data();
+  return x.buffer.data();
 }
 inline auto
 data(const node_value& x) -> const void* {
-  return x.buffer->data();
+  return x.buffer.data();
 }
 
 struct tree {
@@ -39,6 +42,30 @@ struct tree {
   std::string label;
   node_value value;
   std::vector<tree> children;
+
+
+  tree() = default;
+
+  tree(std::string name, std::string label, node_value value)
+    : name(std::move(name))
+    , label(std::move(label))
+    , value(std::move(value))
+  {}
+
+  template<class Tree>
+  tree(std::string name, std::string label, node_value value, std::vector<Tree> children)
+    : name(std::move(name))
+    , label(std::move(label))
+    , value(std::move(value))
+    , children(std::move(children))
+  {}
+
+  tree(std::string name, std::string label, node_value value, std::initializer_list<tree> children)
+    : name(std::move(name))
+    , label(std::move(label))
+    , value(std::move(value))
+    , children(std_e::move_to_vector((tree*)children.begin(),(tree*)children.end())) // need this to overcome std::init_list and std::move limitations
+  {}
 };
 // core }
 
@@ -61,7 +88,9 @@ template<> inline auto to_string<const R8>() -> std::string { return "R8"; }
 
 
 /// empty node value {
-const node_value MT = {"MT",{0},nullptr};
+inline auto MT() -> node_value {
+  return {"MT",{0},{}};
+}
 /// empty node value }
 
 
@@ -107,7 +136,7 @@ using const_tree_range = range_of_ref<const tree>;
 
 
 /// children {
-inline 
+inline
 tree& emplace_child(tree& t, tree&& c) {
   t.children.emplace_back(std::move(c));
   return t.children.back();

@@ -1,4 +1,6 @@
 #include "std_e/unit_test/doctest.hpp"
+
+#include "cpp_cgns/node_manip.hpp"
 #include "cpp_cgns/dispatch.hpp"
 #include "std_e/base/lift.hpp"
 
@@ -16,20 +18,20 @@ I8 I8_value = 10'000'000'000ll; // > max(I4)
 R4 R4_value = 50.f;
 R8 R8_value = 150.;
 
-const node_value my_C1_node_value = {"C1",{1},&C1_value};
-const node_value my_I4_node_value = {"I4",{1},&I4_value};
-const node_value my_I8_node_value = {"I8",{1},&I8_value};
-const node_value my_R4_node_value = {"R4",{1},&R4_value};
-const node_value my_R8_node_value = {"R8",{1},&R8_value};
+const node_value my_C1_node_value = make_scalar_node_value(C1_value);
+const node_value my_I4_node_value = make_scalar_node_value(I4_value);
+const node_value my_I8_node_value = make_scalar_node_value(I8_value);
+const node_value my_R4_node_value = make_scalar_node_value(R4_value);
+const node_value my_R8_node_value = make_scalar_node_value(R8_value);
 
-const tree my_I4_tree = {"Test","Test_t", my_I4_node_value, {} };
-const tree my_I8_tree = {"Test","Test_t", my_I8_node_value, {} };
+const tree my_I4_tree = {"Test","Test_t", make_scalar_node_value(I4_value), {} };
+const tree my_I8_tree = {"Test","Test_t", make_scalar_node_value(I8_value), {} };
 
 // Template function that implements the tree query with the right type information
 // The type I will either be I4 or I8
 template<class I> auto
 my_templated_query(const tree& node) -> I {
-  auto ptr = (I*)node.value.data; // We need to know the type of the node value to correctly cast it
+  auto ptr = (I*)data(node.value); // We need to know the type of the node value to correctly cast it
   return *ptr; // if given my_I4_tree, will return 42
                // if given my_I8_tree, will return 43
 }
@@ -51,7 +53,7 @@ auto
 my_query(const tree& node) -> I8 {
   return dispatch_I4_I8(
     LIFT(my_query__impl), // LIFT is needed to turn the templated function "my_query__impl" into the corresponding lambda
-    node 
+    node
   );
 }
 
@@ -91,14 +93,14 @@ TEST_CASE("dispatch_I4_I8 -- base") {
 // Test dispatch_I4_I8 -- node_value version {
 template<class I> auto
 my_node_query__impl(I, const node_value& x) -> bool {
-  auto ptr = (I*)x.data; 
+  auto ptr = (I*)data(x);
   return *ptr > 100;
 }
 auto
 my_node_query(const node_value& node) -> bool {
   return dispatch_I4_I8(
     LIFT(my_node_query__impl),
-    node 
+    node
   );
 }
 

@@ -5,11 +5,11 @@ using namespace cgns;
 
 TEST_CASE("find nodes") {
   tree t = {
-    "A", "A_t", MT, {
-      tree{"B0", "B_t", MT, {
-          tree{"D", "A_t", MT, {}} } },
-      tree{"B1", "B_t", MT, {
-          tree{"D", "D_t", MT, {}} } } }
+    "A", "A_t", MT(), {
+      tree{"B0", "B_t", MT(), {
+          tree{"D", "A_t", MT(), {}} } },
+      tree{"B1", "B_t", MT(), {
+          tree{"D", "D_t", MT(), {}} } } }
   };
 
   SUBCASE("get_nodes_by_matching") {
@@ -43,7 +43,7 @@ TEST_CASE("find nodes") {
   }
 
   SUBCASE("get_node_by_matching") {
-    auto n = get_node_by_matching(t,"B_t/D");
+    auto& n = get_node_by_matching(t,"B_t/D");
 
     CHECK( n.name  == "D" );
     CHECK( n.label == "A_t" );
