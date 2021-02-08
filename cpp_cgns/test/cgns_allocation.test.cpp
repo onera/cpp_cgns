@@ -70,9 +70,9 @@ TEST_CASE("memory transfer") {
   CHECK( buf.is_owner() );
 
   // release memory
-  buf.release();
-  // make Python own the memory now
-  py.aquire_ptr(buf.data(),buf.deallocator());
+  auto dealloc = buf.release();
+  // make Python own the memory now, and tell it which deallocator to use
+  py.aquire_ptr(buf.data(),dealloc);
 
   // not owner but the memory is still here
   CHECK_FALSE( buf.is_owner() );
@@ -96,7 +96,6 @@ TEST_CASE("use buffer_vector then tranfer to cgns node") {
     is_even
   );
 
-  I8 nb_even = even_numbers.size();
   tree even_numbers_node = {
     "EvenNumbers",
     "DataArray_t",

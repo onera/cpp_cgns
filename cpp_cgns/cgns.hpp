@@ -27,6 +27,12 @@ struct node_value {
   std::string data_type; // TODO enum
   std::vector<I8> dims;
   std_e::polymorphic_buffer buffer;
+
+  node_value() = default;
+  node_value(node_value&&) = default;
+  node_value& operator=(node_value&&) = default;
+  node_value(const node_value&) = delete;
+  node_value& operator=(const node_value&) = delete;
 };
 inline auto
 data(node_value& x) -> void* {
@@ -45,6 +51,10 @@ struct tree {
 
 
   tree() = default;
+  tree(tree&&) = default;
+  tree& operator=(tree&&) = default;
+  tree(const tree&) = delete;
+  tree& operator=(const tree&) = delete;
 
   tree(std::string name, std::string label, node_value value)
     : name(std::move(name))

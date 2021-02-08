@@ -25,7 +25,7 @@ TEST_CASE("Create node value") {
   }
 
   SUBCASE("multiple dimensions") {
-    node_value val = make_node_value({{2,3,4},
+    node_value val = create_node_value({{2,3,4},
                                       {5,6,7}});
 
     SUBCASE("direct access") {
@@ -50,58 +50,6 @@ TEST_CASE("Create node value") {
 }
 
 
-//TEST_CASE("View as node_value") { // TODO DEL
-//  SUBCASE("one dimension") {
-//    std::vector<I4> v = {42,43,44};
-//    node_value val = view_as_node_value(v);
-//
-//    CHECK( val.data_type == "I4" );
-//    CHECK( val.dims == std::vector<I8>{3} );
-//    CHECK( ((I4*)data(val))[0] == 42 );
-//    CHECK( ((I4*)data(val))[1] == 43 );
-//    CHECK( ((I4*)data(val))[2] == 44 );
-//  }
-//
-//  SUBCASE("multiple dimensions") {
-//    std_e::dyn_multi_array<I4,2> x = {
-//      {2,3,4},
-//      {5,6,7}
-//    };
-//    node_value val = view_as_node_value(x);
-//
-//    SUBCASE("data is stored in fortran order") {
-//      CHECK( val.data_type == "I4" );
-//      CHECK( val.dims == std::vector<I8>{2,3} );
-//      CHECK( ((I4*)data(val))[0] == 2 );
-//      CHECK( ((I4*)data(val))[1] == 5 );
-//      CHECK( ((I4*)data(val))[2] == 3 );
-//      CHECK( ((I4*)data(val))[3] == 6 );
-//      CHECK( ((I4*)data(val))[4] == 4 );
-//      CHECK( ((I4*)data(val))[5] == 7 );
-//    }
-//
-//    SUBCASE("data is shared") {
-//      ((I4*)data(val))[2] = 42;
-//      x(1,0) = 43;
-//
-//      CHECK( ((I4*)data(val))[0] == 2 );
-//      CHECK( ((I4*)data(val))[1] == 43);
-//      CHECK( ((I4*)data(val))[2] == 42);
-//      CHECK( ((I4*)data(val))[3] == 6 );
-//      CHECK( ((I4*)data(val))[4] == 4 );
-//      CHECK( ((I4*)data(val))[5] == 7 );
-//
-//      CHECK( x(0,0) == 2 );
-//      CHECK( x(1,0) == 43);
-//      CHECK( x(0,1) == 42);
-//      CHECK( x(1,1) == 6 );
-//      CHECK( x(0,2) == 4 );
-//      CHECK( x(1,2) == 7 );
-//    }
-//  }
-//}
-
-
 TEST_CASE("Create node value from buffer_vector") {
   std_e::buffer_vector<I4> v;
 
@@ -123,8 +71,8 @@ TEST_CASE("Create node value from buffer_vector") {
 
 TEST_CASE("node_value to string") {
   auto val0 = make_node_value({0,1,2});
-  auto val1 = make_node_value({{0},{1},{2}});
-  auto val2 = make_node_value({{5,6},{7,8}});
+  auto val1 = create_node_value({{0},{1},{2}});
+  auto val2 = create_node_value({{5,6},{7,8}});
 
   CHECK ( to_string(val0) == "[0,1,2]" );
   CHECK ( to_string(val1) == "[[0],[1],[2]]" );

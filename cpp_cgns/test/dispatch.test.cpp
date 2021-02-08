@@ -18,14 +18,14 @@ I8 I8_value = 10'000'000'000ll; // > max(I4)
 R4 R4_value = 50.f;
 R8 R8_value = 150.;
 
-const node_value my_C1_node_value = make_scalar_node_value(C1_value);
-const node_value my_I4_node_value = make_scalar_node_value(I4_value);
-const node_value my_I8_node_value = make_scalar_node_value(I8_value);
-const node_value my_R4_node_value = make_scalar_node_value(R4_value);
-const node_value my_R8_node_value = make_scalar_node_value(R8_value);
+const node_value my_C1_node_value = create_scalar_node_value(C1_value);
+const node_value my_I4_node_value = create_scalar_node_value(I4_value);
+const node_value my_I8_node_value = create_scalar_node_value(I8_value);
+const node_value my_R4_node_value = create_scalar_node_value(R4_value);
+const node_value my_R8_node_value = create_scalar_node_value(R8_value);
 
-const tree my_I4_tree = {"Test","Test_t", make_scalar_node_value(I4_value), {} };
-const tree my_I8_tree = {"Test","Test_t", make_scalar_node_value(I8_value), {} };
+const tree my_I4_tree = {"Test","Test_t", create_scalar_node_value(I4_value), {} };
+const tree my_I8_tree = {"Test","Test_t", create_scalar_node_value(I8_value), {} };
 
 // Template function that implements the tree query with the right type information
 // The type I will either be I4 or I8

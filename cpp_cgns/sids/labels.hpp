@@ -96,7 +96,6 @@ enum class label {
   EMConductivityModel_t,
   EMConductivityModelType_t,
   AverageInterfaceType_t,
-  AverageInterface_t,
   Elements_t,
   ElementType_t
 };

@@ -7,3 +7,4 @@
 
 #include "cpp_cgns/sids/utils.hpp"
 #include "cpp_cgns/sids/elements_utils.hpp"
+#include "cpp_cgns/sids/labels.hpp"

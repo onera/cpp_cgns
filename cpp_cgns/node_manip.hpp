@@ -43,19 +43,19 @@ make_node_value(std::initializer_list<T> l, A alloc = {}) -> node_value {
   return make_node_value(std_e::make_buffer_vector(l,alloc));
 }
 template<class T, class A = std_e::buffer_mallocator> auto
-make_scalar_node_value(T x, A alloc = {}) -> node_value {
+create_scalar_node_value(T x, A alloc = {}) -> node_value {
   return make_node_value({x},alloc);
 }
 template<class T, class A = std_e::buffer_mallocator> auto
-make_node_value_1(std::initializer_list<T> l, A alloc = {}) -> node_value {
+create_node_value_1(std::initializer_list<T> l, A alloc = {}) -> node_value {
   return make_node_value_1(std_e::make_buffer_vector(l,alloc));
 }
 template<class T, class A = std_e::buffer_mallocator> auto
-make_node_value(std::initializer_list<std::initializer_list<T>> ll, A alloc = {}) -> node_value {
+create_node_value(std::initializer_list<std::initializer_list<T>> ll, A alloc = {}) -> node_value {
   return make_node_value(make_md_array(ll,alloc));
 }
 template<class A = std_e::buffer_mallocator> auto
-make_node_value(const std::string& s, A alloc = {}) -> node_value {
+create_string_node_value(const std::string& s, A alloc = {}) -> node_value {
   return make_node_value(std_e::make_buffer_vector(begin(s),end(s),alloc));
 }
 
@@ -64,13 +64,11 @@ view(node_value& x) -> node_value {
   return {x.data_type,x.dims,std_e::buffer_view(data(x))};
 }
 
-//// TODO DEL?
-//template<class Range> auto
-//view_as_node_value(Range x) -> node_value {
-//  using T = typename Range::value_type;
-//  static_assert(!std::is_const_v<T>,"no way to ensure constness in CGNS tree");
-//  return make_node_value__(to_string<T>(), {(I8)x.size()}, non_owning_buffer{x.data()});
-//}
+template<class T, ptrdiff_t N> auto
+view_as_node_value(std_e::span<T,N> x) -> node_value {
+  static_assert(!std::is_const_v<T>,"no way to ensure constness in CGNS tree");
+  return {to_string<T>(), {(I8)x.size()}, buffer_view(x.data())};
+}
 //template<class T0, class T1> auto
 //view_as_node_value(std_e::multi_array<T0,T1>& x) -> node_value {
 //  using T = typename std_e::multi_array<T0,T1>::value_type;

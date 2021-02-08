@@ -22,7 +22,7 @@ ElementType_ElementSizeBoundary(Tree& e) {
   auto I_str = to_string<I>();
   if (value(e).data_type!=I_str)
     throw cgns_exception("CGNS requires zone dimensions to be of type \""+I_str+"\"");
-  I* e_ptr = (I*)value(e).data;
+  I* e_ptr = (I*)data(value(e));
   return std_e::make_span<2>(e_ptr);
 }
 
