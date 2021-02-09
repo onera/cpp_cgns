@@ -41,6 +41,8 @@ template<class T, class A> auto
 new_DataArray(const std::string& name, std_e::buffer_vector<T,A>&& v) -> tree;
 template<class T, int rank, class A> auto
 new_DataArray(const std::string& name, md_array<T,rank,A>&& arr) -> tree;
+template<class T, int rank> auto
+new_DataArray(const std::string& name, md_array_view<T,rank>& arr) -> tree;
 
 auto
 new_UserDefinedData(const std::string& name, node_value value = MT()) -> tree;
@@ -107,12 +109,11 @@ new_CGNSBase(const std::string& name, I cellDim, I physDim) -> tree {
 template<class I> auto
 new_UnstructuredZone(const std::string& name, const I(&dims)[3]) -> tree {
   tree z_type = {"ZoneType", "ZoneType_t", create_string_node_value("Unstructured"), {}};
-  return {name, "Zone_t", create_node_value({{dims[0]},{dims[1]},{dims[2]}}), {std::move(z_type)}};
+  return {name, "Zone_t", create_node_value({{dims[0],dims[1],dims[2]}}), {std::move(z_type)}};
 }
 template<class I> auto
 new_ZoneSubRegion(const std::string& name, I dim, const std::string& gridLoc) -> tree {
-  tree loc = new_GridLocation(gridLoc);
-  return {name, "ZoneSubRegion_t", create_scalar_node_value(dim), {loc}};
+  return {name, "ZoneSubRegion_t", create_scalar_node_value(dim), {new_GridLocation(gridLoc)}};
 }
 
 
@@ -210,6 +211,10 @@ new_DataArray(const std::string& name, std_e::buffer_vector<T,A>&& v) -> tree {
 template<class T, int rank, class A> auto
 new_DataArray(const std::string& name, md_array<T,rank,A>&& arr) -> tree {
   return new_DataArray(name,make_node_value(std::move(arr)));
+}
+template<class T, int rank> auto
+new_DataArray(const std::string& name, md_array_view<T,rank>& arr) -> tree {
+  return new_DataArray(name,view_as_node_value(arr));
 }
 /// node creation }
 

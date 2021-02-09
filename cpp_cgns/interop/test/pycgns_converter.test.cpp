@@ -42,7 +42,7 @@ py_tree_example() -> py::list {
   std::vector<int> z1_elt_range_val = {1,4};
   std::vector<int> z1_elt_co_val = {5,6,7, 1,2,3, 2,3,4, 3,4,5};
 
-  std::vector<int> zone_shape = {3,1};
+  std::vector<int> zone_shape = {1,3};
 
   py::list b(4);
   b[0] = "Base";

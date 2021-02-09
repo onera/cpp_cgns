@@ -69,11 +69,10 @@ view_as_node_value(std_e::span<T,N> x) -> node_value {
   static_assert(!std::is_const_v<T>,"no way to ensure constness in CGNS tree");
   return {to_string<T>(), {(I8)x.size()}, buffer_view(x.data())};
 }
-//template<class T0, class T1> auto
-//view_as_node_value(std_e::multi_array<T0,T1>& x) -> node_value {
-//  using T = typename std_e::multi_array<T0,T1>::value_type;
-//  return make_node_value__(to_string<T>(), std_e::convert_to<std::vector<I8>>(x.extent()), non_owning_buffer{x.data()});
-//}
+template<class T, int rank> auto
+view_as_node_value(md_array_view<T,rank>& x) -> node_value {
+  return {to_string<T>(), std_e::convert_to<std::vector<I8>>(x.extent()), std_e::buffer_span{x.data()}};
+}
 /// span/vector/md_array -> node_value }
 
 /// node_value -> md_array_view<T> {
