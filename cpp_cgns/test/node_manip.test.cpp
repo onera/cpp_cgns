@@ -7,7 +7,7 @@ using namespace cgns;
 
 TEST_CASE("Create node value") {
   SUBCASE("one dimension") {
-    node_value val = make_node_value({42,43,44});
+    node_value val = create_node_value({42,43,44});
 
     SUBCASE("direct access") {
       CHECK( val.data_type == "I4" );
@@ -70,7 +70,7 @@ TEST_CASE("Create node value from buffer_vector") {
 
 
 TEST_CASE("node_value to string") {
-  auto val0 = make_node_value({0,1,2});
+  auto val0 = create_node_value({0,1,2});
   auto val1 = create_node_value({{0},{1},{2}});
   auto val2 = create_node_value({{5,6},{7,8}});
 

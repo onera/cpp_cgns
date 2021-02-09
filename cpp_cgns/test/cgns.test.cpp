@@ -11,7 +11,7 @@ TEST_CASE("Hand-written tree construction") {
   tree t = {
     "MyArray", // name
     "DataArray_t", // SIDS label
-    make_node_value({42.,43.,44.}), // value (here, the default are used: the value will be hold by a buffer using malloc/free)
+    create_node_value({42.,43.,44.}), // value (here, the default are used: the value will be hold by a buffer using malloc/free)
     {} // children (none here)
   };
 
@@ -78,8 +78,8 @@ TEST_CASE("same_node_data and equal_node_data") {
 TEST_CASE("tree equality") {
   std::vector<I4> v0 ={0,1};
   std::vector<R8> v1 ={2.,3.,4.,5.};
-  auto val0 = make_node_value({0,1});
-  auto val1 = make_node_value({2.,3.,4.,5.});
+  auto val0 = create_node_value({0,1});
+  auto val1 = create_node_value({2.,3.,4.,5.});
 
   tree t0 = {
     "A", "A_t", view(val0), {

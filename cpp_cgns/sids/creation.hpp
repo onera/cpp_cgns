@@ -33,7 +33,7 @@ auto new_Descriptor(const std::string& name, const std::string& val) -> tree;
 auto new_GridConnectivityType(const std::string& gc_type) -> tree;
 auto new_GridConnectivity(const std::string& name, const std::string& z_donor_name, const std::string& loc, const std::string& connec_type) -> tree;
 
-auto new_DataArray(const std::string& name, node_value value) -> tree;
+auto new_DataArray(const std::string& name, node_value&& value) -> tree;
 
 auto new_UserDefinedData(const std::string& name, node_value value = MT()) -> tree;
 auto new_UserDefinedData(const std::string& name, const std::string& val) -> tree;
@@ -99,7 +99,7 @@ new_CGNSBase(const std::string& name, I cellDim, I physDim) -> tree {
 template<class I> auto
 new_UnstructuredZone(const std::string& name, const I(&dims)[3]) -> tree {
   tree z_type = {"ZoneType", "ZoneType_t", create_string_node_value("Unstructured"), {}};
-  return {name, "Zone_t", create_node_value({{dims[0]},{dims[1]},{dims[2]}}), {z_type}};
+  return {name, "Zone_t", create_node_value({{dims[0]},{dims[1]},{dims[2]}}), {std::move(z_type)}};
 }
 template<class I> auto
 new_ZoneSubRegion(const std::string& name, I dim, const std::string& gridLoc) -> tree {
@@ -127,7 +127,7 @@ new_Elements(
   return
     { name, "Elements_t", create_node_value({type,nb_bnd_elts}),
        { new_ElementRange(first,last) ,
-         new_DataArray("ElementConnectivity", create_node_value(std::move(conns))) } };
+         new_DataArray("ElementConnectivity", make_node_value(std::move(conns))) } };
 }
 template<class I, class A> auto
 new_Elements(

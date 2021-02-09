@@ -2,6 +2,7 @@
 
 
 #include "cpp_cgns/exception.hpp"
+#include "std_e/buffer/buffer_view.hpp"
 
 
 namespace cgns {
@@ -61,14 +62,14 @@ view_as_node_value(py::array np_arr) -> node_value {
   std::copy_n(dims_ptr,n_dim,begin(dims));
 
   void* data = np_arr.mutable_data();
-  return {data_type,dims,data};
+  return {data_type,dims,std_e::buffer_view(data)};
 }
 auto
 to_np_array(node_value& n, py::handle capsule) -> py::array {
   auto np_type = cgns_type_to_numpy_type(n.data_type);
   auto dt = py::dtype(np_type);
   auto strides = py::detail::f_strides(n.dims, dt.itemsize());
-  return py::array(dt,n.dims,strides,n.data,capsule);
+  return py::array(dt,n.dims,strides,data(n),capsule);
 }
 // numpy array <-> node_value }
 

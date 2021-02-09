@@ -39,12 +39,12 @@ make_node_value(md_array<T,rank,A>&& x) -> node_value {
 }
 
 template<class T, class A = std_e::buffer_mallocator> auto
-make_node_value(std::initializer_list<T> l, A alloc = {}) -> node_value {
+create_node_value(std::initializer_list<T> l, A alloc = {}) -> node_value {
   return make_node_value(std_e::make_buffer_vector(l,alloc));
 }
 template<class T, class A = std_e::buffer_mallocator> auto
 create_scalar_node_value(T x, A alloc = {}) -> node_value {
-  return make_node_value({x},alloc);
+  return create_node_value({x},alloc);
 }
 template<class T, class A = std_e::buffer_mallocator> auto
 create_node_value_1(std::initializer_list<T> l, A alloc = {}) -> node_value {

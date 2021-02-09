@@ -21,7 +21,7 @@ class fake_python_program {
   public:
     auto
     create_tree() -> tree {
-      return {"RootNode", "UserDefinedData_t", make_node_value({10,11},fake_python_allocator{})};
+      return {"RootNode", "UserDefinedData_t", create_node_value({10,11},fake_python_allocator{})};
     }
 
     auto
@@ -49,7 +49,7 @@ create_node(my_test_allocator& alloc) -> tree {
   return {
     "my_node",
     "UserDefinedData_t",
-    make_node_value({42,43,44},alloc)
+    create_node_value({42,43,44},alloc)
   };
 }
 
