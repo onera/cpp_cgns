@@ -146,14 +146,14 @@ using const_tree_range = range_of_ref<const tree>;
 
 
 /// children {
-inline
-tree& emplace_child(tree& t, tree&& c) {
+inline auto
+emplace_child(tree& t, tree&& c) -> tree& {
   t.children.emplace_back(std::move(c));
   return t.children.back();
 }
 
-inline
-void emplace_children(tree& t, std::vector<tree>&& cs) {
+inline auto
+emplace_children(tree& t, std::vector<tree>&& cs) -> void {
   for (size_t i=0; i<cs.size(); ++i) {
     emplace_child(t,std::move(cs[i]));
   }

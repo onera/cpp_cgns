@@ -53,11 +53,11 @@ TEST_CASE("same_node_data and equal_node_data") {
   std::vector<int> v1 = {10,3,4,1,5};
   std::vector<int> v2 = {10,3,4,1,15};
 
-  node_value x0 = {"I4",{5},std_e::buffer_view(v0)};
-  node_value x1 = {"I4",{3},std_e::buffer_view(v0)};
-  node_value x2 = {"R4",{5},std_e::buffer_view(v0)};
-  node_value x3 = {"I4",{5},std_e::buffer_view(v1)};
-  node_value x4 = {"I4",{5},std_e::buffer_view(v2)};
+  node_value x0 = {"I4",{5},std_e::buffer_span(v0)};
+  node_value x1 = {"I4",{3},std_e::buffer_span(v0)};
+  node_value x2 = {"R4",{5},std_e::buffer_span(v0)};
+  node_value x3 = {"I4",{5},std_e::buffer_span(v1)};
+  node_value x4 = {"I4",{5},std_e::buffer_span(v2)};
 
   CHECK(  same_node_data(x0,x0) );
   CHECK( !same_node_data(x0,x1) );

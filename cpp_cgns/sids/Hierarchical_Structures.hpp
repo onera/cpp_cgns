@@ -19,8 +19,8 @@ dims_of_unstruct_zone(Tree& z) {
   STD_E_ASSERT(z.label=="Zone_t");
   if (!is_unstructured_zone(z))
     throw cgns_exception("dims_of_unstruct_zone expects an unstructured z");
-  if (z.value.dims.size()!=2 || z.value.dims[0]!=1 || z.value.dims[1]!=3)
-    throw cgns_exception("CGNS requires unstructured z dimensions to be an array of shape {1x3}");
+  if (z.value.dims.size()!=2 || z.value.dims[0]!=3 || z.value.dims[1]!=1)
+    throw cgns_exception("CGNS requires unstructured zone dimensions to be an array of shape {3x1}");
 
   I* zone_dims_ptr = (I*)data(z.value);
   return std_e::make_span<2>(zone_dims_ptr);

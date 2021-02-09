@@ -41,7 +41,7 @@ ElementSizeBoundary(Tree& e) -> I& {
 template<class I> auto
 is_boundary_partitionned_element_pool(const tree& e) -> bool;
 
-template<class I, class Tree> auto 
+template<class I, class Tree> auto
 ElementRange(Tree& e) {
   STD_E_ASSERT(label(e)=="Elements_t");
   auto& elt_range = get_child_by_name(e,"ElementRange");

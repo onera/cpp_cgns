@@ -61,7 +61,7 @@ create_string_node_value(const std::string& s, A alloc = {}) -> node_value {
 
 inline auto
 view(node_value& x) -> node_value {
-  return {x.data_type,x.dims,std_e::buffer_view(data(x))};
+  return {x.data_type,x.dims,std_e::buffer_span(data(x))};
 }
 
 template<class T, ptrdiff_t N> auto

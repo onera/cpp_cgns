@@ -33,10 +33,23 @@ auto new_Descriptor(const std::string& name, const std::string& val) -> tree;
 auto new_GridConnectivityType(const std::string& gc_type) -> tree;
 auto new_GridConnectivity(const std::string& name, const std::string& z_donor_name, const std::string& loc, const std::string& connec_type) -> tree;
 
-auto new_DataArray(const std::string& name, node_value&& value) -> tree;
+auto
+new_DataArray(const std::string& name, node_value&& value) -> tree;
+template<class I, int N> auto
+new_DataArray(const std::string& name, const I(&arr)[N]) -> tree;
+template<class T, class A> auto
+new_DataArray(const std::string& name, std_e::buffer_vector<T,A>&& v) -> tree;
+template<class T, int rank, class A> auto
+new_DataArray(const std::string& name, md_array<T,rank,A>&& arr) -> tree;
 
-auto new_UserDefinedData(const std::string& name, node_value value = MT()) -> tree;
-auto new_UserDefinedData(const std::string& name, const std::string& val) -> tree;
+auto
+new_UserDefinedData(const std::string& name, node_value value = MT()) -> tree;
+auto
+new_UserDefinedData(const std::string& name, const std::string& val) -> tree;
+template<class T> auto
+new_UserDefinedData(const std::string& name, const T& val) -> tree;
+template<class T, class A> auto
+new_UserDefinedData(const std::string& name, std_e::buffer_vector<T,A>&& v) -> tree;
 
 template<class I> auto
 new_CGNSBase(const std::string& name, I cellDim, I physDim) -> tree;
@@ -70,11 +83,6 @@ new_Rind(std_e::buffer_vector<I,A>&& rind_planes) -> tree;
 
 template<class I> auto
 new_Ordinal(I i) -> tree;
-
-template<class T> auto
-new_UserDefinedData(const std::string& name, const T& val) -> tree;
-template<class I, int N> auto
-new_DataArray(const std::string& name, const I(&arr)[N]) -> tree;
 
 // removal
 auto rm_child(tree& t, const tree& c) -> void;
@@ -186,10 +194,22 @@ template<class T> auto
 new_UserDefinedData(const std::string& name, const T& val) -> tree {
   return {name, "UserDefinedData_t", create_scalar_node_value(val)};
 }
+template<class T, class A> auto
+new_UserDefinedData(const std::string& name, std_e::buffer_vector<T,A>&& v) -> tree {
+  return new_UserDefinedData(name,make_node_value(std::move(v)));
+}
 
 template<class T, int N> auto
 new_DataArray(const std::string& name, const T(&arr)[N]) -> tree {
   return {name, "DataArray_t", create_node_value(arr)};
+}
+template<class T, class A> auto
+new_DataArray(const std::string& name, std_e::buffer_vector<T,A>&& v) -> tree {
+  return new_DataArray(name,make_node_value(std::move(v)));
+}
+template<class T, int rank, class A> auto
+new_DataArray(const std::string& name, md_array<T,rank,A>&& arr) -> tree {
+  return new_DataArray(name,make_node_value(std::move(arr)));
 }
 /// node creation }
 

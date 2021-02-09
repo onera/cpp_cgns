@@ -2,7 +2,7 @@
 
 
 #include "cpp_cgns/exception.hpp"
-#include "std_e/buffer/buffer_view.hpp"
+#include "std_e/buffer/buffer_span.hpp"
 
 
 namespace cgns {
@@ -62,7 +62,7 @@ view_as_node_value(py::array np_arr) -> node_value {
   std::copy_n(dims_ptr,n_dim,begin(dims));
 
   void* data = np_arr.mutable_data();
-  return {data_type,dims,std_e::buffer_view(data)};
+  return {data_type,dims,std_e::buffer_span(data)};
 }
 auto
 to_np_array(node_value& n, py::handle capsule) -> py::array {
