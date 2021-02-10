@@ -19,6 +19,7 @@ auto is_one_of_labels(const tree& tree, const std::vector<std::string>& labels) 
 template<class Unary_pred> auto has_child_by_predicate(const tree& t, Unary_pred p) -> bool;
                            auto has_child_of_name(const tree& t, const std::string& name) -> bool;
                            auto has_child_of_label(const tree& t, const std::string& name) -> bool;
+                           auto has_node(const tree& t, const std::string& gen_path) -> bool;
 // predicates }
 
 
@@ -140,7 +141,7 @@ class visitor_for_matching_path {
       if (is_matching && depth==max_depth) {
         matching_nodes.push_back(t);
       }
-      return !is_matching || depth > max_depth; // continue if not matching or gen_path reached the end 
+      return !is_matching || depth > max_depth; // continue if not matching or gen_path reached the end
     }
 
     auto
@@ -184,6 +185,15 @@ get_node_by_matching(Tree& t, const std::string& gen_path) -> decltype(auto) {
     throw cgns_exception("No sub-tree matching \""+gen_path+"\" in tree \""+name(t)+"\"");
   } else {
     return ts[0].get();
+  }
+}
+inline auto
+has_node(const tree& t, const std::string& gen_path) -> bool {
+  auto ts = get_nodes_by_matching(t,gen_path);
+  if (ts.size() == 0) {
+    return false;
+  } else {
+    return true;
   }
 }
 template<class Tree> auto
