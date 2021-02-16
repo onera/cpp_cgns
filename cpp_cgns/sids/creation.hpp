@@ -4,6 +4,8 @@
 #include "cpp_cgns/node_manip.hpp"
 #include "cpp_cgns/exception.hpp"
 #include "cpp_cgns/sids/cgnslib.h"
+#include "std_e/buffer/buffer_vector.hpp"
+#include <initializer_list>
 
 
 namespace cgns {
@@ -77,8 +79,13 @@ new_NfaceElements(const std::string& name, std_e::buffer_vector<I,A>&& connectiv
 
 template<class I, class A> auto
 new_PointList(const std::string& name, std_e::buffer_vector<I,A>&& pl) -> tree;
+template<class I> auto
+new_PointList(const std::string& name, std::initializer_list<I> pl) -> tree;
+
 template<class I, class A> auto
 new_BC(const std::string& name, const std::string& loc, std_e::buffer_vector<I,A>&& point_list) -> tree;
+template<class I> auto
+new_BC(const std::string& name, const std::string& loc, std::initializer_list<I> pl) -> tree;
 
 template<class I, class A> auto
 new_Rind(std_e::buffer_vector<I,A>&& rind_planes) -> tree;
@@ -173,12 +180,21 @@ new_PointList(const std::string& name, std_e::buffer_vector<I,A>&& point_list) -
   pl_value.dims = {1,pl_value.dims[0]}; // required by SIDS (9.3: BC_t)
   return {name, "IndexArray_t", std::move(pl_value)};
 }
+template<class I> auto
+new_PointList(const std::string& name, std::initializer_list<I> pl) -> tree {
+  return new_PointList(name,std_e::make_buffer_vector(pl));
+}
+
 template<class I, class A> auto
 new_BC(const std::string& name, const std::string& loc, std_e::buffer_vector<I,A>&& point_list) -> tree {
   return
     { name, "BC_t", create_string_node_value("FamilySpecified"),
        { new_GridLocation(loc),
          new_PointList("PointList",std::move(point_list)) } };
+}
+template<class I> auto
+new_BC(const std::string& name, const std::string& loc, std::initializer_list<I> pl) -> tree {
+  return new_BC(name,loc,std_e::make_buffer_vector(pl));
 }
 
 template<class I, class A> auto
