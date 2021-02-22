@@ -5,6 +5,7 @@
 #include "cpp_cgns/exception.hpp"
 #include "cpp_cgns/sids/cgnslib.h"
 #include "std_e/buffer/buffer_vector.hpp"
+#include <algorithm>
 #include <initializer_list>
 
 
@@ -99,6 +100,9 @@ auto rm_child_by_name(tree& t, const std::string& name) -> void;
 auto rm_child_by_label(tree& t, const std::string& label) -> void;
 auto rm_children_by_label(tree& t, const std::string& label) -> void;
 
+template<class Tree_range>
+auto rm_children(tree& t, Tree_range& children) -> void;
+
 template<class Unary_predicate> auto
 rm_children_by_predicate(tree& t, Unary_predicate p) -> void;
 template<class Unary_predicate> auto
@@ -126,7 +130,7 @@ new_ZoneSubRegion(const std::string& name, I dim, const std::string& gridLoc) ->
 
 template<class I> auto
 new_PointRange(I first, I last) -> tree {
-  return {"PointRange", "IndexRange_t", create_node_value({{first},{last}})};
+  return {"PointRange", "IndexRange_t", create_node_value({{first,last}})};
 }
 template<class I> auto
 new_ElementRange(I first, I last) -> tree {
@@ -252,6 +256,17 @@ rm_children_by_predicate(tree& t, Unary_predicate p) -> void {
   auto not_p = [p](const auto& x){ return !p(x); };
   auto pos = std::stable_partition(begin(cs),end(cs),not_p); // move nodes to be deleted at the end
   cs.erase(pos,end(cs));
+}
+
+template<class Tree_range>
+auto rm_children(tree& t, Tree_range& children) -> void {
+  // deleting from a vector is complicated because of iterator invalidation
+  // here we need to register the names, then erase
+  std::vector<std::string> child_names(children.size());
+  std::transform(begin(children),end(children),begin(child_names),[](const tree& c){ return c.name; });
+  for (const auto& name : child_names) {
+    rm_child_by_name(t,name);
+  }
 }
 /// node removal }
 

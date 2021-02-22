@@ -7,6 +7,8 @@
 
 namespace cgns {
 
+template<class I> using interval = std_e::integer_closed_range<I>; // CGNS intervals are always closed
+
 
 auto
 correct_bc_data_arrays_according_to_SIDS(tree& bcdata_node) -> void;
@@ -15,10 +17,13 @@ auto
 nb_of_elements(const tree& elements_node) -> I8;
 
 
-auto 
+auto
 element_type(const tree& elements_node) -> ElementType_t;
 auto
-element_range(const tree& element_node) -> std_e::integer_closed_range<I8>;
+element_range(const tree& element_node) -> cgns::interval<I8>;
+
+auto
+point_range_to_interval(const tree& pr) -> cgns::interval<I8>;
 
 
 template<class I, class Tree> auto
@@ -53,10 +58,24 @@ face_is_boundary(const Array& parent_elts) -> bool {
 }
 
 
-auto
-elts_ranges_are_contiguous(const tree_range& elt_pools) -> bool;
-auto
-elts_types_are_unique(const tree_range& elt_pools) -> bool;
+template<class Tree_range> auto
+elts_ranges_are_contiguous(const Tree_range& elt_pools) -> bool {
+  STD_E_ASSERT(std::is_sorted(begin(elt_pools),end(elt_pools),compare_by_range));
+  int nb_of_elt_types = elt_pools.size();
+  for (int i=0; i<nb_of_elt_types-1; ++i) {
+    auto current_range = element_range(elt_pools[i]);
+    auto next_range = element_range(elt_pools[i+1]);
+    return contiguous(current_range,next_range);
+  }
+  return true;
+}
+
+template<class Tree_range> auto
+elts_types_are_unique(const Tree_range& elt_pools) -> bool {
+  STD_E_ASSERT(std::is_sorted(begin(elt_pools),end(elt_pools),compare_by_elt_type));
+  auto last = std::adjacent_find(begin(elt_pools),end(elt_pools),equal_by_elt_type);
+  return last==end(elt_pools);
+}
 
 
 } // cgns

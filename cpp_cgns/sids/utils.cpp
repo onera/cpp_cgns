@@ -33,16 +33,25 @@ element_type(const tree& elements_node) -> ElementType_t {
 }
 
 template<class I> auto
-element_range__impl(I, const tree& elements_node) -> std_e::integer_closed_range<I8> {
-  auto elt_range = ElementRange<I>(elements_node);
-  return {elt_range[0],elt_range[1]};
+range_to_interval(I, const tree& range_node) -> cgns::interval<I8> {
+  auto range = view_as_span<I>(range_node.value);
+  return {range[0],range[1]};
 }
 auto
-element_range(const tree& elements_node) -> std_e::integer_closed_range<I8> {
+element_range(const tree& elements_node) -> cgns::interval<I8> {
   STD_E_ASSERT(elements_node.label=="Elements_t");
   return dispatch_I4_I8(
-    LIFT(element_range__impl),
-    elements_node
+    LIFT(range_to_interval),
+    get_child_by_name(elements_node,"ElementRange")
+  );
+}
+
+auto
+point_range_to_interval(const tree& pr) -> cgns::interval<I8> {
+  STD_E_ASSERT(pr.label=="PointRange_t");
+  return dispatch_I4_I8(
+    LIFT(range_to_interval),
+    pr
   );
 }
 
@@ -79,24 +88,6 @@ is_boundary(const md_array_view<Integer,2>& pe, Integer i) -> bool {
 }
 template bool is_boundary<I4>(const md_array_view<I4,2>& pe, I4 i);
 template bool is_boundary<I8>(const md_array_view<I8,2>& pe, I8 i);
-
-auto
-elts_ranges_are_contiguous(const tree_range& elt_pools) -> bool {
-  STD_E_ASSERT(std::is_sorted(begin(elt_pools),end(elt_pools),compare_by_range));
-  int nb_of_elt_types = elt_pools.size();
-  for (int i=0; i<nb_of_elt_types-1; ++i) {
-    auto current_range = element_range(elt_pools[i]);
-    auto next_range = element_range(elt_pools[i+1]);
-    return contiguous(current_range,next_range);
-  }
-  return true;
-}
-auto
-elts_types_are_unique(const tree_range& elt_pools) -> bool {
-  STD_E_ASSERT(std::is_sorted(begin(elt_pools),end(elt_pools),compare_by_elt_type));
-  auto last = std::adjacent_find(begin(elt_pools),end(elt_pools),equal_by_elt_type);
-  return last==end(elt_pools);
-}
 
 
 } // cgns
