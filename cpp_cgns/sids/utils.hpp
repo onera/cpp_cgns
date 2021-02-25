@@ -1,3 +1,5 @@
+#pragma once
+
 #include "cpp_cgns/node_manip.hpp"
 
 #include "cpp_cgns/sids/cgnslib.h"
@@ -75,6 +77,17 @@ elts_types_are_unique(const Tree_range& elt_pools) -> bool {
   STD_E_ASSERT(std::is_sorted(begin(elt_pools),end(elt_pools),compare_by_elt_type));
   auto last = std::adjacent_find(begin(elt_pools),end(elt_pools),equal_by_elt_type);
   return last==end(elt_pools);
+}
+
+template<class I, class Tree> auto
+PointList(Tree& t) {
+  auto& pl_node = get_child_by_name(t,"PointList");
+  return view_as_span<I>(pl_node.value);
+}
+template<class I, class Tree> auto
+PointListDonor(Tree& t) {
+  auto& pl_node = get_child_by_name(t,"PointListDonor");
+  return view_as_span<I>(pl_node.value);
 }
 
 

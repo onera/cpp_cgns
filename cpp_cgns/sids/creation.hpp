@@ -94,24 +94,8 @@ new_Rind(std_e::buffer_vector<I,A>&& rind_planes) -> tree;
 template<class I> auto
 new_Ordinal(I i) -> tree;
 
-// removal
-auto rm_child(tree& t, const tree& c) -> void;
-auto rm_child_by_name(tree& t, const std::string& name) -> void;
-auto rm_child_by_label(tree& t, const std::string& label) -> void;
-auto rm_children_by_label(tree& t, const std::string& label) -> void;
-
-template<class Tree_range>
-auto rm_children(tree& t, Tree_range& children) -> void;
-
-template<class Unary_predicate> auto
-rm_children_by_predicate(tree& t, Unary_predicate p) -> void;
-template<class Unary_predicate> auto
-rm_child_by_predicate(tree& t, Unary_predicate p) -> void;
-
-
 // ====================== impl ======================
 
-/// node creation {
 template<class I> auto
 new_CGNSBase(const std::string& name, I cellDim, I physDim) -> tree {
   return {name, "CGNSBase_t", create_node_value({cellDim,physDim})};
@@ -236,39 +220,6 @@ template<class T, int rank> auto
 new_DataArray(const std::string& name, md_array_view<T,rank>& arr) -> tree {
   return new_DataArray(name,view_as_node_value(arr));
 }
-/// node creation }
-
-
-/// node removal {
-template<class Unary_predicate> auto
-rm_child_by_predicate(tree& t, Unary_predicate p) -> void {
-  auto& cs = t.children;
-  auto pos = std::find_if(begin(cs),end(cs),p);
-  if (pos==end(cs)) {
-    throw cgns_exception("No node to erase");
-  } else {
-    cs.erase(pos);
-  }
-}
-template<class Unary_predicate> auto
-rm_children_by_predicate(tree& t, Unary_predicate p) -> void {
-  auto& cs = t.children;
-  auto not_p = [p](const auto& x){ return !p(x); };
-  auto pos = std::stable_partition(begin(cs),end(cs),not_p); // move nodes to be deleted at the end
-  cs.erase(pos,end(cs));
-}
-
-template<class Tree_range>
-auto rm_children(tree& t, Tree_range& children) -> void {
-  // deleting from a vector is complicated because of iterator invalidation
-  // here we need to register the names, then erase
-  std::vector<std::string> child_names(children.size());
-  std::transform(begin(children),end(children),begin(child_names),[](const tree& c){ return c.name; });
-  for (const auto& name : child_names) {
-    rm_child_by_name(t,name);
-  }
-}
-/// node removal }
 
 
 } // cgns

@@ -2,6 +2,8 @@
 #include "cpp_cgns/exception.hpp"
 #include "std_e/utils/string.hpp"
 #include "std_e/future/contract.hpp"
+#include <algorithm>
+#include <vector>
 
 
 namespace cgns {
@@ -11,25 +13,54 @@ namespace cgns {
 
 
 /// common predicates {
-bool is_of_name(const tree& tree, const std::string& name) {
-  return tree.name == name;
+auto
+is_of_name(const tree& t, const std::string& name) -> bool {
+  return t.name == name;
 }
-bool is_of_label(const tree& tree, const std::string& label) {
-  return tree.label == label;
+auto
+is_of_label(const tree& t, const std::string& label) -> bool {
+  return t.label == label;
 }
-bool is_one_of_labels(const tree& tree, const std::vector<std::string>& labels) {
-  return std::any_of(begin(labels),end(labels),[&tree](const std::string& label){ return is_of_label(tree,label); });
+auto
+is_of_labels(const tree& t, const std::vector<std::string>& labels) -> bool {
+  return std::any_of(begin(labels),end(labels),[&t](const std::string& label){ return is_of_label(t,label); });
 }
 
-bool has_child_of_name(const tree& t, const std::string& name) {
+auto
+has_child_of_name(const tree& t, const std::string& name) -> bool {
   auto predicate = [&](const tree& child){ return is_of_name(child,name); };
   return has_child_by_predicate(t,predicate);
 }
-bool has_child_of_label(const tree& t, const std::string& label) {
+auto
+has_child_of_label(const tree& t, const std::string& label) -> bool {
   auto predicate = [&](const tree& child){ return is_of_label(child,label); };
   return has_child_by_predicate(t,predicate);
 }
 /// common predicates }
+
+
+/// node removal {
+auto
+rm_child(tree& t, const tree& c) -> void {
+  auto predicate = [&](const tree& child){ return &child==&c; };
+  rm_child_by_predicate(t,predicate);
+}
+auto
+rm_child_by_name(tree& t, const std::string& name) -> void {
+  auto predicate = [&](const tree& child){ return is_of_name(child,name); };
+  rm_child_by_predicate(t,predicate);
+}
+auto
+rm_child_by_label(tree& t, const std::string& label) -> void {
+  auto predicate = [&](const tree& child){ return is_of_label(child,label); };
+  rm_child_by_predicate(t,predicate);
+}
+auto
+rm_children_by_label(tree& t, const std::string& label) -> void {
+  auto predicate = [&](const tree& child){ return is_of_label(child,label); };
+  rm_children_by_predicate(t,predicate);
+}
+/// node removal }
 
 
 } // cgns

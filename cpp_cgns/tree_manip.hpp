@@ -14,7 +14,7 @@ namespace cgns {
 // predicates {
 auto is_of_name(const tree& tree, const std::string& name) -> bool;
 auto is_of_label(const tree& tree, const std::string& label) -> bool;
-auto is_one_of_labels(const tree& tree, const std::vector<std::string>& labels) -> bool;
+auto is_of_labels(const tree& tree, const std::vector<std::string>& labels) -> bool;
 
 template<class Unary_pred> auto has_child_by_predicate(const tree& t, Unary_pred p) -> bool;
                            auto has_child_of_name(const tree& t, const std::string& name) -> bool;
@@ -45,11 +45,29 @@ template<class Tree>                   auto get_node_by_name          (Tree& t, 
 template<class Tree>                   auto get_node_by_label         (Tree& t, const std::string& label)    -> decltype(auto);
 template<class Tree>                   auto get_nodes_by_name         (Tree& t, const std::string& name )    -> range_of_ref<Tree>;
 template<class Tree>                   auto get_nodes_by_label        (Tree& t, const std::string& label)    -> range_of_ref<Tree>;
+template<class Tree>                   auto get_nodes_by_labels       (Tree& t, const std::vector<std::string>& label) -> range_of_ref<Tree>;
 
 template<class T, int N=1, class Tree> auto get_child_value_by_name   (Tree& t, const std::string& s);
 template<class T, int N=1, class Tree> auto get_child_value_by_label  (Tree& t, const std::string& s);
 template<class T, int N=1, class Tree> auto get_node_value_by_matching(Tree& t, const std::string& s);
 // searches }
+
+// removal {
+auto rm_child(tree& t, const tree& c) -> void;
+auto rm_child_by_name(tree& t, const std::string& name) -> void;
+auto rm_child_by_label(tree& t, const std::string& label) -> void;
+auto rm_children_by_label(tree& t, const std::string& label) -> void;
+
+template<class Tree_range>
+auto rm_children(tree& t, Tree_range& children) -> void;
+
+template<class Unary_predicate> auto
+rm_children_by_predicate(tree& t, Unary_predicate p) -> void;
+template<class Unary_predicate> auto
+rm_child_by_predicate(tree& t, Unary_predicate p) -> void;
+// removal }
+
+
 
 
 // actions {
@@ -101,7 +119,7 @@ get_children_by_label(Tree& t, const std::string& label) -> range_of_ref<Tree> {
 }
 template<class Tree> auto
 get_children_by_labels(Tree& t, const std::vector<std::string>& labels) -> range_of_ref<Tree> {
-  auto predicate = [&](const tree& child){ return is_one_of_labels(child,labels); };
+  auto predicate = [&](const tree& child){ return is_of_labels(child,labels); };
   return get_children_by_predicate(t,predicate);
 }
 template<class Tree> auto
@@ -225,6 +243,11 @@ get_nodes_by_label(Tree& t, const std::string& label) -> range_of_ref<Tree> {
   auto predicate = [&](auto& child){ return is_of_label(child,label); };
   return get_nodes_by_predicate(t,predicate);
 }
+template<class Tree> auto
+get_nodes_by_labels(Tree& t, const std::vector<std::string>& labels) -> range_of_ref<Tree> {
+  auto predicate = [&](auto& child){ return is_of_labels(child,labels); };
+  return get_nodes_by_predicate(t,predicate);
+}
 //// get_nodes_by_predicate }
 
 
@@ -263,6 +286,38 @@ get_node_value_by_matching(Tree& t, const std::string& s) {
   return view_as_array<T,N>(value(n));
 }
 // find and give value }
+
+
+/// node removal {
+template<class Unary_predicate> auto
+rm_child_by_predicate(tree& t, Unary_predicate p) -> void {
+  auto& cs = t.children;
+  auto pos = std::find_if(begin(cs),end(cs),p);
+  if (pos==end(cs)) {
+    throw cgns_exception("No node to erase");
+  } else {
+    cs.erase(pos);
+  }
+}
+template<class Unary_predicate> auto
+rm_children_by_predicate(tree& t, Unary_predicate p) -> void {
+  auto& cs = t.children;
+  auto not_p = [p](const auto& x){ return !p(x); };
+  auto pos = std::stable_partition(begin(cs),end(cs),not_p); // move nodes to be deleted at the end
+  cs.erase(pos,end(cs));
+}
+
+template<class Tree_range>
+auto rm_children(tree& t, Tree_range& children) -> void {
+  // deleting from a vector is complicated because of iterator invalidation
+  // here we need to register the names, then erase
+  std::vector<std::string> child_names(children.size());
+  std::transform(begin(children),end(children),begin(child_names),[](const tree& c){ return c.name; });
+  for (const auto& name : child_names) {
+    rm_child_by_name(t,name);
+  }
+}
+/// node removal }
 
 
 } // cgns

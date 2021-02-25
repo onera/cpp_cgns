@@ -8,7 +8,6 @@
 namespace cgns {
 
 
-/// node creation {
 auto
 new_DataArray(const std::string& name, node_value&& value) -> tree {
   return {name, "DataArray_t", std::move(value)};
@@ -97,30 +96,6 @@ new_GridConnectivity(const std::string& name, const std::string& z_donor_name, c
       { new_GridLocation(loc),
         new_GridConnectivityType(connec_type) } };
 }
-/// node creation }
-
-/// node removal {
-auto
-rm_child(tree& t, const tree& c) -> void {
-  auto predicate = [&](const tree& child){ return &child==&c; };
-  rm_child_by_predicate(t,predicate);
-}
-auto
-rm_child_by_name(tree& t, const std::string& name) -> void {
-  auto predicate = [&](const tree& child){ return is_of_name(child,name); };
-  rm_child_by_predicate(t,predicate);
-}
-auto
-rm_child_by_label(tree& t, const std::string& label) -> void {
-  auto predicate = [&](const tree& child){ return is_of_label(child,label); };
-  rm_child_by_predicate(t,predicate);
-}
-auto
-rm_children_by_label(tree& t, const std::string& label) -> void {
-  auto predicate = [&](const tree& child){ return is_of_label(child,label); };
-  rm_children_by_predicate(t,predicate);
-}
-/// node removal }
 
 
 } // cgns

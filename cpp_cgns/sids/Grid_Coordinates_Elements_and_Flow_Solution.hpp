@@ -65,8 +65,8 @@ ParentElements(Tree& e) {
 template<class I, class Tree> auto
 ElementStartOffset(Tree& e) {
   STD_E_ASSERT(label(e)=="Elements_t");
-  auto& res = get_child_by_name(e,"ElementStartOffset");
-  return view_as_md_array<I,2>(res.value);
+  auto& eso = get_child_by_name(e,"ElementStartOffset");
+  return view_as_span<I>(eso.value);
 }
 
 
