@@ -30,7 +30,7 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 project(
   cpp_cgns VERSION 0.1.0
   DESCRIPTION	"C++/CGNS mapping"
-  LANGUAGES	C CXX
+  LANGUAGES	CXX
 )
 
 
