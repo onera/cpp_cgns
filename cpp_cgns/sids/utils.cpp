@@ -48,7 +48,7 @@ element_range(const tree& elements_node) -> cgns::interval<I8> {
 
 auto
 point_range_to_interval(const tree& pr) -> cgns::interval<I8> {
-  STD_E_ASSERT(pr.label=="PointRange_t");
+  STD_E_ASSERT(pr.label=="IndexRange_t");
   return dispatch_I4_I8(
     LIFT(range_to_interval),
     pr
