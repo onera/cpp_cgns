@@ -76,20 +76,20 @@ check_sub_repo_exists(std_e)
 target_add_dependency(${PROJECT_NAME} std_e)
 
 target_link_libraries(${PROJECT_NAME}
-  PUBLIC 
+  PUBLIC
     std_e::std_e
     pybind11::pybind11_headers
 )
 if(CMAKE_VERSION VERSION_LESS 3.14)
   target_add_thirdparty_dependency(${PROJECT_NAME} Python REQUIRED COMPONENTS Interpreter Development)
   target_link_libraries(${PROJECT_NAME}
-    PUBLIC 
+    PUBLIC
       Python::Python
   )
 else()
   target_add_thirdparty_dependency(${PROJECT_NAME} Python REQUIRED COMPONENTS Interpreter Development NumPy)
   target_link_libraries(${PROJECT_NAME}
-    PUBLIC 
+    PUBLIC
       Python::Python
       Python::NumPy
   )
@@ -171,6 +171,9 @@ endif()
 # ----------------------------------------------------------------------
 
 # ----------------------------------------------------------------------
-include(FeatureSummary)
-FEATURE_SUMMARY(WHAT ALL)
+get_directory_property(top_lvl_cmakelists PARENT_DIRECTORY)
+if(top_lvl_cmakelists STREQUAL ${PROJECT_SOURCE_DIR})
+  include(FeatureSummary)
+  FEATURE_SUMMARY(WHAT ALL)
+endif()
 # ----------------------------------------------------------------------
