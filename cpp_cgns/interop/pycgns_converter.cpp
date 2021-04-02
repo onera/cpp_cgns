@@ -4,6 +4,7 @@
 #include "std_e/future/contract.hpp"
 
 #include "cpp_cgns/interop/node_value_conversion.hpp"
+#include "std_e/multi_index/cartesian_product_size.hpp"
 
 
 namespace cgns {
@@ -56,7 +57,7 @@ to_py_value(node_value& value) -> py::object {
 }
 auto
 to_owning_py_value(node_value& value, std_e::deallocator_function dealloc) -> py::object {
-  if (value.data_type=="MT") {
+  if (value.data_type=="MT" || std_e::cartesian_product_size(value.dims)==0) {
     return py::none();
   } else {
     py::capsule capsule(data(value), dealloc);
