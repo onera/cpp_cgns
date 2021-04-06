@@ -20,5 +20,7 @@ PYBIND11_EXPORT auto view_as_node_value(py::array np_arr) -> node_value;
 //   SEE https://github.com/pybind/pybind11/issues/2533
 PYBIND11_EXPORT auto to_np_array(node_value& n, py::handle capsule = py::none()) -> py::array;
 
+PYBIND11_EXPORT auto to_empty_np_array(node_value& n) -> py::array;
+
 
 } // cgns

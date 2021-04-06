@@ -57,8 +57,10 @@ to_py_value(node_value& value) -> py::object {
 }
 auto
 to_owning_py_value(node_value& value, std_e::deallocator_function dealloc) -> py::object {
-  if (value.data_type=="MT" || std_e::cartesian_product_size(value.dims)==0) {
+  if (value.data_type=="MT") {
     return py::none();
+  } else if (std_e::cartesian_product_size(value.dims)==0) {
+    return to_empty_np_array(value);
   } else {
     py::capsule capsule(data(value), dealloc);
     return to_np_array(value,capsule);

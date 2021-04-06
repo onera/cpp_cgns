@@ -161,6 +161,16 @@ new_NfaceElements(const std::string& name, std_e::buffer_vector<I,A>&& conns, I 
   return new_Elements(name,nface_type,std::move(conns),first,last,0);
 }
 
+template<class I, class A> auto
+new_IndexArray(const std::string& name, std_e::buffer_vector<I,A>&& point_list) -> tree {
+  node_value pl_value = make_node_value(std::move(point_list));
+  pl_value.dims = {pl_value.dims[0]};
+  return {name, "IndexArray_t", std::move(pl_value)};
+}
+template<class I> auto
+new_IndexArray(const std::string& name, std::initializer_list<I> pl) -> tree {
+  return new_IndexArray(name,std_e::make_buffer_vector(pl));
+}
 
 template<class I, class A> auto
 new_PointList(const std::string& name, std_e::buffer_vector<I,A>&& point_list) -> tree {

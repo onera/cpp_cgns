@@ -71,6 +71,13 @@ to_np_array(node_value& n, py::handle capsule) -> py::array {
   auto strides = py::detail::f_strides(n.dims, dt.itemsize());
   return py::array(dt,n.dims,strides,data(n),capsule);
 }
+auto
+to_empty_np_array(node_value& n) -> py::array {
+  auto np_type = cgns_type_to_numpy_type(n.data_type);
+  auto dt = py::dtype(np_type);
+  auto strides = py::detail::f_strides(n.dims, dt.itemsize());
+  return py::array(dt,n.dims,strides,nullptr);
+}
 // numpy array <-> node_value }
 
 
