@@ -33,6 +33,12 @@ struct node_value {
   node_value& operator=(node_value&&) = default;
   node_value(const node_value&) = delete;
   node_value& operator=(const node_value&) = delete;
+
+  node_value(std::string dt, std::vector<I8> dims, std_e::polymorphic_buffer buf)
+    : data_type(std::move(dt))
+    , dims(std::move(dims))
+    , buffer(std::move(buf))
+  {}
 };
 inline auto
 data(node_value& x) -> void* {

@@ -189,14 +189,14 @@ class visitor_for_matching_path {
 template<class Tree> auto
 get_nodes_by_matching(Tree& t, const std::string& gen_path) -> range_of_ref<Tree> {
   visitor_for_matching_path<Tree> v(name(t)+'/'+gen_path);
-  graph::depth_first_prune_adjacencies(t,v);
+  std_e::depth_first_prune_adjacencies(t,v);
   return v.retrieve_nodes();
 }
 template<class Tree> auto
 get_node_by_matching(Tree& t, const std::string& gen_path) -> decltype(auto) {
   // TODO the commented code is bugged (wrong predicate in visitor_for_matching_path.pre)
   //visitor_for_matching_path<Tree> v(name(t)+'/'+gen_path);
-  //graph::depth_first_find_adjacencies(t,v);
+  //std_e::depth_first_find_adjacencies(t,v);
   //auto ts = v.retrieve_nodes();
   auto ts = get_nodes_by_matching(t,gen_path);
   if (ts.size() == 0) {
@@ -230,7 +230,7 @@ template<class Tree, class Unary_pred> auto
 get_nodes_by_predicate(Tree& t, Unary_pred p) -> range_of_ref<Tree> {
   range_of_ref<Tree> ts;
   auto f = [&ts,p](auto& t){ if (p(t)) ts.push_back(t); };
-  graph::preorder_depth_first_scan_adjacencies(t,f);
+  std_e::preorder_depth_first_scan_adjacencies(t,f);
   return ts;
 }
 template<class Tree> auto

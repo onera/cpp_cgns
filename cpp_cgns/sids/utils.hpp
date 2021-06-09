@@ -4,12 +4,12 @@
 
 #include "cpp_cgns/sids/cgnslib.h"
 #include "cpp_cgns/sids/elements_utils.hpp"
-#include "std_e/utils/integer_range.hpp"
+#include "std_e/interval/interval.hpp"
 
 
 namespace cgns {
 
-template<class I> using interval = std_e::integer_closed_range<I>; // CGNS intervals are always closed
+template<class I> using interval = std_e::closed_interval<I>; // CGNS intervals are always closed
 
 
 auto

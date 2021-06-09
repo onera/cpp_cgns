@@ -67,7 +67,7 @@ auto
 compare_by_range(const tree& elts_node0, const tree& elts_node1) -> bool {
   STD_E_ASSERT(elts_node0.label=="Elements_t");
   STD_E_ASSERT(elts_node1.label=="Elements_t");
-  return element_range(elts_node0).first < element_range(elts_node1).first;
+  return element_range(elts_node0).first() < element_range(elts_node1).first();
 }
 auto
 equal_by_elt_type(const tree& elts_node0, const tree& elts_node1) -> bool {
