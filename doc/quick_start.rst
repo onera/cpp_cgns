@@ -22,6 +22,10 @@ See :ref:`installation`.
 Note
 ----
 
+.. warning::
+   The cpp_cgns documentation is outdated!
+
+
 Below is a succinct presentation of the main facilities of the library. For a more detailed presentation, see the :ref:`user_manual`.
 
 Everything is defined within the :cpp:`cgns` namespace.
@@ -41,7 +45,7 @@ C++/CGNS mapping
 ----------------
 
 
-A C++ CGNS tree is defined by the following recursive structure (file ``cpp_cgns.hpp``):
+A C++ CGNS tree is defined by the following recursive structure (file :cpp:`cpp_cgns.hpp`):
 
 .. code:: c++
 
@@ -59,8 +63,22 @@ Where the value of a tree node is defined by the following data structure:
   struct node_value {
     std::string data_type;
     std::vector<I8> dims;
-    void* data;
+    std_e::polymorphic_buffer buffer;
   };
+
+The :cpp:`buffer` attribute allows to take into account owning and non-owning memory. It can be any type following the :cpp:`Buffer` interface:
+
+.. code:: c++
+
+  struct Buffer {
+    auto data() -> void*; // Access data
+    auto is_owner() const -> bool; // Does the buffer own the memory?
+    auto release() -> void(*)(void*); // Make the buffer non-owning, and return a deallocation function
+
+In particular, it can be
+
+* a :cpp:`buffer_span` for non-owning arrays (constuctible from only a pointer)
+* a :cpp:`buffer_vector` for owning arrays (similar to :cpp:`std::vector`, but with possibility to release memory)
 
 .. _tree_manip:
 
@@ -79,7 +97,7 @@ Node values
 .. code:: c++
 
   node_value val = /* ... */;
-  md_array_view<I4,2> x = view_as_md_array<I4,2>(val); 
+  md_array_view<I4,2> x = view_as_md_array<I4,2>(val);
   // "x" is now a two-dimensional array of I4s pointing to the same memory as node_value "val"
   std::cout << "dimensions of x: " << x.extent() << "\n";
   std::cout << "value (0,1) of x: " << x(0,1) << "\n";
@@ -89,7 +107,7 @@ Node values
 .. code:: c++
 
   node_value val = /* ... */;
-  std_e::span<I4> x = view_as_span<I4>(val); 
+  std_e::span<I4> x = view_as_span<I4>(val);
   std::cout << "size of x: " << x.size() << "\n";
 
 There is no memory copy involved, the created object point to the same memory the :cpp:`node_value` object does.
@@ -182,7 +200,7 @@ Although it is possible to use a :cpp:`cgns_allocator` directly to create nodes,
     emplace_child(base, F.newUnstructuredZone("Zone_0",10000,6075));
 
     emplace_child(t, std::move(base));
-    
+
     // use
     use_tree(t)
 
