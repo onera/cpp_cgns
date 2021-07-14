@@ -1,55 +1,76 @@
-## Global config ##
-cmake_minimum_required(VERSION 3.12)
+# ------------------------------------------------------------------------------
+# General CMake settings
+# ------------------------------------------------------------------------------
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_policy(SET CMP0074 NEW) # force find_package to take <PackageName>_ROOT variables into account
 
 if(NOT DEFINED PROJECT_ROOT)
   set(PROJECT_ROOT ${CMAKE_SOURCE_DIR} CACHE PATH "Root directory, where the submodules are populated")
 endif()
 
-macro(check_sub_repo_exists sub_repo_name)
-  set(sub_repo_path "${PROJECT_ROOT}/external/${sub_repo_name}")
-  file(GLOB sub_repo_files ${sub_repo_path}/*)
-  list(LENGTH sub_repo_files sub_repo_nb_files)
-  if(sub_repo_nb_files EQUAL 0)
-    message(FATAL_ERROR
-      "${PROJECT_ROOT}/external/${sub_repo_name} is empty.
-      Maybe you forgot to initialize it with \"git submodule update --init\""
-    )
-  endif()
-endmacro()
-
-check_sub_repo_exists(project_utils)
+# Bootstrap project_utils
+set(sub_repo_path "${PROJECT_ROOT}/external/project_utils")
+file(GLOB sub_repo_files ${sub_repo_path}/*)
+list(LENGTH sub_repo_files sub_repo_nb_files)
+if(sub_repo_nb_files EQUAL 0)
+  message(FATAL_ERROR
+    "${sub_repo_path} is empty.
+    Maybe you forgot to initialize it with \"git submodule update --init\""
+  )
+endif()
 set(PROJECT_UTILS_DIR ${PROJECT_ROOT}/external/project_utils)
-set(PROJECT_UTILS_CMAKE_DIR ${PROJECT_UTILS_DIR}/scripts/cmake)
-include(${PROJECT_UTILS_CMAKE_DIR}/target_add_dependency.cmake) # target_add_dependency, target_add_thirdparty_dependency and target_install commands
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_UTILS_CMAKE_DIR}") # for custom Find*.cmake files
+set(PROJECT_UTILS_CMAKE_DIR ${PROJECT_UTILS_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_UTILS_CMAKE_DIR}/find_package") # for custom Find*.cmake files
+include(${PROJECT_UTILS_CMAKE_DIR}/dependency_management.cmake) # project_add_subdirectory, project_find_package and target_install
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
-## Project ##
+
+# ------------------------------------------------------------------------------
+# Project
+# ------------------------------------------------------------------------------
 project(
   cpp_cgns VERSION 0.1.0
   DESCRIPTION	"C++/CGNS mapping"
   LANGUAGES	CXX
 )
 
+option(${PROJECT_NAME}_ENABLE_FETCH_PYBIND "Fetch Pybind11 sources on-the-fly if not found by find_package()" ON)
+option(${PROJECT_NAME}_ENABLE_COVERAGE "Enable coverage for ${PROJECT_NAME}" OFF)
+option(${PROJECT_NAME}_ENABLE_DOCUMENTATION "Build ${PROJECT_NAME} documentation" OFF)
 
-## Dependencies ##
-### pybind11 ###
-set(PYBIND11_INSTALL ON CACHE BOOL "cpp_cgns requires PyBind" FORCE)
+# ------------------------------------------------------------------------------
+# Dependencies
+# ------------------------------------------------------------------------------
 include(FetchContent)
+### doctest ###
 FetchContent_Declare(
-  pybind11
-  GIT_REPOSITORY https://github.com/pybind/pybind11.git
-  GIT_TAG        v2.6
+  doctest
+  GIT_REPOSITORY https://github.com/onqtam/doctest.git
+  GIT_TAG        2.4.6
 )
-FetchContent_GetProperties(pybind11)
-if(NOT pybind11_POPULATED)
-  FetchContent_Populate(pybind11)
-  add_subdirectory(${pybind11_SOURCE_DIR} ${pybind11_BINARY_DIR})
+FetchContent_MakeAvailable(doctest)
+### pybind11 ###
+project_find_package(pybind11 CONFIG)
+if ((NOT pybind11_FOUND) AND ${PROJECT_NAME}_ENABLE_FETCH_PYBIND)
+  message("Pybind11 was not found by find_package(). Fetching sources on-the-fly")
+  set(PYBIND11_INSTALL ON CACHE BOOL "cpp_cgns requires PyBind" FORCE)
+  include(FetchContent)
+  FetchContent_Declare(
+    pybind11
+    GIT_REPOSITORY https://github.com/pybind/pybind11.git
+    GIT_TAG        v2.6
+  )
+  FetchContent_MakeAvailable(pybind11)
+else()
+  message(FATAL_ERROR "Pybind11 was not found by find_package() and ${PROJECT_NAME}_ENABLE_FETCH_PYBIND is OFF")
 endif()
 
 
+# ------------------------------------------------------------------------------
+# Compilation
+# ------------------------------------------------------------------------------
 ## Find files ##
 set(src_dir ${PROJECT_SOURCE_DIR}/${PROJECT_NAME})
 set(include_dir ${PROJECT_SOURCE_DIR})
@@ -72,58 +93,61 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
 
-check_sub_repo_exists(std_e)
-target_add_dependency(${PROJECT_NAME} std_e)
+include(${PROJECT_UTILS_CMAKE_DIR}/check_local_dependency.cmake)
+check_local_dependency(std_e REQUIRED)
+if (std_e_FOUND)
+  project_add_subdirectory(std_e)
+else()
+  project_find_package(std_e CONFIG REQUIRED)
+endif()
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
     std_e::std_e
     pybind11::pybind11_headers
+    Python::Python
+    Python::NumPy
 )
-if(CMAKE_VERSION VERSION_LESS 3.14)
-  target_add_thirdparty_dependency(${PROJECT_NAME} Python REQUIRED COMPONENTS Interpreter Development)
-  target_link_libraries(${PROJECT_NAME}
-    PUBLIC
-      Python::Python
-  )
-else()
-  target_add_thirdparty_dependency(${PROJECT_NAME} Python REQUIRED COMPONENTS Interpreter Development NumPy)
-  target_link_libraries(${PROJECT_NAME}
-    PUBLIC
-      Python::Python
-      Python::NumPy
-  )
-endif()
 
 
-## Install ##
+# ------------------------------------------------------------------------------
+# Install
+# ------------------------------------------------------------------------------
 target_install(${PROJECT_NAME})
 
 
-## Unit tests ##
-option(CPP_CGNS_ENABLE_TEST "Enable testing for ${PROJECT_NAME}" ON)
-if(CPP_CGNS_ENABLE_TEST)
-  enable_testing()
-  include(CTest)
-  add_executable(${PROJECT_NAME}_unit_tests
-    ${test_files}
-    ${PROJECT_UTILS_DIR}/src/unit_test_main.cpp
-  )
-  target_link_libraries(${PROJECT_NAME}_unit_tests
-    PUBLIC
-      ${PROJECT_NAME}
-    PRIVATE
-      doctest::doctest
-      pybind11::embed
-  )
-  add_test(NAME ${PROJECT_NAME}_unit_tests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_unit_tests)
+# ------------------------------------------------------------------------------
+# Testing #TODO
+# ------------------------------------------------------------------------------
+enable_testing()
+include(CTest)
+add_executable(${PROJECT_NAME}_unit_tests
+  ${test_files}
+  ${PROJECT_UTILS_DIR}/src/unit_test_main.cpp
+)
+target_link_libraries(${PROJECT_NAME}_unit_tests
+  PUBLIC
+    ${PROJECT_NAME}
+  PRIVATE
+    doctest::doctest
+    pybind11::embed
+)
+add_test(NAME ${PROJECT_NAME}_unit_tests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_unit_tests)
+
+
+# ------------------------------------------------------------------------------
+# Build documentation
+# ------------------------------------------------------------------------------
+if(${PROJECT_NAME}_ENABLE_DOCUMENTATION)
+  include(${PROJECT_UTILS_CMAKE_DIR}/build_documentation.cmake)
+  build_documentation()
 endif()
 
-option(CPP_CGNS_ENABLE_COVERAGE "Enable coverage for ${PROJECT_NAME}" OFF)
-if(CPP_CGNS_ENABLE_COVERAGE)
-  if(NOT CPP_CGNS_ENABLE_TEST)
-    message(FATAL_ERROR "You need to enable testing to enable coverage: CPP_CGNS_ENABLE_TEST is OFF")
-  endif()
+
+# ------------------------------------------------------------------------------
+# Coverage TODO clean
+# ------------------------------------------------------------------------------
+if(${PROJECT_NAME}_ENABLE_COVERAGE)
   # TODO -> Make a correct exclude directory
   # NOTE : not working with gcc-9.2
   include(CodeCoverage)
@@ -138,20 +162,13 @@ if(CPP_CGNS_ENABLE_COVERAGE)
     EXECUTABLE ctest -j ${n_cores} # Executable in PROJECT_BINARY_DIR
   )
 endif()
-# --------------------------------------------------------------------------------
 
-# ----------------------------------------------------------------------
-option(CPP_CGNS_BUILD_DOCUMENTATION "Build ${PROJECT_NAME} documentation" OFF)
-if(CPP_CGNS_BUILD_DOCUMENTATION)
-  include(${PROJECT_UTILS_CMAKE_DIR}/build_documentation.cmake)
-  build_documentation()
-endif()
-# ----------------------------------------------------------------------
 
-# ----------------------------------------------------------------------
-get_directory_property(top_lvl_cmakelists PARENT_DIRECTORY)
-if(top_lvl_cmakelists STREQUAL ${PROJECT_SOURCE_DIR})
+# ------------------------------------------------------------------------------
+# Summary
+# ------------------------------------------------------------------------------
+get_directory_property(is_top_lvl_cmakelists PARENT_DIRECTORY)
+if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
   include(FeatureSummary)
-  FEATURE_SUMMARY(WHAT ALL)
+  feature_summary(WHAT ALL)
 endif()
-# ----------------------------------------------------------------------
