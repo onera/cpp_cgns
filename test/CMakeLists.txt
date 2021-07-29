@@ -12,3 +12,7 @@ create_doctest(
   SERIAL_RUN    true
   N_PROC        1
 )
+#target_link_libraries(${PROJECT_NAME}_doctest_unit_tests
+#  PRIVATE
+#    pybind11::embed
+#)

@@ -66,6 +66,10 @@ if ((NOT pybind11_FOUND) AND ${PROJECT_NAME}_ENABLE_FETCH_PYBIND)
 else()
   message(FATAL_ERROR "Pybind11 was not found by find_package() and ${PROJECT_NAME}_ENABLE_FETCH_PYBIND is OFF")
 endif()
+### std_e ###
+project_add_subdir_or_package(std_e REQUIRED)
+### Python ###
+project_find_package(Python REQUIRED COMPONENTS Interpreter Development NumPy)
 
 
 # ------------------------------------------------------------------------------
@@ -93,14 +97,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
 
-include(${PROJECT_UTILS_CMAKE_DIR}/check_local_dependency.cmake)
-check_local_dependency(std_e REQUIRED)
-if (std_e_FOUND)
-  project_add_subdirectory(std_e)
-else()
-  project_find_package(std_e CONFIG REQUIRED)
-endif()
-
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
     std_e::std_e
@@ -116,23 +112,11 @@ target_link_libraries(${PROJECT_NAME}
 target_install(${PROJECT_NAME})
 
 
-# ------------------------------------------------------------------------------
-# Testing #TODO
-# ------------------------------------------------------------------------------
-enable_testing()
+## ------------------------------------------------------------------------------
+## Testing
+## ------------------------------------------------------------------------------
 include(CTest)
-add_executable(${PROJECT_NAME}_unit_tests
-  ${test_files}
-  ${PROJECT_UTILS_DIR}/src/unit_test_main.cpp
-)
-target_link_libraries(${PROJECT_NAME}_unit_tests
-  PUBLIC
-    ${PROJECT_NAME}
-  PRIVATE
-    doctest::doctest
-    pybind11::embed
-)
-add_test(NAME ${PROJECT_NAME}_unit_tests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_unit_tests)
+add_subdirectory(test)
 
 
 # ------------------------------------------------------------------------------
