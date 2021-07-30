@@ -37,6 +37,7 @@ project(
 )
 
 option(${PROJECT_NAME}_ENABLE_FETCH_PYBIND "Fetch Pybind11 sources on-the-fly if not found by find_package()" ON)
+message("${PROJECT_NAME}_ENABLE_FETCH_PYBIND = ${${PROJECT_NAME}_ENABLE_FETCH_PYBIND}")
 option(${PROJECT_NAME}_ENABLE_COVERAGE "Enable coverage for ${PROJECT_NAME}" OFF)
 option(${PROJECT_NAME}_ENABLE_DOCUMENTATION "Build ${PROJECT_NAME} documentation" OFF)
 
@@ -53,18 +54,20 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(doctest)
 ### pybind11 ###
 project_find_package(pybind11 CONFIG)
-if ((NOT pybind11_FOUND) AND ${PROJECT_NAME}_ENABLE_FETCH_PYBIND)
-  message("Pybind11 was not found by find_package(). Fetching sources on-the-fly")
-  set(PYBIND11_INSTALL ON CACHE BOOL "cpp_cgns requires PyBind" FORCE)
-  include(FetchContent)
-  FetchContent_Declare(
-    pybind11
-    GIT_REPOSITORY https://github.com/pybind/pybind11.git
-    GIT_TAG        v2.6
-  )
-  FetchContent_MakeAvailable(pybind11)
-else()
-  message(FATAL_ERROR "Pybind11 was not found by find_package() and ${PROJECT_NAME}_ENABLE_FETCH_PYBIND is OFF")
+if (NOT pybind11_FOUND)
+  if (${PROJECT_NAME}_ENABLE_FETCH_PYBIND)
+    message("Pybind11 was not found by find_package(). Fetching sources on-the-fly")
+    set(PYBIND11_INSTALL ON CACHE BOOL "cpp_cgns requires PyBind" FORCE)
+    include(FetchContent)
+    FetchContent_Declare(
+      pybind11
+      GIT_REPOSITORY https://github.com/pybind/pybind11.git
+      GIT_TAG        v2.6
+    )
+    FetchContent_MakeAvailable(pybind11)
+  else()
+    message(FATAL_ERROR "Pybind11 was not found by find_package() and ${PROJECT_NAME}_ENABLE_FETCH_PYBIND is OFF")
+  endif()
 endif()
 ### std_e ###
 project_add_subdir_or_package(std_e REQUIRED)
