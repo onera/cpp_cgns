@@ -37,7 +37,6 @@ project(
 )
 
 option(${PROJECT_NAME}_ENABLE_FETCH_PYBIND "Fetch Pybind11 sources on-the-fly if not found by find_package()" ON)
-message("${PROJECT_NAME}_ENABLE_FETCH_PYBIND = ${${PROJECT_NAME}_ENABLE_FETCH_PYBIND}")
 option(${PROJECT_NAME}_ENABLE_COVERAGE "Enable coverage for ${PROJECT_NAME}" OFF)
 option(${PROJECT_NAME}_ENABLE_DOCUMENTATION "Build ${PROJECT_NAME} documentation" OFF)
 
