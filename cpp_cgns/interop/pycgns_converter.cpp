@@ -5,6 +5,7 @@
 
 #include "cpp_cgns/interop/node_value_conversion.hpp"
 #include "std_e/multi_index/cartesian_product_size.hpp"
+#include "std_e/log.hpp"
 
 
 namespace cgns {
@@ -42,6 +43,8 @@ auto
 to_node_value(py::object value) -> node_value {
   if (value.is_none()) {
     return MT();
+  } else if (py::isinstance<py::str>(value)) {
+    return view_py_string_as_node_value(value);
   } else {
     return view_as_node_value(value);
   }

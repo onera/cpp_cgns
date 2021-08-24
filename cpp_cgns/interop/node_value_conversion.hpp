@@ -11,6 +11,7 @@ namespace cgns {
 namespace py = pybind11;
 
 PYBIND11_EXPORT auto view_as_node_value(py::array np_arr) -> node_value;
+PYBIND11_EXPORT auto view_py_string_as_node_value(py::object str) -> node_value;
 
 // Turn a node_value into a numpy array
 // The data is not copied, and by default (no capule passed), no ownership is transfered

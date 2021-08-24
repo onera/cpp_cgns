@@ -80,5 +80,24 @@ to_empty_np_array(node_value& n) -> py::array {
 }
 // numpy array <-> node_value }
 
+// python string -> node_value {
+auto
+view_py_string_as_node_value(py::object str) -> node_value {
+  py::object tmp = str;
+  if (PyUnicode_Check(tmp.ptr())) {
+    tmp = py::reinterpret_steal<py::object>(PyUnicode_AsUTF8String(tmp.ptr()));
+    if (!tmp) {
+      throw py::error_already_set();
+    }
+  }
+  char *buffer = nullptr;
+  ssize_t length = 0;
+  if (PYBIND11_BYTES_AS_STRING_AND_SIZE(tmp.ptr(), &buffer, &length)) {
+    py::pybind11_fail("Unable to extract string contents! (invalid type)");
+  }
+  return {"C1",{length},std_e::buffer_span((void*)buffer)};
+}
+// python string -> node_value }
+
 
 } // cgns
