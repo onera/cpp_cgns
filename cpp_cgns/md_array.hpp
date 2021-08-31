@@ -27,6 +27,12 @@ make_md_array(std_e::multi_index<I8,rank> dims, A alloc = {}) {
   return md_array<T,rank,A>(mem,shape);
 }
 
+template<class T, class A, int rank> auto
+make_md_array(std_e::buffer_vector<T,A>&& v, std_e::multi_index<I8,rank> dims) {
+  std_e::dyn_shape<I8,rank> shape(std::move(dims));
+  return md_array<T,rank,A>(std::move(v),shape);
+}
+
 template<class T, class A = std_e::buffer_mallocator> auto
 make_md_array(std::initializer_list<std::initializer_list<T>> ll, A alloc = {}) {
   int n_row = ll.size();

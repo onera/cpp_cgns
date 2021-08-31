@@ -11,7 +11,7 @@ namespace cgns {
 class cgns_exception : public std::exception {
   public:
     cgns_exception() = default;
-    
+
     cgns_exception(std::string msg)
       : msg(std::move(msg))
     {}
