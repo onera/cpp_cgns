@@ -94,6 +94,10 @@ new_Rind(std_e::buffer_vector<I,A>&& rind_planes) -> tree;
 template<class I> auto
 new_Ordinal(I i) -> tree;
 
+auto
+new_Distribution(const std::string& entity_kind, std_e::buffer_vector<I8>&& partial_dist) -> tree;
+
+
 // ====================== impl ======================
 
 template<class I> auto
