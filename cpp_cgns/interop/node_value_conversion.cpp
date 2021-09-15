@@ -3,6 +3,7 @@
 
 #include "cpp_cgns/exception.hpp"
 #include "std_e/buffer/buffer_span.hpp"
+#include "std_e/multi_index/cartesian_product_size.hpp"
 #include "std_e/log.hpp"
 
 
@@ -66,6 +67,26 @@ view_as_node_value(py::array np_arr) -> node_value {
   return {data_type,dims,std_e::buffer_span(data)};
 }
 auto
+copy_to_node_value(py::array np_arr) -> node_value {
+  if (!(np_arr.flags() & py::array::f_style)) {
+    throw cgns_exception("In python/CGNS, numpy array must be contiguous and fortran-ordered");
+  }
+
+  auto type = np_arr.dtype();
+  auto data_type = numpy_type_to_cgns_type(type);
+
+  auto n_dim = np_arr.ndim();
+
+  auto dims_ptr = np_arr.shape();
+  std::vector<I8> dims(n_dim);
+  std::copy_n(dims_ptr,n_dim,begin(dims));
+
+  char* data = (char*)np_arr.mutable_data();
+  int sz = std_e::cartesian_product_size(dims) * n_byte(data_type);
+  return {data_type,dims,std_e::to_buffer(std_e::make_buffer_vector(data,data+sz))};
+}
+
+auto
 to_np_array(node_value& n, py::handle capsule) -> py::array {
   auto np_type = cgns_type_to_numpy_type(n.data_type);
   auto dt = py::dtype(np_type);
@@ -93,6 +114,18 @@ view_py_string_as_node_value(py::object str) -> node_value {
   buffer = PyUnicode_AsUTF8AndSize(str.ptr(),&length);
 
   return {"C1",{length},std_e::buffer_span((void*)buffer)};
+}
+auto
+copy_py_string_to_node_value(py::object str) -> node_value {
+  if (!PyUnicode_Check(str.ptr())) {
+    throw cgns_exception("node_value is a string, but it is not unicode");
+  }
+
+  const char* buffer = nullptr;
+  ssize_t length = 0;
+  buffer = PyUnicode_AsUTF8AndSize(str.ptr(),&length);
+
+  return {"C1",{length},std_e::to_buffer(std_e::make_buffer_vector(buffer,buffer+length))};
 }
 // python string -> node_value }
 

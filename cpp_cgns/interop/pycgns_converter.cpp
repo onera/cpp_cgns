@@ -49,6 +49,16 @@ to_node_value(py::object value) -> node_value {
     return view_as_node_value(value);
   }
 }
+auto
+to_node_value_copy(py::object value) -> node_value {
+  if (value.is_none()) {
+    return MT();
+  } else if (py::isinstance<py::str>(value)) {
+    return copy_py_string_to_node_value(value);
+  } else {
+    return copy_to_node_value(value);
+  }
+}
 
 auto
 to_py_value(node_value& value) -> py::object {
@@ -86,6 +96,22 @@ to_cpp_tree(py::list py_tree) -> tree {
   for (int i=0; i<n_child; ++i) {
     py::list py_child = py_children[i];
     children_[i] = to_cpp_tree(py_child);
+  }
+
+  return {name_,label_,std::move(value_),std::move(children_)};
+}
+auto
+to_cpp_tree_copy(py::list py_tree) -> tree {
+  std::string  name_ = to_string_from_py (name (py_tree));
+  std::string label_ = to_string_from_py (label(py_tree));
+  node_value  value_ = to_node_value_copy(value(py_tree));
+
+  py::list py_children = children(py_tree);
+  int n_child = py_children.size();
+  std::vector<tree> children_(n_child);
+  for (int i=0; i<n_child; ++i) {
+    py::list py_child = py_children[i];
+    children_[i] = to_cpp_tree_copy(py_child);
   }
 
   return {name_,label_,std::move(value_),std::move(children_)};

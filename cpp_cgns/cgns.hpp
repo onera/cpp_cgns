@@ -9,6 +9,7 @@
 #include "std_e/buffer/buffer.hpp"
 #include "std_e/buffer/polymorphic_buffer.hpp"
 #include "std_e/utils/vector.hpp"
+#include "cpp_cgns/exception.hpp"
 
 
 namespace cgns {
@@ -100,6 +101,16 @@ template<> inline auto to_string<      R4>() -> std::string { return "R4"; }
 template<> inline auto to_string<const R4>() -> std::string { return "R4"; }
 template<> inline auto to_string<      R8>() -> std::string { return "R8"; }
 template<> inline auto to_string<const R8>() -> std::string { return "R8"; }
+
+inline auto
+n_byte(const std::string& dt) -> int {
+  if (dt=="C1") return 1;
+  if (dt=="I4") return 4;
+  if (dt=="I8") return 8;
+  if (dt=="R4") return 4;
+  if (dt=="R8") return 8;
+  else throw cgns_exception("n_byte: unknown data type \"" + dt + "\"");
+}
 /// basic type to_string }
 
 
