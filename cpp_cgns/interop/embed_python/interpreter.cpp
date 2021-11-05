@@ -1,4 +1,4 @@
-#include "cpp_cgns/interop/test/doctest_pybind.hpp"
+#include "cpp_cgns/interop/embed_python/interpreter.hpp"
 
 namespace cpp_cgns {
   namespace detail {
