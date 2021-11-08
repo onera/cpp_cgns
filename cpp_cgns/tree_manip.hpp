@@ -155,7 +155,7 @@ class visitor_for_matching_path {
 
     auto
     pre(Tree& t) -> bool {
-      bool is_matching = identifiers[depth]==t.name || identifiers[depth]==t.label;
+      bool is_matching = identifiers[depth]==name(t) || identifiers[depth]==label(t);
       if (is_matching && depth==max_depth) {
         matching_nodes.push_back(t);
       }
@@ -247,6 +247,15 @@ template<class Tree> auto
 get_nodes_by_labels(Tree& t, const std::vector<std::string>& labels) -> range_of_ref<Tree> {
   auto predicate = [&](auto& child){ return is_of_labels(child,labels); };
   return get_nodes_by_predicate(t,predicate);
+}
+template<class Tree> auto
+get_node_by_name(Tree& t, const std::string& name) -> decltype(auto) {
+  auto ts = get_nodes_by_name(t,name);
+  if (ts.size() == 0) {
+    throw cgns_exception("No child of name\""+name+"\" in tree \""+cgns::name(t)+"\"");
+  } else {
+    return ts[0].get();
+  }
 }
 //// get_nodes_by_predicate }
 

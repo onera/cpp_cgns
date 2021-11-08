@@ -1,7 +1,7 @@
 #pragma once
 
 
-/// Extracted from the real "cgnslib.hpp" (because of incompatibility problems. Should be replaced by the real third-party library.
+/// Extracted from the real "cgnslib.hpp" (because of incompatibility problems. Should be replaced by the real third-party library.)
 
 namespace cgns {
 
