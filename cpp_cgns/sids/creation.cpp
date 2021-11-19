@@ -99,9 +99,18 @@ new_GridConnectivity(const std::string& name, const std::string& z_donor_name, c
 
 auto
 new_Distribution(const std::string& entity_kind, std_e::buffer_vector<I8>&& partial_dist) -> tree {
-  tree vtx_dist = cgns::new_DataArray(entity_kind,std::move(partial_dist));
+  tree entity_dist = cgns::new_DataArray(entity_kind,std::move(partial_dist));
   tree dist = cgns::new_UserDefinedData(":CGNS#Distribution");
-  emplace_child(dist,std::move(vtx_dist));
+  emplace_child(dist,std::move(entity_dist));
+  return dist;
+}
+auto
+new_ElementDistribution(std_e::buffer_vector<I8>&& partial_dist, std_e::buffer_vector<I8>&& partial_dist_connec) -> tree {
+  tree elt_dist = cgns::new_DataArray("Element",std::move(partial_dist));
+  tree connec_dist = cgns::new_DataArray("ElementConnectivity",std::move(partial_dist_connec));
+  tree dist = cgns::new_UserDefinedData(":CGNS#Distribution");
+  emplace_child(dist,std::move(elt_dist));
+  emplace_child(dist,std::move(connec_dist));
   return dist;
 }
 

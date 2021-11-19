@@ -96,6 +96,8 @@ new_Ordinal(I i) -> tree;
 
 auto
 new_Distribution(const std::string& entity_kind, std_e::buffer_vector<I8>&& partial_dist) -> tree;
+auto
+new_ElementDistribution(std_e::buffer_vector<I8>&& partial_dist, std_e::buffer_vector<I8>&& partial_dist_connec) -> tree;
 
 
 // ====================== impl ======================
