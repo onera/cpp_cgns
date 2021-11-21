@@ -93,6 +93,31 @@ to_np_array(node_value& n, py::handle capsule) -> py::array {
   auto strides = py::detail::f_strides(n.dims, dt.itemsize());
   return py::array(dt,n.dims,strides,data(n),capsule);
 }
+
+//template<class T>
+//delete_polymorphic_array_base2(std_e::internal::internal_array_base<T>* arr) -> void {
+//  delete arr;
+//}
+//constexpr auto caps2 = []<class Rng>(Rng& rng) -> py::capsule {
+//  using T = typename Rng::value_type;
+//  using polymorphic_base = typename Rng::polymorphic_base;
+//  polymorphic_base arr = rng.release();
+//  return py::capsule(arr, delete_polymorphic_array_base2<T>);
+//}
+//template<class T> auto // TODO replace by real type
+//caps(T& var_rng) -> py::capsule {
+//  auto& var_rng_impl = var_rng.underlying_variant();
+//  return std::visit(caps2, var_rng_impl);
+//}
+//auto
+//to_owning_np_array(node_value&& n, py::handle capsule) -> py::array {
+//  auto np_type = cgns_type_to_numpy_type(n.data_type);
+//  auto dt = py::dtype(np_type);
+//  auto strides = py::detail::f_strides(n.dims, dt.itemsize());
+//
+//  auto& var_rng = value.underlying_range();
+//  return py::array(dt,n.dims,strides,var_rng.data(),caps(var_rng);
+//}
 auto
 to_empty_np_array(node_value& n) -> py::array {
   auto np_type = cgns_type_to_numpy_type(n.data_type);
@@ -100,6 +125,13 @@ to_empty_np_array(node_value& n) -> py::array {
   auto strides = py::detail::f_strides(n.dims, dt.itemsize());
   return py::array(dt,n.dims,strides,nullptr);
 }
+//auto
+//to_empty_np_array2(node_value&& n) -> py::array { // TODO
+//  auto np_type = cgns_type_to_numpy_type(n.data_type);
+//  auto dt = py::dtype(np_type);
+//  auto strides = py::detail::f_strides(n.dims, dt.itemsize());
+//  return py::array(dt,n.dims,strides,nullptr);
+//}
 // numpy array <-> node_value }
 
 // python string -> node_value {
