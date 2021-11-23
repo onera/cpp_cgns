@@ -16,17 +16,9 @@ using I8 = std::int64_t;
 using R4 = float;
 using R8 = double;
 
-struct MT_t {
-  constexpr auto
-  operator<=>(const MT_t& x) const = default;
-};
-
-
 
 // TODO enum
 template<class T> auto to_string          () -> std::string { return "Unknown CGNS data_type"; };
-template<> inline auto to_string<      MT_t>() -> std::string { return "MT"; }
-template<> inline auto to_string<const MT_t>() -> std::string { return "MT"; }
 template<> inline auto to_string<      C1  >() -> std::string { return "C1"; }
 template<> inline auto to_string<const C1  >() -> std::string { return "C1"; }
 template<> inline auto to_string<      I4  >() -> std::string { return "I4"; }
@@ -45,7 +37,6 @@ n_byte(const std::string& dt) -> int {
   if (dt=="I8") return 8;
   if (dt=="R4") return 4;
   if (dt=="R8") return 8;
-  if (dt=="MT") throw cgns_exception("n_byte: undefined for MT node");
   else throw cgns_exception("n_byte: unknown data type \"" + dt + "\"");
 }
 

@@ -9,7 +9,7 @@ namespace cgns {
 
 
 template<class... Ts>
-// requires Ts...==MT_t,C1,I4,I8,R4,R8;
+// requires Ts...==C1,I4,I8,R4,R8;
 class dt_ref_variant : public std_e::reference_variant<Ts...> {
   public:
     using base = std_e::reference_variant<Ts...>;
@@ -118,10 +118,10 @@ class dt_ref_variant : public std_e::reference_variant<Ts...> {
 };
 
 
-using dt_ref_var = dt_ref_variant<MT_t,C1,I4,I8,R4,R8>;
+using dt_ref_var = dt_ref_variant<C1,I4,I8,R4,R8>;
 
 template<class T>
-  requires std_e::exactly_once<T,MT_t,C1,I4,I8,R4,R8>
+  requires std_e::exactly_once<T,C1,I4,I8,R4,R8>
 constexpr auto
 operator==(const dt_ref_var& x, T y) -> bool {
   if (holds_alternative<T>(x)) { // if same underlying type, cast and compare
@@ -139,19 +139,19 @@ operator==(const dt_ref_var& x, T y) -> bool {
   }
 }
 template<class T>
-  requires std_e::exactly_once<T,MT_t,C1,I4,I8,R4,R8>
+  requires std_e::exactly_once<T,C1,I4,I8,R4,R8>
 constexpr auto
 operator==(T x, const dt_ref_var& y) -> bool {
   return y==x;
 }
 template<class T>
-  requires std_e::exactly_once<T,MT_t,C1,I4,I8,R4,R8>
+  requires std_e::exactly_once<T,C1,I4,I8,R4,R8>
 constexpr auto
 operator!=(const dt_ref_var& x, T y) -> bool {
   return !(x==y);
 }
 template<class T>
-  requires std_e::exactly_once<T,MT_t,C1,I4,I8,R4,R8>
+  requires std_e::exactly_once<T,C1,I4,I8,R4,R8>
 constexpr auto
 operator!=(T x, const dt_ref_var& y) -> bool {
   return !(x==y);

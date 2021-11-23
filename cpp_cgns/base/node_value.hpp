@@ -20,7 +20,7 @@ using node_value_underlying_range =
   std_e::variant_range<
     node_value_underlying_memory,
     dt_ref_variant,
-    MT_t,C1,I4,I8,R4,R8
+    C1,I4,I8,R4,R8
   >;
 
 using node_value_shape =
@@ -43,9 +43,7 @@ class node_value : public node_value_impl {
     using base = node_value_impl;
 
   // ctor
-    node_value()
-      : base(std_e::polymorphic_array<MT_t>{},node_value_shape{{}})
-    {}
+    node_value() = default;
 
     /// from 1d range
     template<class Array>
@@ -122,7 +120,9 @@ class node_value : public node_value_impl {
   // data type
     auto
     data_type() const -> std::string { // TODO enum
-      return this->visit([](const auto& x){ return to_string<decltype(x)>(); });
+      const auto& rng = underlying_range();
+      if (holds_alternative<C1>(rng) && get<C1>(rng).is_null()) return "MT";
+      return this->visit([]<class T>(const std_e::polymorphic_array<T>& x){ return to_string<T>(); });
     }
 
     //auto

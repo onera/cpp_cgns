@@ -10,13 +10,9 @@ using namespace cgns;
 TEST_CASE("node_value construction") {
   SUBCASE("empty") {
     node_value x;
-    LOG("tto");
-    //CHECK( x == MT() );
-    LOG("tt1");
+    CHECK( x == MT() );
     CHECK( x.rank() == 0 );
-    LOG("tt2");
     CHECK( x.data_type() == "MT" );
-    LOG("tt3");
   }
 
   SUBCASE("from string") {
@@ -40,20 +36,20 @@ TEST_CASE("node_value construction") {
       CHECK( x1.rank() == 1 );
       CHECK( x2.rank() == 1 );
       CHECK( x3.rank() == 1 );
-      CHECK( x0.extent(0) == 11 );
-      CHECK( x1.extent(0) == 11 );
-      CHECK( x2.extent(0) == 11 );
-      CHECK( x3.extent(0) == 11 );
-      CHECK( x0.data_type() == "C1" );
-      CHECK( x1.data_type() == "C1" );
-      CHECK( x2.data_type() == "C1" );
-      CHECK( x3.data_type() == "C1" );
+      CHECK( x0.extent(0) == 3 );
+      CHECK( x1.extent(0) == 3 );
+      CHECK( x2.extent(0) == 2 );
+      CHECK( x3.extent(0) == 2 );
+      CHECK( x0.data_type() == "I4" );
+      CHECK( x1.data_type() == "I8" );
+      CHECK( x2.data_type() == "R4" );
+      CHECK( x3.data_type() == "R8" );
       CHECK( x0(0) == 42 );
       CHECK( x0(1) == 43 );
       CHECK( x0(2) == 44 );
-      CHECK( x1(0) == 44l );
-      CHECK( x1(1) == 44l );
-      CHECK( x1(2) == 44l );
+      CHECK( x1(0) == 45l );
+      CHECK( x1(1) == 46l );
+      CHECK( x1(2) == 47l );
       CHECK( x2(0) == 3.14f );
       CHECK( x2(1) == 2.7f );
       CHECK( x3(0) == 1.5 );
@@ -62,8 +58,15 @@ TEST_CASE("node_value construction") {
 
     SUBCASE("from initializer list") {
       // Note: Shorthand for node_value(std::vector{...})
-      // the underlying range of the node value will be a vector
-      node_value x6({42,43,44});
+      // the underlying range of the node value will be a std::vector
+      node_value x({42,43,44});
+
+      CHECK( x.rank() == 1 );
+      CHECK( x.extent(0) == 3 );
+      CHECK( x.data_type() == "I4" );
+      CHECK( x(0) == 42 );
+      CHECK( x(1) == 43 );
+      CHECK( x(2) == 44 );
     }
 
     SUBCASE("from span") {
@@ -73,18 +76,38 @@ TEST_CASE("node_value construction") {
 
       // Note: in this case, the node_value does not own its memory
       CHECK( x.data() == v.data() );
+
+      CHECK( x.rank() == 1 );
+      CHECK( x.extent(0) == 3 );
+      CHECK( x.data_type() == "I4" );
+      CHECK( x(0) == 42 );
+      CHECK( x(1) == 43 );
+      CHECK( x(2) == 44 );
     }
   }
 
   SUBCASE("multi dimensions") {
     SUBCASE("from md_array") {
-      node_value x7(md_array<I4,2>{{0,1,2},{3,4,5}});
+      node_value x(md_array<I4,2>{{0,1,2},{3,4,5}});
+      CHECK( x.rank() == 2 );
+      CHECK( x.extent(0) == 2 );
+      CHECK( x.extent(1) == 3 );
+      CHECK( x.data_type() == "I4" );
+      CHECK( x(0,0) == 0 ); CHECK( x(0,1) == 1 ); CHECK( x(0,2) == 2 );
+      CHECK( x(1,0) == 3 ); CHECK( x(1,1) == 4 ); CHECK( x(1,2) == 5 );
     }
 
     SUBCASE("from initializer list") {
       // Note: Shorthand for node_value(md_array{...})
       // the underlying range of the node value will be a vector
-      node_value x7({{0,1,2},{3,4,5}});
+      node_value x({{0,1,2},{3,4,5}});
+
+      CHECK( x.rank() == 2 );
+      CHECK( x.extent(0) == 2 );
+      CHECK( x.extent(1) == 3 );
+      CHECK( x.data_type() == "I4" );
+      CHECK( x(0,0) == 0 ); CHECK( x(0,1) == 1 ); CHECK( x(0,2) == 2 );
+      CHECK( x(1,0) == 3 ); CHECK( x(1,1) == 4 ); CHECK( x(1,2) == 5 );
     }
 
     SUBCASE("from md_array_view") {
@@ -96,6 +119,14 @@ TEST_CASE("node_value construction") {
 
       // Note: in this case, the node_value does not own its memory
       CHECK( x.data() == v.data() );
+
+      CHECK( x.rank() == 2 );
+      CHECK( x.extent(0) == 3 );
+      CHECK( x.extent(1) == 2 );
+      CHECK( x.data_type() == "I4" );
+      CHECK( x(0,0) == 0 ); CHECK( x(0,1) == 3 );
+      CHECK( x(1,0) == 1 ); CHECK( x(1,1) == 4 );
+      CHECK( x(2,0) == 2 ); CHECK( x(2,1) == 5 );
     }
   }
 }
