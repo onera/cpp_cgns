@@ -72,7 +72,7 @@ auto make_node_value(const std::string& data_type, const std::vector<I8>& dims, 
     throw std_e::not_implemented_exception("make_node_value only implemented for C1, I4, I8, R4, R8");
   }
 }
-auto view_as_node_value(const std::string& data_type, const std::vector<I8>& dims, void* data) -> node_value {
+auto make_non_owning_node_value(const std::string& data_type, const std::vector<I8>& dims, void* data) -> node_value {
   auto sz = std_e::cartesian_product_size(dims);
   if (data_type=="C1") {
     auto* ptr = static_cast<C1*>(data);

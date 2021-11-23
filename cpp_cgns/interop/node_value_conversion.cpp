@@ -62,7 +62,7 @@ view_as_node_value(py::array np_arr) -> node_value {
   std::copy_n(dims_ptr,n_dim,begin(dims));
 
   void* data = np_arr.mutable_data();
-  return view_as_node_value(data_type,dims,data);
+  return make_non_owning_node_value(data_type,dims,data);
 }
 auto
 copy_to_node_value(py::array np_arr) -> node_value {
@@ -132,7 +132,7 @@ view_py_string_as_node_value(py::object str) -> node_value {
   ssize_t length = 0;
   buffer = PyUnicode_AsUTF8AndSize(str.ptr(),&length);
 
-  return view_as_node_value("C1",{length},const_cast<char*>(buffer)); // const_cast: reason to deprecate
+  return make_non_owning_node_value("C1",{length},const_cast<char*>(buffer)); // const_cast: reason to deprecate
 }
 auto
 copy_py_string_to_node_value(py::object str) -> node_value {

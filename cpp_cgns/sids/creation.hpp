@@ -100,27 +100,27 @@ new_Distribution(const std::string& entity_kind, std::vector<I8>&& partial_dist)
 
 template<class I> auto
 new_CGNSBase(const std::string& name, I cellDim, I physDim) -> tree {
-  return {name, "CGNSBase_t", create_node_value({cellDim,physDim})};
+  return {name, "CGNSBase_t", node_value({cellDim,physDim})};
 }
 
 template<class I> auto
 new_UnstructuredZone(const std::string& name, const I(&dims)[3]) -> tree {
   tree z_type = {"ZoneType", "ZoneType_t", node_value("Unstructured"), {}};
-  return {name, "Zone_t", create_node_value({{dims[0],dims[1],dims[2]}}), {std::move(z_type)}};
+  return {name, "Zone_t", node_value({{dims[0],dims[1],dims[2]}}), {std::move(z_type)}};
 }
 template<class I> auto
 new_ZoneSubRegion(const std::string& name, I dim, const std::string& gridLoc) -> tree {
-  return {name, "ZoneSubRegion_t", create_scalar_node_value(dim), {new_GridLocation(gridLoc)}};
+  return {name, "ZoneSubRegion_t", node_value(dim), {new_GridLocation(gridLoc)}};
 }
 
 
 template<class I> auto
 new_PointRange(I first, I last) -> tree {
-  return {"PointRange", "IndexRange_t", create_node_value({{first,last}})};
+  return {"PointRange", "IndexRange_t", node_value({{first,last}})};
 }
 template<class I> auto
 new_ElementRange(I first, I last) -> tree {
-  return {"ElementRange", "IndexRange_t", create_node_value({first,last}), {}};
+  return {"ElementRange", "IndexRange_t", node_value({first,last}), {}};
 }
 
 
@@ -131,7 +131,7 @@ new_Elements(
 -> tree
 {
   return
-    { name, "Elements_t", create_node_value({type,nb_bnd_elts}),
+    { name, "Elements_t", node_value({type,nb_bnd_elts}),
        { new_ElementRange(first,last) ,
          new_DataArray("ElementConnectivity", node_value(std::move(conns))) } };
 }
@@ -208,16 +208,16 @@ new_Ordinal(I i) -> tree {
 
 template<class T> auto
 new_UserDefinedData(const std::string& name, const T& val) -> tree {
-  return {name, "UserDefinedData_t", create_scalar_node_value(val)};
+  return {name, "UserDefinedData_t", node_value(val)};
 }
 template<class T> auto
 new_UserDefinedData(const std::string& name, std::vector<T>&& v) -> tree {
   return new_UserDefinedData(name,node_value(std::move(v)));
 }
 
-template<class T, int N> auto
-new_DataArray(const std::string& name, const T(&arr)[N]) -> tree {
-  return {name, "DataArray_t", create_node_value(arr)};
+template<class T> auto
+new_DataArray(const std::string& name, std::initializer_list<T>&& arr) -> tree {
+  return {name, "DataArray_t", node_value(std::move(arr))};
 }
 template<class T> auto
 new_DataArray(const std::string& name, std::vector<T>&& v) -> tree {

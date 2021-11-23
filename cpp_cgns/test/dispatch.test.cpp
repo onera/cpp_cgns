@@ -33,7 +33,7 @@ template<class I> auto
 my_templated_query(const tree& node) -> I {
   auto ptr = data_as<I>(node.value); // We need to know the type of the node value to correctly cast it
   return *ptr; // if given my_I4_tree, will return 42
-               // if given my_I8_tree, will return 43
+               // if given my_I8_tree, will return 10'000'000'000ll
 }
 
 

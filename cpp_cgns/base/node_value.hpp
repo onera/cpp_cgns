@@ -110,6 +110,9 @@ class node_value : public node_value_impl {
     node_value(const std::string& x)
       : node_value(std::vector<char>(x.data(),x.data()+x.size()))
     {}
+    node_value(const char* x)
+      : node_value(std::string(x))
+    {}
 
   // copy and move
     node_value(const node_value&) = delete;
@@ -124,15 +127,6 @@ class node_value : public node_value_impl {
       if (holds_alternative<C1>(rng) && get<C1>(rng).is_null()) return "MT";
       return this->visit([]<class T>(const std_e::polymorphic_array<T>& x){ return to_string<T>(); });
     }
-
-    //auto
-    //data() -> void* { // TODO
-    //  return underlying_range().data();
-    //}
-    //auto
-    //data() const -> const void* { // TODO
-    //  return underlying_range().data();
-    //}
 
     template<class F> auto
     visit(F&& f) -> decltype(underlying_range().visit(FWD(f))) {
@@ -184,15 +178,6 @@ data_as(const node_value& x) -> const T* {
 }
 // data_as }
 
-// make_node_value {
-auto make_node_value(const std::string& data_type, const std::vector<I8>& dims, const void* data) -> node_value;
-auto view_as_node_value(const std::string& data_type, const std::vector<I8>& dims, void* data) -> node_value;
-// make_node_value }
-
-// to_string {
-inline constexpr int default_threshold_to_print_whole_array = 10;
-auto to_string(const node_value& x, int threshold = default_threshold_to_print_whole_array) -> std::string;
-// to_string }
 
 // MT {
 inline auto
@@ -200,5 +185,18 @@ MT() -> node_value {
   return {};
 }
 // MT }
+
+
+/// ptr -> node_value {
+auto make_node_value(const std::string& data_type, const std::vector<I8>& dims, const void* data) -> node_value;
+auto make_non_owning_node_value(const std::string& data_type, const std::vector<I8>& dims, void* data) -> node_value;
+/// ptr -> node_value }
+
+
+/// to_string {
+inline constexpr int default_threshold_to_print_whole_array = 10;
+auto to_string(const node_value& x, int threshold = default_threshold_to_print_whole_array) -> std::string;
+/// to_string }
+
 
 } // cgns
