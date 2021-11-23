@@ -2,7 +2,7 @@
 
 
 #include "cpp_cgns/sids/elements_utils.hpp"
-#include "cpp_cgns/exception.hpp"
+#include "cpp_cgns/base/exception.hpp"
 
 
 namespace cgns {

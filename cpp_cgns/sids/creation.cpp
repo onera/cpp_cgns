@@ -2,7 +2,6 @@
 #include "cpp_cgns/tree_manip.hpp"
 #include <functional>
 #include "std_e/multi_array/utils.hpp"
-#include "cpp_cgns/exception.hpp"
 
 
 namespace cgns {
@@ -18,12 +17,12 @@ new_UserDefinedData(const std::string& name, node_value value) -> tree {
 }
 auto
 new_UserDefinedData(const std::string& name, const std::string& val) -> tree {
-  return {name, "UserDefinedData_t", create_string_node_value(val)};
+  return {name, "UserDefinedData_t", node_value(val)};
 }
 
 auto
 new_CGNSVersionNode(R4 version) -> tree {
-  return {"CGNSLibraryVersion", "CGNSLibraryVersion_t", create_scalar_node_value(version)};
+  return {"CGNSLibraryVersion", "CGNSLibraryVersion_t", node_value(version)};
 }
 
 auto
@@ -59,7 +58,7 @@ new_DiscreteData(const std::string& name, const std::string& gridLoc) -> tree {
 }
 auto
 new_BCDataSet(const std::string& name, const std::string& val, const std::string& gridLoc) -> tree {
-  return {name, "BCDataSet_t", create_string_node_value(val), {new_GridLocation(gridLoc)}};
+  return {name, "BCDataSet_t", node_value(val), {new_GridLocation(gridLoc)}};
 }
 auto
 new_BCData(const std::string& name) -> tree {
@@ -69,7 +68,7 @@ new_BCData(const std::string& name) -> tree {
 
 auto
 new_GridLocation(const std::string& loc) -> tree {
-  return {"GridLocation","GridLocation_t",create_string_node_value(loc)};
+  return {"GridLocation","GridLocation_t",node_value(loc)};
 }
 auto
 new_Family(const std::string& name) -> tree {
@@ -77,28 +76,28 @@ new_Family(const std::string& name) -> tree {
 }
 auto
 new_FamilyBC(const std::string& famName) -> tree {
-  return {"FamilyBC", "FamilyBC_t", create_string_node_value(famName)};
+  return {"FamilyBC", "FamilyBC_t", node_value(famName)};
 }
 
 auto
 new_Descriptor(const std::string& name, const std::string& val) -> tree {
-  return {name, "Descriptor_t", create_string_node_value(val)};
+  return {name, "Descriptor_t", node_value(val)};
 }
 
 auto
 new_GridConnectivityType(const std::string& gc_type) -> tree {
-  return {"GridConnectivityType","GridConnectivityType_t",create_string_node_value(gc_type)};
+  return {"GridConnectivityType","GridConnectivityType_t",node_value(gc_type)};
 }
 auto
 new_GridConnectivity(const std::string& name, const std::string& z_donor_name, const std::string& loc, const std::string& connec_type) -> tree {
   return
-    { name, "GridConnectivity_t", create_string_node_value(z_donor_name),
+    { name, "GridConnectivity_t", node_value(z_donor_name),
       { new_GridLocation(loc),
         new_GridConnectivityType(connec_type) } };
 }
 
 auto
-new_Distribution(const std::string& entity_kind, std_e::buffer_vector<I8>&& partial_dist) -> tree {
+new_Distribution(const std::string& entity_kind, std::vector<I8>&& partial_dist) -> tree {
   tree vtx_dist = cgns::new_DataArray(entity_kind,std::move(partial_dist));
   tree dist = cgns::new_UserDefinedData(":CGNS#Distribution");
   emplace_child(dist,std::move(vtx_dist));

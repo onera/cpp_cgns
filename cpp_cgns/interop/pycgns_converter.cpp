@@ -62,27 +62,22 @@ to_node_value_copy(py::object value) -> node_value {
 
 auto
 to_py_value(node_value& value) -> py::object {
-  if (value.data_type=="MT") {
+  if (value.data_type()=="MT") {
     return py::none{};
   } else {
     return to_np_array(value);
   }
 }
 auto
-to_owning_py_value(node_value& value, std_e::deallocator_function dealloc) -> py::object {
+to_owning_py_value(node_value& value) -> py::object {
 //TODO
-//to_owning_py_value(node_value&& value, std_e::deallocator_function dealloc) -> py::object {
-  if (value.data_type=="MT") {
+//to_owning_py_value(node_value&& value) -> py::object {
+  if (value.data_type()=="MT") {
     return py::none{};
-  } else if (std_e::cartesian_product_size(value.dims)==0) {
-    return to_empty_np_array(value);
-    // TODO
-    //return to_empty_np_array2(std::move(value));
+  } else if (std_e::cartesian_product_size(value.extent())==0) {
+    return to_empty_np_array(value.data_type());
   } else {
-    py::capsule capsule(data(value), dealloc);
-    return to_np_array(value,capsule);
-    // TODO
-    //return to_owning_np_array(std::move(value));
+    return to_owning_np_array(value); // TODO move
   }
 }
 // py value <-> node_value }
@@ -146,17 +141,6 @@ to_py_tree(tree& t) -> py::list {
 
 /// ownership transfer to python {
 auto
-to_np_array_with_transfered_ownership(node_value& n) {
-  if (n.buffer.is_owner()) {
-    return to_owning_py_value(n,n.buffer.release());
-  } else { // case where memory was allocated by another allocator
-    // return a view because can't transfer to python
-    // since we don't know the allocator that did the allocation
-    return to_py_value(n);
-  }
-}
-
-auto
 to_owning_py_tree(tree& t) -> py::list {
   // creates a py_tree from t
   // each owner node has its ownership transfered to Python (capsule mechanism)
@@ -164,7 +148,7 @@ to_owning_py_tree(tree& t) -> py::list {
 
   name (py_tree) = name (t);
   label(py_tree) = label(t);
-  value(py_tree) = to_np_array_with_transfered_ownership(value(t));
+  value(py_tree) = to_owning_py_value(value(t));
 
   int n_child = t.children.size();
   py::list py_children(n_child);
@@ -186,9 +170,9 @@ update_and_transfer_ownership_to_py_tree(tree& t, py::list py_tree) -> void {
   STD_E_ASSERT(name (t)==to_string_from_py(name (py_tree)));
   STD_E_ASSERT(label(t)==to_string_from_py(label(py_tree)));
 
-  bool node_data_was_coming_from_python = same_node_data(value(t),to_node_value(value(py_tree)));
+  bool node_data_was_coming_from_python = same_data(value(t),to_node_value(value(py_tree)));
   if (!node_data_was_coming_from_python) {
-    value(py_tree) = to_np_array_with_transfered_ownership(value(t));
+    value(py_tree) = to_owning_py_value(value(t));
   }
 
   py::list py_children = children(py_tree);

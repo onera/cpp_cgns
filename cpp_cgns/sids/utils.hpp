@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cpp_cgns/node_manip.hpp"
+#include "cpp_cgns/cgns.hpp"
 
 #include "cpp_cgns/sids/cgnslib.h"
 #include "cpp_cgns/sids/elements_utils.hpp"
@@ -32,13 +32,12 @@ template<class I, class Tree> auto
 regular_elements_connectivities(Tree& elements_node) -> md_array_view<I,2> {
   STD_E_ASSERT(elements_node.label=="Elements_t");
   ElementType_t elt_type = element_type(elements_node);
-  I8 nb_nodes_for_elt_type = number_of_nodes(elt_type);
-  I8 nb_elts = nb_of_elements(elements_node);
+  I8 n_node_for_elt_type = number_of_nodes(elt_type);
+  I8 n_elt = nb_of_elements(elements_node);
   Tree& element_connectivity_node = get_child_by_name(elements_node, "ElementConnectivity");
 
   node_value elt_conn_val = element_connectivity_node.value;
-  elt_conn_val.dims = {nb_nodes_for_elt_type,nb_elts};
-  return view_as_md_array<I,2>(elt_conn_val);;
+  return view_as_md_array<I,2>(elt_conn_val,{n_node_for_elt_type,n_elt});
 }
 
 

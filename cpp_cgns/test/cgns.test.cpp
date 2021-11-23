@@ -1,7 +1,5 @@
 #include "std_e/unit_test/doctest.hpp"
 #include "cpp_cgns/cgns.hpp"
-#include "cpp_cgns/node_manip.hpp"
-#include <memory>
 
 
 using namespace cgns;
@@ -11,17 +9,18 @@ TEST_CASE("Hand-written tree construction") {
   tree t = {
     "MyArray", // name
     "DataArray_t", // SIDS label
-    create_node_value({42.,43.,44.}), // value (here, the default are used: the value will be hold by a buffer using malloc/free)
+    node_value({42.,43.,44.}), // value (here, the value will be hold by a std::vector)
     {} // children (none here)
   };
 
   CHECK( t.name == "MyArray" );
 
-  CHECK( t.value.data_type == "R8" );
-  CHECK( t.value.dims == std::vector<I8>{3} );
-  CHECK( ((R8*)data(t.value))[0] == 42. );
-  CHECK( ((R8*)data(t.value))[1] == 43. );
-  CHECK( ((R8*)data(t.value))[2] == 44. );
+  CHECK( t.value.data_type() == "R8" );
+  CHECK( t.value.rank() == 1 );
+  CHECK( t.value.extent(0) == 3 );
+  CHECK( t.value(0) == 42. );
+  CHECK( t.value(1) == 43. );
+  CHECK( t.value(2) == 44. );
 
   CHECK( t.children.size() == 0 );
 
@@ -35,7 +34,7 @@ TEST_CASE("Hand-written tree construction") {
     tree sub_t = {
       "SubArray",
       "IndexArray_t",
-      make_node_value(std::move(sub_values)),
+      node_value(std::move(sub_values)),
       {}
     };
     emplace_child(t,std::move(sub_t));
@@ -48,88 +47,61 @@ TEST_CASE("Hand-written tree construction") {
 
 
 
-TEST_CASE("same_node_data and equal_node_data") {
-  std::vector<int> v0 = {10,3,4,1,5};
-  std::vector<int> v1 = {10,3,4,1,5};
-  std::vector<int> v2 = {10,3,4,1,15};
-
-  node_value x0 = {"I4",{5},std_e::buffer_span(v0)};
-  node_value x1 = {"I4",{3},std_e::buffer_span(v0)};
-  node_value x2 = {"R4",{5},std_e::buffer_span(v0)};
-  node_value x3 = {"I4",{5},std_e::buffer_span(v1)};
-  node_value x4 = {"I4",{5},std_e::buffer_span(v2)};
-
-  CHECK(  same_node_data(x0,x0) );
-  CHECK( !same_node_data(x0,x1) );
-  CHECK( !same_node_data(x0,x2) );
-  CHECK( !same_node_data(x0,x3) );
-  CHECK( !same_node_data(x0,x4) );
-
-  CHECK( x0==x0 );
-  CHECK( x0!=x1 );
-  CHECK( x0!=x2 );
-  CHECK( x0==x3 );
-  CHECK( x0!=x4 );
-}
-
-
-
-
 TEST_CASE("tree equality") {
-  std::vector<I4> v0 ={0,1};
-  std::vector<R8> v1 ={2.,3.,4.,5.};
-  auto val0 = create_node_value({0,1});
-  auto val1 = create_node_value({2.,3.,4.,5.});
+  std::vector<I4> v0 = {0,1};
+  std::vector<R8> v1 = {2.,3.,4.,5.};
+  auto val0 = std_e::make_span(v0);
+  auto val1 = std_e::make_span(v1);
 
   tree t0 = {
-    "A", "A_t", view(val0), {
+    "A", "A_t", node_value(val0), {
       tree{"B0", "B_t", MT(), {
           tree{"D", "A_t", MT(), {}} } },
-      tree{"B1", "B_t", view(val0), {
+      tree{"B1", "B_t", node_value(val0), {
           tree{"D", "D_t", MT(), {}} } } }
   };
 
   // same
   tree t1 = {
-    "A", "A_t", view(val0), {
+    "A", "A_t", node_value(val0), {
       tree{"B0", "B_t", MT(), {
           tree{"D", "A_t", MT(), {}} } },
-      tree{"B1", "B_t", view(val0), {
+      tree{"B1", "B_t", node_value(val0), {
           tree{"D", "D_t", MT(), {}} } } }
   };
 
   // changed value at the root
   tree t2 = {
-    "A", "A_t", view(val1), {
+    "A", "A_t", node_value(val1), {
       tree{"B0", "B_t", MT(), {
           tree{"D", "A_t", MT(), {}} } },
-      tree{"B1", "B_t", view(val0), {
+      tree{"B1", "B_t", node_value(val0), {
           tree{"D", "D_t", MT(), {}} } } }
   };
 
   // changed value at the end
   tree t3 = {
-    "A", "A_t", view(val0), {
+    "A", "A_t", node_value(val0), {
       tree{"B0", "B_t", MT(), {
           tree{"D", "A_t", MT(), {}} } },
-      tree{"B1", "B_t", view(val0), {
-          tree{"D", "D_t", view(val1), {}} } } }
+      tree{"B1", "B_t", node_value(val0), {
+          tree{"D", "D_t", node_value(val1), {}} } } }
   };
 
   // removed node in the middle
   tree t4 = {
-    "A", "A_t", view(val0), {
+    "A", "A_t", node_value(val0), {
       tree{"B0", "B_t", MT(), {} },
-      tree{"B1", "B_t", view(val0), {
+      tree{"B1", "B_t", node_value(val0), {
           tree{"D", "D_t", MT(), {}} } } }
   };
 
   // removed node at the end
   tree t5 = {
-    "A", "A_t", view(val0), {
+    "A", "A_t", node_value(val0), {
       tree{"B0", "B_t", MT(), {
           tree{"D", "A_t", MT(), {}} } },
-      tree{"B1", "B_t", view(val0), {} } }
+      tree{"B1", "B_t", node_value(val0), {} } }
   };
 
   CHECK( t0 == t0 );

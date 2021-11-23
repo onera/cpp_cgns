@@ -1,6 +1,6 @@
 #include "std_e/unit_test/doctest.hpp"
 
-#include "cpp_cgns/node_manip.hpp"
+#include "cpp_cgns/base/node_value_conversion.hpp"
 #include "cpp_cgns/dispatch.hpp"
 #include "std_e/base/lift.hpp"
 
@@ -18,20 +18,20 @@ I8 I8_value = 10'000'000'000ll; // > max(I4)
 R4 R4_value = 50.f;
 R8 R8_value = 150.;
 
-const node_value my_C1_node_value = create_scalar_node_value(C1_value);
-const node_value my_I4_node_value = create_scalar_node_value(I4_value);
-const node_value my_I8_node_value = create_scalar_node_value(I8_value);
-const node_value my_R4_node_value = create_scalar_node_value(R4_value);
-const node_value my_R8_node_value = create_scalar_node_value(R8_value);
+const node_value my_C1_node_value = node_value(C1_value);
+const node_value my_I4_node_value = node_value(I4_value);
+const node_value my_I8_node_value = node_value(I8_value);
+const node_value my_R4_node_value = node_value(R4_value);
+const node_value my_R8_node_value = node_value(R8_value);
 
-const tree my_I4_tree = {"Test","Test_t", create_scalar_node_value(I4_value), {} };
-const tree my_I8_tree = {"Test","Test_t", create_scalar_node_value(I8_value), {} };
+const tree my_I4_tree = {"Test","Test_t", node_value(I4_value), {} };
+const tree my_I8_tree = {"Test","Test_t", node_value(I8_value), {} };
 
 // Template function that implements the tree query with the right type information
 // The type I will either be I4 or I8
 template<class I> auto
 my_templated_query(const tree& node) -> I {
-  auto ptr = (I*)data(node.value); // We need to know the type of the node value to correctly cast it
+  auto ptr = data_as<I>(node.value); // We need to know the type of the node value to correctly cast it
   return *ptr; // if given my_I4_tree, will return 42
                // if given my_I8_tree, will return 43
 }
@@ -93,7 +93,7 @@ TEST_CASE("dispatch_I4_I8 -- base") {
 // Test dispatch_I4_I8 -- node_value version {
 template<class I> auto
 my_node_query__impl(I, const node_value& x) -> bool {
-  auto ptr = (I*)data(x);
+  auto ptr = data_as<I>(x);
   return *ptr > 100;
 }
 auto

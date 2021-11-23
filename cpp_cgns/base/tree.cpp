@@ -1,48 +1,12 @@
-#include "cpp_cgns/cgns.hpp"
-#include "cpp_cgns/dispatch.hpp"
+#include "cpp_cgns/base/tree.hpp"
+
+
 #include <algorithm>
 #include "std_e/graph/algorithm/zip.hpp"
 #include "std_e/graph/algorithm/algo_adjacencies.hpp"
-#include "std_e/multi_index/cartesian_product_size.hpp"
 
 
 namespace cgns {
-
-
-// node_value comparison {
-auto same_node_data(const node_value& x, const node_value& y) -> bool {
-  return
-      x.data_type==y.data_type
-   && x.dims==y.dims
-   && data(x)==data(y);
-}
-
-
-template<class T> auto
-equal_node_data__impl(T, const node_value& x, const node_value& y) {
-  I8 sz = std_e::cartesian_product_size(x.dims);
-  auto x_ptr = (T*)data(x);
-  auto y_ptr = (T*)data(y);
-  return std::equal(x_ptr,x_ptr+sz,y_ptr);
-}
-
-auto operator==(const node_value& x, const node_value& y) -> bool {
-  bool same_shape = x.data_type==y.data_type
-                 && x.dims==y.dims;
-  if (!same_shape) return false;
-  if (data(x)==data(y)) return true;
-
-  // Note: a bit-wise comparison is not enought
-  //       because it does not work for floating point types
-  return dispatch_on_data_type(
-    x.data_type,
-    [&x,&y](auto type){ return equal_node_data__impl(type,x,y); }
-  );
-}
-auto operator!=(const node_value& x, const node_value& y) -> bool {
-  return !(x==y);
-}
-// node_value comparison }
 
 
 // tree comparisons {
@@ -77,6 +41,23 @@ operator!=(const tree& x, const tree& y) -> bool {
   return !(x==y);
 }
 // tree comparisons }
+
+
+// to_string {
+auto to_string_impl(const tree& t, const std::string& indent, int threshold) -> std::string {
+  // TODO replace by dfs
+  static const std::string unit_indent = "  ";
+  std::string s = indent + t.name + ", " + to_string(t.value,threshold) + ", " + t.label + "\n";
+  for (const auto& c : t.children) {
+    s += to_string_impl(c,indent+unit_indent,threshold);
+  }
+  return s;
+}
+
+auto to_string(const tree& t, int threshold) -> std::string {
+  return to_string_impl(t,"",threshold);
+}
+// to_string }
 
 
 } // cgns

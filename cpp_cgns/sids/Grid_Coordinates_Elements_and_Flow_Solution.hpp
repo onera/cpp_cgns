@@ -1,10 +1,8 @@
 #pragma once
 
 #include "cpp_cgns/cgns.hpp"
-#include "cpp_cgns/node_manip.hpp"
 #include "std_e/future/span.hpp"
 #include "std_e/future/contract.hpp"
-#include "cpp_cgns/exception.hpp"
 #include "cpp_cgns/tree_manip.hpp"
 #include "cpp_cgns/sids/cgnslib.h"
 #include "cpp_cgns/sids/Hierarchical_Structures.hpp"
@@ -20,9 +18,9 @@ template<class I, class Tree> auto
 ElementType_ElementSizeBoundary(Tree& e) {
   STD_E_ASSERT(label(e)=="Elements_t");
   auto I_str = to_string<I>();
-  if (value(e).data_type!=I_str)
+  if (value(e).data_type()!=I_str)
     throw cgns_exception("CGNS requires zone dimensions to be of type \""+I_str+"\"");
-  I* e_ptr = (I*)data(value(e));
+  I* e_ptr = (I*)value(e).data();
   return std_e::make_span<2>(e_ptr);
 }
 

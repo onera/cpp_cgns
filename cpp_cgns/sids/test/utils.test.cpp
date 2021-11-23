@@ -1,6 +1,6 @@
 #include "std_e/unit_test/doctest.hpp"
 
-#include "cpp_cgns/md_array.hpp"
+#include "cpp_cgns/base/md_array.hpp"
 #include "cpp_cgns/sids/utils.hpp"
 
 using namespace cgns;

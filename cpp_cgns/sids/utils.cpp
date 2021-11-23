@@ -1,5 +1,5 @@
-#include "cpp_cgns/exception.hpp"
 #include "cpp_cgns/sids/utils.hpp"
+
 #include "cpp_cgns/tree_manip.hpp"
 #include "cpp_cgns/sids/elements_utils.hpp"
 #include "cpp_cgns/dispatch.hpp"
@@ -15,7 +15,7 @@ correct_bc_data_arrays_according_to_SIDS(tree& bcdata_node) -> void {
   // SIDS: boundary field should have shape {1,PointList size}
   tree_range bcdata_array_nodes = get_children_by_label(bcdata_node,"DataArray_t");
   for (tree& bcdata_array_node : bcdata_array_nodes) {
-    bcdata_array_node.value.dims = {1,bcdata_array_node.value.dims[0]};
+    cons_reshape(bcdata_array_node.value,{1,bcdata_array_node.value.extent(0)});
   }
 }
 

@@ -2,8 +2,6 @@
 
 
 #include "cpp_cgns/cgns.hpp"
-#include "cpp_cgns/node_manip.hpp"
-#include "cpp_cgns/exception.hpp"
 #include "std_e/graph/algorithm/algo_adjacencies.hpp"
 #include "std_e/utils/concatenate.hpp"
 

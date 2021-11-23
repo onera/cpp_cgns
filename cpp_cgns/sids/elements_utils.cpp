@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <algorithm>
-#include "cpp_cgns/exception.hpp"
 #include "std_e/algorithm/algorithm.hpp"
 
 
