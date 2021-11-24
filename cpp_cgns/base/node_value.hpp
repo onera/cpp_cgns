@@ -12,13 +12,13 @@ namespace cgns {
 
 // polymorphic_array allow the CGNS node value
 // to hide memory allocation and ownership under a unique type
-template<class T> using node_value_underlying_memory = std_e::polymorphic_array<T>;
+template<class T> using node_value_typed_array = std_e::polymorphic_array<T>;
 
 // variant_range allows the CGNS node value
 // to hide its array scalar type under a variant type
-using node_value_underlying_range =
+using node_value_array =
   std_e::variant_range<
-    node_value_underlying_memory,
+    node_value_typed_array,
     dt_ref_variant,
     C1,I4,I8,R4,R8
   >;
@@ -29,7 +29,7 @@ using node_value_shape =
 // a CGNS node value is actually a multi-dimensional array...
 using node_value_impl =
   std_e::multi_array<
-    node_value_underlying_range,
+    node_value_array,
     node_value_shape
   >;
 
@@ -137,13 +137,6 @@ class node_value : public node_value_impl {
       return underlying_range().visit(FWD(f));
     }
 
-  //// release the memory: it is now the responsibility of the caller to delete it
-  //  //using polymorphic_base = typename node_value_underlying_memory::polymorphic_base;
-  //  auto
-  //  underlying_variant() -> auto& {
-  //    return this->underlying_range().underlying_variant();
-  //  }
-
     auto operator<=>(const node_value& x) const = default;
   private:
     template<class Array>
@@ -156,16 +149,53 @@ class node_value : public node_value_impl {
     {}
 
     template<class T> static auto
-    to_node_value_underlying_range(std::vector<T>&& v) -> node_value_underlying_range {
+    to_node_value_underlying_range(std::vector<T>&& v) -> node_value_array {
       std_e::polymorphic_array<T> parr(std::move(v));
-      return node_value_underlying_range(std::move(parr));
+      return node_value_array(std::move(parr));
     }
     template<class T> static auto
-    to_node_value_underlying_range(std_e::span<T>&& v) -> node_value_underlying_range {
+    to_node_value_underlying_range(std_e::span<T>&& v) -> node_value_array {
       std_e::polymorphic_array<T> parr(std::move(v));
-      return node_value_underlying_range(std::move(parr));
+      return node_value_array(std::move(parr));
     }
 };
+
+
+// comparison {
+template<class T> auto
+operator==(const node_value& x, const std_e::span<T>& y) -> bool {
+  if (x.rank()!=1) return false;
+  return x.visit([&y]<class T0>(const std_e::polymorphic_array<T0>& x0){ return x0==y; });
+}
+template<class T> auto
+operator==(const std_e::span<T>& x, const node_value& y) -> bool {
+  return y==x;
+}
+template<class T> auto
+operator==(const node_value& x, const std::vector<T>& y) -> bool {
+  return x==std_e::make_span(y);
+}
+template<class T> auto
+operator==(const std::vector<T>& x, const node_value& y) -> bool {
+  return y==x;
+}
+template<class T> auto
+operator!=(const node_value& x, const std_e::span<T>& y) -> bool {
+  return !(x==y);
+}
+template<class T> auto
+operator!=(const std_e::span<T>& x, const node_value& y) -> bool {
+  return !(x==y);
+}
+template<class T> auto
+operator!=(const node_value& x, const std::vector<T>& y) -> bool {
+  return !(x==y);
+}
+template<class T> auto
+operator!=(const std::vector<T>& x, const node_value& y) -> bool {
+  return !(x==y);
+}
+// comparison }
 
 // data_as {
 template<class T> auto

@@ -29,7 +29,7 @@ TEST_CASE("node_value construction") {
     SUBCASE("from vector") {
       node_value x0(std::vector<I4>{42,43,44});
       node_value x1(std::vector<I8>{45,46,47});
-      node_value x2(std::vector<R4>{3.14,2.7});
+      node_value x2(std::vector<R4>{3.14f,2.7f});
       node_value x3(std::vector<R8>{1.5,0.3});
 
       CHECK( x0.rank() == 1 );
@@ -159,13 +159,107 @@ TEST_CASE("node_value comparisons") {
   }
 
   SUBCASE("equality") {
-    CHECK( x0==x0 );
-    CHECK( x0==x1 );
-    CHECK( x0!=x2 );
-    CHECK( x0!=x3 );
-    CHECK( x0==x4 );
-    CHECK( x0==x5 );
+    SUBCASE("with other node_value") {
+      CHECK( x0==x0 );
+      CHECK( x0==x1 );
+      CHECK( x0!=x2 );
+      CHECK( x0!=x3 );
+      CHECK( x0==x4 );
+      CHECK( x0==x5 );
 
-    CHECK( x4==x5 );
+      CHECK( x4==x5 );
+    }
+    SUBCASE("with vector or span") {
+      CHECK( x0 == v );
+      CHECK( v == x0 );
+      CHECK( x0 == std_e::make_span(v) );
+      CHECK( std_e::make_span(v) == x0 );
+
+      CHECK( x2 != v );
+
+      node_value x_multi_dim({{0,2},{1,3}});
+      CHECK( x_multi_dim != v ); // not equal because multi_dim
+    }
+  }
+}
+
+TEST_CASE("node_value assignments") {
+
+  SUBCASE("C1") {
+    node_value x("Alice & Bob");
+    x(0) = 'C';
+    x(1) = 'a';
+    x(2) = 'r';
+    x(3) = 'o';
+    x(4) = 'l';
+
+    CHECK( x == std::string("Carol & Bob") );
+
+    SUBCASE("forbidded conversions") {
+      CHECK_THROWS_AS(x(0) = I4(0), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = I8(0), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = R4(0.), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = R8(0.), const std::bad_variant_access&);
+    }
+  }
+
+  SUBCASE("I4") {
+    node_value x(std::vector<I4>{42,43,44});
+
+    x(0) = I4(100);
+
+    CHECK( x == std::vector<I4>({100,43,44}) );
+
+    SUBCASE("forbidded conversions") {
+      CHECK_THROWS_AS(x(0) = C1('A'), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = I8(0), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = R4(0.), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = R8(0.), const std::bad_variant_access&);
+    }
+  }
+  SUBCASE("I8") {
+    node_value x(std::vector<I8>{45,46,47});
+
+    x(0) = (I8)10'000'000'000;
+    x(2) = (I4)100; // conversion from R4 to R8 is allowed (no narrowing)
+
+    CHECK( x == std::vector<I8>({10'000'000'000,46,100}) );
+
+    SUBCASE("forbidded conversions") {
+      CHECK_THROWS_AS(x(0) = C1('A'), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = R4(0.), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = R8(0.), const std::bad_variant_access&);
+    }
+  }
+
+  SUBCASE("R4") {
+    node_value x(std::vector<R4>{3.14f,2.7f});
+
+    x(1) = R4(1.5);
+
+    CHECK( x == std::vector<R4>({3.14f,1.5f}) );
+
+    SUBCASE("forbidded conversions") {
+      CHECK_THROWS_AS(x(0) = C1('A'), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = I4(0), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = I8(0), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = R8(0.), const std::bad_variant_access&);
+    }
+  }
+
+  SUBCASE("R8") {
+    node_value x(std::vector<R8>{1.5,0.3});
+
+    x(0) = R8(0.66);
+    x(1) = R4(0.2f); // conversion from R4 to R8 is allowed (no narrowing)
+
+    CHECK( x(0) == 0.66 );
+    CHECK( x(1) == doctest::Approx(0.2) ); // Approx because 0.2f != 0.2
+
+    SUBCASE("forbidded conversions") {
+      CHECK_THROWS_AS(x(0) = C1('A'), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = I4(0), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = I8(0), const std::bad_variant_access&);
+    }
   }
 }

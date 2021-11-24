@@ -191,7 +191,7 @@ PYBIND_TEST_CASE("update_and_transfer_ownership") {
     my_test_operation(cpp_tree);
     /// 4. Update the py_tree and give it the ownership
     update_and_transfer_ownership_to_py_tree(cpp_tree,py_tree);
-  } /// 5. Return to Python. At this point, alloc is destroyed, but the memory it was holding has been transfered to Python
+  } /// 5. Return to Python. At this point, C++ node_value objects are destroyed, but the memory they where holding has been transfered to Python
 
   auto expected_cpp_tree = cpp_tree_example();
   my_test_operation(expected_cpp_tree);

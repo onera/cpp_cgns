@@ -15,7 +15,17 @@ class dt_ref_variant : public std_e::reference_variant<Ts...> {
     using base = std_e::reference_variant<Ts...>;
     using base::base;
 
-    // assignement: handle safe cases (note: exact type assignment already implemented in reference_variant)
+  // assignement
+    // exact same type
+    template<class T>
+      requires std_e::exactly_once<T,Ts...>
+    auto
+    operator=(const T& x) -> dt_ref_variant& {
+      base& self_as_base = *this;
+      self_as_base = x;
+      return *this;
+    }
+    /// handle safe cases 
     constexpr
     dt_ref_variant& operator=(const I4& x) {
       static_assert(std_e::exactly_once<I4,Ts...>); // ensures non-const versions
@@ -66,55 +76,6 @@ class dt_ref_variant : public std_e::reference_variant<Ts...> {
         return get<R4>(*this);
       }
     }
-
-    //// conversions to non-const ref: only if the ref type is non-const
-    //constexpr
-    //operator C1&() {
-    //  static_assert(std_e::exactly_once<C1,Ts...>);
-    //  return get<C1>(*this);
-    //}
-    //constexpr
-    //operator I4&() {
-    //  static_assert(std_e::exactly_once<I4,Ts...>);
-    //  return get<I4>(*this);
-    //}
-    //constexpr
-    //operator I8&() {
-    //  static_assert(std_e::exactly_once<I8,Ts...>);
-    //  return get<I8>(*this);
-    //}
-    //constexpr
-    //operator R4&() {
-    //  static_assert(std_e::exactly_once<R4,Ts...>);
-    //  return get<R4>(*this);
-    //}
-    //constexpr
-    //operator R8&() {
-    //  static_assert(std_e::exactly_once<R8,Ts...>);
-    //  return get<R8>(*this);
-    //}
-
-    //// conversions to const ref
-    //constexpr
-    //operator const C1&() const {
-    //  return get<C1>(*this);
-    //}
-    //constexpr
-    //operator const I4&() const {
-    //  return get<I4>(*this);
-    //}
-    //constexpr
-    //operator const I8&() const {
-    //  return get<I8>(*this);
-    //}
-    //constexpr
-    //operator const R4&() const {
-    //  return get<R4>(*this);
-    //}
-    //constexpr
-    //operator const R8&() const {
-    //  return get<R8>(*this);
-    //}
 };
 
 

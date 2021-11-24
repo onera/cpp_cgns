@@ -91,15 +91,21 @@ to_np_array(node_value& n, py::handle capsule) -> py::array {
   return py::array(dt,n.extent(),strides,n.data(),capsule);
 }
 
-constexpr auto caps2 = []<class Rng>(Rng& rng) -> py::capsule {
-  using polymorphic_base = typename Rng::polymorphic_base;
-  polymorphic_base* arr = rng.release();
-  return py::capsule(arr, rng.cleanup_fn());
+
+constexpr auto release_memory_fn = []<class T>(std_e::polymorphic_array<T>& arr) -> std::pair<void*,py::capsule> {
+  using polymorphic_base = typename std_e::polymorphic_array<T>::polymorphic_base;
+
+  polymorphic_base* arr_base = arr.release(); // Release the state "arr_base" of "arr"
+                                              // Now "arr" is not reponsible for its state "arr_base" anymore
+                                              // Hence "arr" can be destroyed while the memory is still alive...
+  void* data = arr_base->data(); // ... which is good because we want to access this memory from Python...
+  return {data,py::capsule(arr_base, arr.cleanup_fn())}; // ... but then we also need to give Python a capsule
+                                                         // to delete the memory when it doesn't need it anymore
 };
-template<class T> auto // TODO replace by real type
-caps(T& var_rng) -> py::capsule {
-  auto& var_rng_impl = var_rng.underlying_variant();
-  return std::visit(caps2, var_rng_impl);
+auto
+release_memory(node_value_array& nv_arr) -> std::pair<void*,py::capsule> {
+  auto& var_arr = nv_arr.underlying_variant();
+  return std::visit(release_memory_fn, var_arr);
 }
 auto
 to_owning_np_array(node_value& n) -> py::array {
@@ -107,8 +113,9 @@ to_owning_np_array(node_value& n) -> py::array {
   auto dt = py::dtype(np_type);
   auto strides = py::detail::f_strides(n.extent(), dt.itemsize());
 
-  auto& var_rng = n.underlying_range();
-  return py::array(dt,n.extent(),strides,var_rng.data(),caps(var_rng));
+  node_value_array& nv_arr = n.underlying_range();
+  auto [data,capsule] = release_memory(nv_arr);
+  return py::array(dt,n.extent(),strides,data,capsule);
 }
 auto
 to_empty_np_array(const std::string& data_type) -> py::array {
