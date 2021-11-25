@@ -84,7 +84,7 @@ class node_value : public node_value_impl {
         (    std::is_rvalue_reference_v<Array&&>
           && std_e::is_1d_array<Array> )
     node_value(Array&& x, std::vector<I8> dims)
-      : base(to_node_value_underlying_range(std::move(x)),node_value_shape{std::move(dims)})
+      : base(type_erase(std::move(x)),node_value_shape{std::move(dims)})
     {}
 
     /// from init list
@@ -122,7 +122,7 @@ class node_value : public node_value_impl {
 
   // data type
     auto
-    data_type() const -> std::string { // TODO enum
+    data_type() const -> std::string {
       const auto& rng = underlying_range();
       if (holds_alternative<C1>(rng) && get<C1>(rng).is_null()) return "MT";
       return this->visit([]<class T>(const std_e::polymorphic_array<T>& x){ return to_string<T>(); });
@@ -141,20 +141,21 @@ class node_value : public node_value_impl {
   private:
     template<class Array>
     node_value(Array& x, I8 sz, tag_1d)
-      : base(to_node_value_underlying_range(std::move(x)),node_value_shape{{sz}})
+      : base(type_erase(std::move(x)),node_value_shape{{sz}})
     {}
     template<class Array, class Multi_index>
     node_value(Array& x, Multi_index&& is, tag_multi)
-      : base(to_node_value_underlying_range(std::move(x.underlying_range())),node_value_shape{FWD(is)})
+      : base(type_erase(std::move(x.underlying_range())),node_value_shape{FWD(is)})
     {}
 
+
     template<class T> static auto
-    to_node_value_underlying_range(std::vector<T>&& v) -> node_value_array {
+    type_erase(std::vector<T>&& v) -> node_value_array {
       std_e::polymorphic_array<T> parr(std::move(v));
       return node_value_array(std::move(parr));
     }
     template<class T> static auto
-    to_node_value_underlying_range(std_e::span<T>&& v) -> node_value_array {
+    type_erase(std_e::span<T>&& v) -> node_value_array {
       std_e::polymorphic_array<T> parr(std::move(v));
       return node_value_array(std::move(parr));
     }
@@ -218,8 +219,8 @@ MT() -> node_value {
 
 
 /// ptr -> node_value {
-auto make_node_value(const std::string& data_type, const std::vector<I8>& dims, const void* data) -> node_value;
-auto make_non_owning_node_value(const std::string& data_type, const std::vector<I8>& dims, void* data) -> node_value;
+auto make_node_value(const std::string& data_type, const void* data, std::vector<I8> dims) -> node_value;
+auto make_non_owning_node_value(const std::string& data_type, void* data, std::vector<I8> dims) -> node_value;
 /// ptr -> node_value }
 
 

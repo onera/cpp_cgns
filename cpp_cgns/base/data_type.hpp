@@ -17,18 +17,13 @@ using R4 = float;
 using R8 = double;
 
 
-// TODO enum
 template<class T> auto to_string          () -> std::string { return "Unknown CGNS data_type"; };
 template<> inline auto to_string<      C1  >() -> std::string { return "C1"; }
-template<> inline auto to_string<const C1  >() -> std::string { return "C1"; }
 template<> inline auto to_string<      I4  >() -> std::string { return "I4"; }
-template<> inline auto to_string<const I4  >() -> std::string { return "I4"; }
 template<> inline auto to_string<      I8  >() -> std::string { return "I8"; }
-template<> inline auto to_string<const I8  >() -> std::string { return "I8"; }
 template<> inline auto to_string<      R4  >() -> std::string { return "R4"; }
-template<> inline auto to_string<const R4  >() -> std::string { return "R4"; }
 template<> inline auto to_string<      R8  >() -> std::string { return "R8"; }
-template<> inline auto to_string<const R8  >() -> std::string { return "R8"; }
+
 
 inline auto
 n_byte(const std::string& dt) -> int {
@@ -40,6 +35,7 @@ n_byte(const std::string& dt) -> int {
   else throw cgns_exception("n_byte: unknown data type \"" + dt + "\"");
 }
 
+
 template<class T> constexpr auto
 is_cgns_data_type_impl() -> bool {
   if (std::is_same_v<T,C1>) return true;
@@ -50,7 +46,6 @@ is_cgns_data_type_impl() -> bool {
   return false;
 }
 template<class T> constexpr bool is_cgns_data_type = is_cgns_data_type_impl<T>();
-
 
 
 } // cgns

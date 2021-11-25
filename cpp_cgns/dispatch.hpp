@@ -19,22 +19,22 @@ dispatch_I4_I8(const std::string& type, F f) {
 }
 
 
-template<class F> auto
-dispatch_on_data_type(const std::string& type, F f) {
+template<class F, class... Args> auto
+dispatch_on_data_type(const std::string& type, F f, Args&&... args) {
   if (type=="C1") {
-    return f(C1{});
+    return f(C1{},FWD(args)...);
   }
   if (type=="I4") {
-    return f(I4{});
+    return f(I4{},FWD(args)...);
   }
   if (type=="I8") {
-    return f(I8{});
+    return f(I8{},FWD(args)...);
   }
   if (type=="R4") {
-    return f(R4{});
+    return f(R4{},FWD(args)...);
   }
   if (type=="R8") {
-    return f(R8{});
+    return f(R8{},FWD(args)...);
   }
   throw cgns_exception("dispatch_on_data_type expects a C1, I4, I8, R4 or R8 data_type, but got "+type);
 }

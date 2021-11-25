@@ -29,8 +29,6 @@ view_as_span(const node_value& x) -> std_e::span<const T,rank> {
 
 
 /// node_value -> md_array_view<T> {
-// TODO: resizing the view won't resize the underlying object
-// TODO either prevent resize, or propagate to underlying
 template<class T, int rank> auto
 view_as_md_array(node_value& x) -> md_array_view<T,rank> {
   STD_E_ASSERT(x.data_type()==to_string<T>());

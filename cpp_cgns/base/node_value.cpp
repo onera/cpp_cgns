@@ -3,6 +3,7 @@
 
 #include "std_e/multi_array/utils.hpp"
 #include "cpp_cgns/base/node_value_conversion.hpp"
+#include "cpp_cgns/dispatch.hpp"
 
 
 namespace cgns {
@@ -20,18 +21,11 @@ auto dims_to_string(const std::vector<I8>& dims) -> std::string {
 }
 
 auto to_complete_string(const node_value& x) -> std::string {
-  // TODO use visit
-  if (x.data_type()=="I4") {
-    return to_string(view_as_md_array<I4,dyn_rank>(x));
-  } else if (x.data_type()=="I8") {
-    return to_string(view_as_md_array<I8,dyn_rank>(x));
-  } else if (x.data_type()=="R4") {
-    return to_string(view_as_md_array<R4,dyn_rank>(x));
-  } else if (x.data_type()=="R8") {
-    return to_string(view_as_md_array<R8,dyn_rank>(x));
-  } else {
-    throw std_e::not_implemented_exception("to_complete_string only implemented for I4, I8, R4, R8");
-  }
+  return
+    dispatch_on_data_type(
+      x.data_type(),
+      [&x]<class T>(T){ return to_string(view_as_md_array<T,dyn_rank>(x)); }
+    );
 }
 
 auto to_string(const node_value& x, int threshold) -> std::string {
@@ -44,59 +38,39 @@ auto to_string(const node_value& x, int threshold) -> std::string {
 
 
 // make_node_value {
-// TODO facto
-auto make_node_value(const std::string& data_type, const std::vector<I8>& dims, const void* data) -> node_value {
-  // TODO use visit
+constexpr auto
+make_node_value_impl = []<class T>(T, const void* data, std::vector<I8> dims) -> node_value {
   auto sz = std_e::cartesian_product_size(dims);
-  if (data_type=="C1") {
-    auto* ptr = static_cast<const C1*>(data);
-    std::vector<C1> v(ptr,ptr+sz);
-    return node_value(md_array<C1,dyn_rank>(std::move(v),md_array_shape<dyn_rank>(dims)));
-  } else if (data_type=="I4") {
-    auto* ptr = static_cast<const I4*>(data);
-    std::vector<I4> v(ptr,ptr+sz);
-    return node_value(md_array<I4,dyn_rank>(std::move(v),md_array_shape<dyn_rank>(dims)));
-  } else if (data_type=="I8") {
-    auto* ptr = static_cast<const I8*>(data);
-    std::vector<I8> v(ptr,ptr+sz);
-    return node_value(md_array<I8,dyn_rank>(std::move(v),md_array_shape<dyn_rank>(dims)));
-  } else if (data_type=="R4") {
-    auto* ptr = static_cast<const R4*>(data);
-    std::vector<R4> v(ptr,ptr+sz);
-    return node_value(md_array<R4,dyn_rank>(std::move(v),md_array_shape<dyn_rank>(dims)));
-  } else if (data_type=="R8") {
-    auto* ptr = static_cast<const R8*>(data);
-    std::vector<R8> v(ptr,ptr+sz);
-    return node_value(md_array<R8,dyn_rank>(std::move(v),md_array_shape<dyn_rank>(dims)));
-  } else {
-    throw std_e::not_implemented_exception("make_node_value only implemented for C1, I4, I8, R4, R8");
-  }
+  auto* ptr = static_cast<const T*>(data);
+  std::vector<T> rng(ptr,ptr+sz);
+  return node_value(md_array<T,dyn_rank>(std::move(rng),md_array_shape<dyn_rank>(std::move(dims))));
+};
+
+constexpr auto
+make_non_owning_node_value_impl = []<class T>(T, void* data, std::vector<I8> dims) -> node_value {
+  auto sz = std_e::cartesian_product_size(dims);
+  auto* ptr = static_cast<T*>(data);
+  std_e::span<T> rng(ptr,ptr+sz);
+  return node_value(md_array_view<T,dyn_rank>(std::move(rng),md_array_shape<dyn_rank>(std::move(dims))));
+};
+
+auto
+make_node_value(const std::string& data_type, const void* data, std::vector<I8> dims) -> node_value {
+  return
+    dispatch_on_data_type(
+      data_type,
+      make_node_value_impl,
+        data,
+        std::move(dims));
 }
-auto make_non_owning_node_value(const std::string& data_type, const std::vector<I8>& dims, void* data) -> node_value {
-  auto sz = std_e::cartesian_product_size(dims);
-  if (data_type=="C1") {
-    auto* ptr = static_cast<C1*>(data);
-    std_e::span<C1> v(ptr,ptr+sz);
-    return node_value(md_array_view<C1,dyn_rank>(std::move(v),md_array_shape<dyn_rank>(dims)));
-  } else if (data_type=="I4") {
-    auto* ptr = static_cast<I4*>(data);
-    std_e::span<I4> v(ptr,ptr+sz);
-    return node_value(md_array_view<I4,dyn_rank>(std::move(v),md_array_shape<dyn_rank>(dims)));
-  } else if (data_type=="I8") {
-    auto* ptr = static_cast<I8*>(data);
-    std_e::span<I8> v(ptr,ptr+sz);
-    return node_value(md_array_view<I8,dyn_rank>(std::move(v),md_array_shape<dyn_rank>(dims)));
-  } else if (data_type=="R4") {
-    auto* ptr = static_cast<R4*>(data);
-    std_e::span<R4> v(ptr,ptr+sz);
-    return node_value(md_array_view<R4,dyn_rank>(std::move(v),md_array_shape<dyn_rank>(dims)));
-  } else if (data_type=="R8") {
-    auto* ptr = static_cast<R8*>(data);
-    std_e::span<R8> v(ptr,ptr+sz);
-    return node_value(md_array_view<R8,dyn_rank>(std::move(v),md_array_shape<dyn_rank>(dims)));
-  } else {
-    throw std_e::not_implemented_exception("make_node_value only implemented for C1, I4, I8, R4, R8");
-  }
+auto
+make_non_owning_node_value(const std::string& data_type, void* data, std::vector<I8> dims) -> node_value {
+  return
+    dispatch_on_data_type(
+      data_type,
+      make_non_owning_node_value_impl,
+        data,
+        std::move(dims));
 }
 // make_node_value }
 

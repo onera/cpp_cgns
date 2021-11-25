@@ -24,7 +24,7 @@ STD_E_ENUM(GridLocation_t,
 
 std::string GridLocation(const tree& t);
 
-template<class I, class Tree> auto 
+template<class I, class Tree> auto
 Rind(Tree& t) {
   auto& rind_node = get_child_by_label(t,"Rind_t");
   STD_E_ASSERT(value(rind_node).data_type==to_string<I>());

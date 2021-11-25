@@ -44,10 +44,27 @@ TEST_CASE("view_as_md_array") {
       CHECK( x(0,0) == 2 ); CHECK( x(0,1) == 3 ); CHECK( x(0,2) == 4 );
       CHECK( x(1,0) == 5 ); CHECK( x(1,1) == 6 ); CHECK( x(1,2) == 7 );
     }
-    SUBCASE("changes are forwarded") {
+    SUBCASE("values changes are forwarded") {
       x(1,0) = 100;
       CHECK( val(0,0) == 2   ); CHECK( val(0,1) == 3 ); CHECK( val(0,2) == 4 );
       CHECK( val(1,0) == 100 ); CHECK( val(1,1) == 6 ); CHECK( val(1,2) == 7 );
+    }
+    SUBCASE("dimension changes are NOT forwarded") {
+      x.extent() = {3,2};
+
+      // dimension changes are working for the view
+      CHECK( x.extent(0) == 3 );
+      CHECK( x.extent(1) == 2 );
+      CHECK( x(0,0) == 2 ); CHECK( x(0,1) == 6 );
+      CHECK( x(1,0) == 5 ); CHECK( x(1,1) == 4 );
+      CHECK( x(2,0) == 3 ); CHECK( x(2,1) == 7 );
+
+      // but the node_value remains unaffected
+      CHECK( val.rank() == 2 );
+      CHECK( val.extent(0) == 2 );
+      CHECK( val.extent(1) == 3 );
+      CHECK( val(0,0) == 2 ); CHECK( val(0,1) == 3 ); CHECK( val(0,2) == 4 );
+      CHECK( val(1,0) == 5 ); CHECK( val(1,1) == 6 ); CHECK( val(1,2) == 7 );
     }
   }
   SUBCASE("const") {

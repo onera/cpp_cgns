@@ -49,7 +49,7 @@ cgns_type_to_numpy_type(const std::string& cgns_type) -> std::string {
 auto
 view_as_node_value(py::array np_arr) -> node_value {
   if (!(np_arr.flags() & py::array::f_style)) {
-    throw cgns_exception("In python/CGNS, numpy array must be contiguous and fortran-ordered");
+    throw cgns_exception("In Python/CGNS, numpy arrays must be contiguous and fortran-ordered");
   }
 
   auto type = np_arr.dtype();
@@ -62,12 +62,12 @@ view_as_node_value(py::array np_arr) -> node_value {
   std::copy_n(dims_ptr,n_dim,begin(dims));
 
   void* data = np_arr.mutable_data();
-  return make_non_owning_node_value(data_type,dims,data);
+  return make_non_owning_node_value(data_type,data,std::move(dims));
 }
 auto
 copy_to_node_value(py::array np_arr) -> node_value {
   if (!(np_arr.flags() & py::array::f_style)) {
-    throw cgns_exception("In python/CGNS, numpy array must be contiguous and fortran-ordered");
+    throw cgns_exception("In Python/CGNS, numpy arrays must be contiguous and fortran-ordered");
   }
 
   auto type = np_arr.dtype();
@@ -79,8 +79,8 @@ copy_to_node_value(py::array np_arr) -> node_value {
   std::vector<I8> dims(n_dim);
   std::copy_n(dims_ptr,n_dim,begin(dims));
 
-  char* data = (char*)np_arr.mutable_data();
-  return make_node_value(data_type,dims,data);
+  const void* data = np_arr.data();
+  return make_node_value(data_type,data,std::move(dims));
 }
 
 auto
@@ -108,7 +108,7 @@ release_memory(node_value_array& nv_arr) -> std::pair<void*,py::capsule> {
   return std::visit(release_memory_fn, var_arr);
 }
 auto
-to_owning_np_array(node_value& n) -> py::array {
+to_owning_np_array(node_value&& n) -> py::array {
   auto np_type = cgns_type_to_numpy_type(n.data_type());
   auto dt = py::dtype(np_type);
   auto strides = py::detail::f_strides(n.extent(), dt.itemsize());
@@ -129,19 +129,6 @@ to_empty_np_array(const std::string& data_type) -> py::array {
 
 // python string -> node_value {
 auto
-view_py_string_as_node_value(py::object str) -> node_value {
-  // TODO deprecate
-  if (!PyUnicode_Check(str.ptr())) {
-    throw cgns_exception("node_value is a string, but it is not unicode");
-  }
-
-  const char* buffer = nullptr;
-  ssize_t length = 0;
-  buffer = PyUnicode_AsUTF8AndSize(str.ptr(),&length);
-
-  return make_non_owning_node_value("C1",{length},const_cast<char*>(buffer)); // const_cast: reason to deprecate
-}
-auto
 copy_py_string_to_node_value(py::object str) -> node_value {
   if (!PyUnicode_Check(str.ptr())) {
     throw cgns_exception("node_value is a string, but it is not unicode");
@@ -151,7 +138,7 @@ copy_py_string_to_node_value(py::object str) -> node_value {
   ssize_t length = 0;
   buffer = PyUnicode_AsUTF8AndSize(str.ptr(),&length);
 
-  return make_node_value("C1",{length},buffer);
+  return node_value(std::vector<char>(buffer,buffer+length));
 }
 // python string -> node_value }
 

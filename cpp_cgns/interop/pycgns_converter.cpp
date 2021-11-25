@@ -44,7 +44,7 @@ to_node_value(py::object value) -> node_value {
   if (value.is_none()) {
     return MT();
   } else if (py::isinstance<py::str>(value)) {
-    return view_py_string_as_node_value(value);
+    return copy_py_string_to_node_value(value);
   } else {
     return view_as_node_value(value);
   }
@@ -69,15 +69,13 @@ to_py_value(node_value& value) -> py::object {
   }
 }
 auto
-to_owning_py_value(node_value& value) -> py::object {
-//TODO
-//to_owning_py_value(node_value&& value) -> py::object {
+to_owning_py_value(node_value&& value) -> py::object {
   if (value.data_type()=="MT") {
     return py::none{};
   } else if (std_e::cartesian_product_size(value.extent())==0) {
     return to_empty_np_array(value.data_type());
   } else {
-    return to_owning_np_array(value); // TODO move
+    return to_owning_np_array(std::move(value));
   }
 }
 // py value <-> node_value }
@@ -141,19 +139,19 @@ to_py_tree(tree& t) -> py::list {
 
 /// ownership transfer to python {
 auto
-to_owning_py_tree(tree& t) -> py::list {
+to_owning_py_tree(tree&& t) -> py::list {
   // creates a py_tree from t
   // each owner node has its ownership transfered to Python (capsule mechanism)
   auto py_tree = new_py_tree();
 
   name (py_tree) = name (t);
   label(py_tree) = label(t);
-  value(py_tree) = to_owning_py_value(value(t));
+  value(py_tree) = to_owning_py_value(std::move(t.value));
 
   int n_child = t.children.size();
   py::list py_children(n_child);
   for (int i=0; i<n_child; ++i) {
-    auto py_child = to_owning_py_tree(t.children[i]);
+    auto py_child = to_owning_py_tree(std::move(t.children[i]));
     py_children[i] = py_child;
   }
   children(py_tree) = py_children;
@@ -162,7 +160,7 @@ to_owning_py_tree(tree& t) -> py::list {
 }
 
 auto
-update_and_transfer_ownership_to_py_tree(tree& t, py::list py_tree) -> void {
+update_and_transfer_ownership_to_py_tree(tree&& t, py::list py_tree) -> void {
   // preconditions:
   //   - nodes similar in t and py_tree have the same order
   //     (in other words, t nodes were never reordered)
@@ -172,7 +170,7 @@ update_and_transfer_ownership_to_py_tree(tree& t, py::list py_tree) -> void {
 
   bool node_data_was_coming_from_python = same_data(value(t),to_node_value(value(py_tree)));
   if (!node_data_was_coming_from_python) {
-    value(py_tree) = to_owning_py_value(value(t));
+    value(py_tree) = to_owning_py_value(std::move(t.value));
   }
 
   py::list py_children = children(py_tree);
@@ -182,7 +180,7 @@ update_and_transfer_ownership_to_py_tree(tree& t, py::list py_tree) -> void {
   while (i_py < (int)py_children.size()) { // NOTE: py_children.size() updated in the body of the loop, so do not store before
     auto py_child = py_children[i_py];
     if (i<n_child && name(t.children[i])==to_string_from_py(name(py_child))) {
-      update_and_transfer_ownership_to_py_tree(t.children[i],py_child);
+      update_and_transfer_ownership_to_py_tree(std::move(t.children[i]),py_child);
       ++i;
       ++i_py;
     } else { // since t and py_tree have the same order
@@ -192,7 +190,7 @@ update_and_transfer_ownership_to_py_tree(tree& t, py::list py_tree) -> void {
     }
   }
   for (; i<n_child; ++i) {
-    auto py_child = to_owning_py_tree(t.children[i]);
+    auto py_child = to_owning_py_tree(std::move(t.children[i]));
     py_children.append(py_child);
   }
 }
