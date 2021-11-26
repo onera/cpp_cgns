@@ -92,20 +92,6 @@ inline auto  last_child(const tree& t) -> auto { return t.children.end()  ; }
 /// rooted graph interface }
 
 
-/// range {
-/// TODO write proper range without using ref_wrapper (too complicated)
-template<class Tree> using ref = std::reference_wrapper<Tree>;
-template<class Tree> using range = std::vector<Tree>;
-template<class Tree> using range_of_ref = range<ref<Tree>>;
-
-using tree_ref       = ref<      tree>;
-using const_tree_ref = ref<const tree>;
-
-using tree_range       = range_of_ref<      tree>;
-using const_tree_range = range_of_ref<const tree>;
-/// range }
-
-
 /// children {
 inline auto
 emplace_child(tree& t, tree&& c) -> tree& {

@@ -13,6 +13,22 @@ TEST_CASE("find nodes") {
   };
 
   SUBCASE("get_nodes_by_matching") {
+    tree_range bs = get_children_by_label(t,"B_t");
+    CHECK( bs.size() == 2 );
+    CHECK( bs[0].name == "B0" );
+    CHECK( bs[1].name == "B1" );
+
+    SUBCASE("references") {
+      //tree_range is made of references, we can assign to the origin tree through them
+      bs[0].name = "X2";
+      bs[1].name = "X3";
+
+      CHECK( t.children[0].name == "X2" );
+      CHECK( t.children[1].name == "X3" );
+    }
+  }
+
+  SUBCASE("get_nodes_by_matching") {
     auto ns = get_nodes_by_matching(t,"B_t/D");
 
     CHECK( ns.size() == 2 );
