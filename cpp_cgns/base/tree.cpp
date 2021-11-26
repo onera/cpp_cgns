@@ -19,8 +19,7 @@ same_tree_structure(const tree& x, const tree& y) -> bool {
     bool same_node =  x.name==y.name  &&  x.label==y.label;
     return !same_node  ||  x.children.size() != y.children.size();
   };
-  auto first_different_node = std_e::preorder_depth_first_find_adjacencies(xy,different_node);
-  return first_different_node == last_root(xy);
+  return !std_e::preorder_depth_first_find_adjacencies_b(xy,different_node);
 }
 
 auto
@@ -32,8 +31,7 @@ operator==(const tree& x, const tree& y) -> bool {
     bool same_node =  x.name==y.name  &&  x.label==y.label  &&  x.value==y.value;
     return !same_node  ||  x.children.size() != y.children.size();
   };
-  auto first_different_node = std_e::preorder_depth_first_find_adjacencies(xy,different_node);
-  return first_different_node == last_root(xy);
+  return !std_e::preorder_depth_first_find_adjacencies_b(xy,different_node);
 }
 
 auto

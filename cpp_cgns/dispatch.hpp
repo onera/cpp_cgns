@@ -7,13 +7,13 @@
 namespace cgns {
 
 
-template<class F> auto
-dispatch_I4_I8(const std::string& type, F f) {
+template<class F, class... Args> auto
+dispatch_I4_I8(const std::string& type, F f, Args&&... args) {
   if (type=="I4") {
-    return f(I4{});
+    return f(I4{},FWD(args)...);
   }
   if (type=="I8") {
-    return f(I8{});
+    return f(I8{},FWD(args)...);
   }
   throw cgns_exception("dispatch_I4_I8 expects an integer data_type, but got "+type);
 }

@@ -85,14 +85,10 @@ inline auto  first_root(const tree& t) -> const tree* { return  &t   ; }
 inline auto   last_root(      tree& t) ->       tree* { return (&t)+1; }
 inline auto   last_root(const tree& t) -> const tree* { return (&t)+1; }
 
-//inline auto first_child(      tree& t) ->       auto  { return t.children.begin(); }
-//inline auto first_child(const tree& t) ->       auto  { return t.children.begin(); }
-//inline auto  last_child(      tree& t) ->       auto  { return t.children.end  (); }
-//inline auto  last_child(const tree& t) ->       auto  { return t.children.end  (); }
-inline auto first_child(      tree& t) ->       tree* { return t.children.data()                    ; }
-inline auto first_child(const tree& t) -> const tree* { return t.children.data()                    ; }
-inline auto  last_child(      tree& t) ->       tree* { return t.children.data() + t.children.size(); }
-inline auto  last_child(const tree& t) -> const tree* { return t.children.data() + t.children.size(); }
+inline auto first_child(      tree& t) -> auto { return t.children.begin(); }
+inline auto first_child(const tree& t) -> auto { return t.children.begin(); }
+inline auto  last_child(      tree& t) -> auto { return t.children.end()  ; }
+inline auto  last_child(const tree& t) -> auto { return t.children.end()  ; }
 /// rooted graph interface }
 
 
