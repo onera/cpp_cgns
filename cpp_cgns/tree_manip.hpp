@@ -90,12 +90,7 @@ bool has_child_by_predicate(const tree& t, Unary_pred p) {
 template<class Tree, class Unary_pred> auto
 get_children_by_predicate(Tree& t, Unary_pred p) -> Tree_range<Tree>{
   Tree_range<Tree> sub_ts;
-  //std::copy_if(begin(children(t)),end(children(t)),std::back_inserter(sub_ts),p);
-  for (auto& c : children(t)) {
-    if (p(c)) {
-      sub_ts.emplace_back(c);
-    }
-  }
+  std::copy_if(begin(children(t)),end(children(t)),back_inserter(sub_ts),p);
   return sub_ts;
 }
 template<class Tree, class Unary_pred> auto

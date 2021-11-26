@@ -109,10 +109,6 @@ class Tree_range {
     size() const -> int {
       return v.size();
     }
-    //auto
-    //operator[](int i) -> Tree& {
-    //  return *v[i];
-    //}
     auto
     operator[](int i) const -> Tree& {
       return *v[i];
@@ -146,6 +142,47 @@ class Tree_range {
 
 using tree_range = Tree_range<tree>;
 using const_tree_range  = Tree_range<const tree>;
+
+
+// back_inserter {
+/// NOTE: std::back_inserter can't be used
+/// because Tree_range<Tree> has value semantics
+/// and hence  Tree_range<Tree>::value_type can't be defined
+template<class Tree>
+class tree_range_back_inserter {
+  private:
+    Tree_range<Tree>* c_ptr;
+  public:
+    using value_type = void;
+    using iterator_category = std::output_iterator_tag;
+    using difference_type = ptrdiff_t;
+    using pointer = void;
+    using reference = void;
+    using container_type = Tree_range<Tree>;
+
+    tree_range_back_inserter(Tree_range<Tree>& c)
+      : c_ptr(&c)
+    {}
+    tree_range_back_inserter& operator=(Tree& t) {
+      c_ptr->emplace_back(t);
+      return *this;
+    }
+    auto operator*() -> tree_range_back_inserter& {
+      return *this;
+    }
+    auto operator++() -> tree_range_back_inserter& {
+      return *this;
+    }
+    auto operator++(int) -> tree_range_back_inserter& {
+      return *this;
+    }
+};
+
+template<class Tree> auto
+back_inserter(Tree_range<Tree>& t) {
+  return tree_range_back_inserter<Tree>(t);
+}
+// back_inserter }
 
 
 } // cgns
