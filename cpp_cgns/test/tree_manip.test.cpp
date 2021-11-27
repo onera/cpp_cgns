@@ -6,8 +6,8 @@ using namespace cgns;
 TEST_CASE("find nodes") {
   tree t = {
     "A", "A_t", MT(), {
-      tree{"B0", "B_t", MT(), {
-          tree{"D", "A_t", MT(), {}} } },
+      tree{"B0", "B_t", node_value(std::vector<I4>{0,1,2}), {
+          tree{"D", "A_t", node_value({{3.,4.,5.},{6.,7.,8.}}), {}} } },
       tree{"B1", "B_t", MT(), {
           tree{"D", "D_t", MT(), {}} } } }
   };
@@ -91,5 +91,19 @@ TEST_CASE("find nodes") {
     const tree& n1 = ns[1];
     CHECK( n1.name  == "D" );
     CHECK( n1.label == "A_t" );
+  }
+
+  SUBCASE("get values") {
+    std_e::span<I4> val_A = get_child_value_by_name<I4>(t,"B0");
+    CHECK( val_A.size() == 3 );
+    CHECK( val_A == std::vector{0,1,2} );
+
+    CHECK_THROWS_AS( get_child_value_by_name<C1>(t,"B0"), const cgns_exception& );
+
+    md_array_view<R8,2> val_D = get_node_value_by_matching<R8,2>(t,"B_t/D");
+    CHECK( val_D.rank() == 2 );
+    CHECK( val_D.extent(0) == 2 );
+    CHECK( val_D.extent(1) == 3 );
+    CHECK( val_D == md_array<R8,2>{{3.,4.,5.},{6.,7.,8.}} );
   }
 }

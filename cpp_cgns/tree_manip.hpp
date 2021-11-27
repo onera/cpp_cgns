@@ -261,14 +261,14 @@ get_node_by_name(Tree& t, const std::string& name) -> decltype(auto) {
 
 /// common searches }
 // tree search }
-template<class T, int N, class Tree> auto
-throw_if_incorrect_array_type(const Tree& x) -> void {
-  if (value(x).data_type!=to_string<T>()) {
-    throw cgns_exception("Value of node \""+name(x)+"\" is of type "+value(x).data_type
+template<class T, int N> auto
+throw_if_incorrect_array_type(const tree& x) -> void {
+  if (!holds_alternative<T>(x.value)) {
+    throw cgns_exception("Value of node \""+x.name+"\" is of type "+x.value.data_type()
                        + " but was asked to be of type "+to_string<T>());
   }
-  if (N!=std_e::dynamic_size && int(value(x).dims.size())!=N) {
-    throw cgns_exception("Array rank of node \""+name(x)+"\" is "+std::to_string(value(x).dims.size())
+  if (N!=std_e::dynamic_size && x.value.rank()!=N) {
+    throw cgns_exception("Array rank of node \""+name(x)+"\" is "+std::to_string(x.value.rank())
                        + " but was asked to be "+std::to_string(N));
   }
 }

@@ -121,6 +121,13 @@ class node_value : public node_value_impl {
     node_value& operator=(node_value&&) = default;
 
   // data type
+    template<class T>
+      requires is_cgns_data_type<T>
+        friend auto
+    holds_alternative(const node_value& x) -> bool {
+      const auto& rng = x.underlying_range();
+      return holds_alternative<T>(rng);
+    }
     auto
     data_type() const -> std::string {
       const auto& rng = underlying_range();
