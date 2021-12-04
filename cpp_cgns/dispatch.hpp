@@ -42,8 +42,8 @@ dispatch_on_data_type(const std::string& type, F f, Args&&... args) {
 
 
 
-inline auto _data_type(const tree      & t) -> std::string { return t.value.data_type(); }
-inline auto _data_type(const node_value& x) -> std::string { return x.      data_type(); }
+inline auto _data_type(const tree      & t) -> std::string { return value(t).data_type(); }
+inline auto _data_type(const node_value& x) -> std::string { return x       .data_type(); }
 
 template<class F, class T> auto
 // requires T is [const]tree or [const]node_value

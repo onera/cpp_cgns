@@ -175,8 +175,8 @@ new_IndexArray(const std::string& name, std::initializer_list<I> pl) -> tree {
 
 template<class I> auto
 new_PointList(const std::string& name, std::vector<I>&& point_list) -> tree {
-  std::vector dims = {1,point_list.size()}; // required by SIDS (9.3: BC_t)
-  node_value pl_value = node_value(std::move(point_list),std::move(dims));
+  std::vector<I8> dims = {1,(I8)point_list.size()}; // required by SIDS (9.3: BC_t)
+  node_value pl_value(std::move(point_list),std::move(dims));
   return {name, "IndexArray_t", std::move(pl_value)};
 }
 template<class I> auto

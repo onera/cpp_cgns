@@ -1,6 +1,7 @@
 #include "std_e/unit_test/doctest.hpp"
 #include "cpp_cgns/base/node_value_conversion.hpp"
 #include "std_e/log.hpp"
+#include "std_e/multi_array/utils.hpp"
 
 
 using namespace cgns;
@@ -95,6 +96,27 @@ TEST_CASE("view_as_md_array") {
     CHECK( x(0,4) == 4 );
     CHECK( x(0,5) == 7 );
   }
+}
+
+TEST_CASE("view_as_array") {
+  node_value x0 = {0,1,2};
+  node_value x1 = {{3,4,5}};
+  node_value x2 = {{6},{7},{8}};
+  node_value x3 = {{ 9,11,13},
+                   {10,12,14}};
+
+  CHECK( view_as_array<I4>(x0) == std::vector{0,1,2} );
+  CHECK( view_as_array<I4,2>(x1) == md_array<I4,2>{{3,4,5}} );
+  CHECK( view_as_array<I4,2>(x2) == md_array<I4,2>{{6},{7},{8}} );
+  CHECK( view_as_array<I4,2>(x3) == md_array<I4,2>{{9,11,13},{10,12,14}} );
+
+  // multi-dim arrays which have a 1D shape can be seen as 1D
+  CHECK( view_as_array<I4>(x1) == std::vector{3,4,5} );
+  CHECK( view_as_array<I4>(x2) == std::vector{6,7,8} );
+
+  // other rank changes result in an error
+  CHECK_THROWS_AS( (view_as_array<I4,2>(x0)) , const cgns_exception& );
+  CHECK_THROWS_AS( view_as_array<I4>(x3) , const cgns_exception& );
 }
 
 

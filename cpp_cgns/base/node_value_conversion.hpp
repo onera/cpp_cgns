@@ -59,11 +59,21 @@ view_as_md_array(const node_value& x, std::vector<I8> dims) -> md_array_view<con
 
 /// node_value -> any array {
 template<class T, int N = 1, class Node_value> auto
-view_as_array(Node_value& value) {
+view_as_array(Node_value& x) {
   if constexpr (N==1) {
-    return view_as_span<T>(value);
+    if (!std_e::is_one_dimensional(x.extent())) {
+      throw cgns_exception(
+        "Trying to view an array of extent "+std_e::to_string(x.extent())+" as a mono-dimensional array"
+      );
+    }
+    return view_as_span<T>(x);
   } else {
-    return view_as_md_array<T,N>(value);
+    if (x.rank()!=N) {
+      throw cgns_exception(
+        "Trying to view an array of rank "+std::to_string(x.rank())+" as an array of rank "+std::to_string(N)
+      );
+    }
+    return view_as_md_array<T,N>(x);
   }
 }
 /// node_value -> any array }

@@ -30,7 +30,7 @@ point_range_to_interval(const tree& pr) -> cgns::interval<I8>;
 
 template<class I, class Tree> auto
 regular_elements_connectivities(Tree& elements_node) -> md_array_view<I,2> {
-  STD_E_ASSERT(elements_node.label=="Elements_t");
+  STD_E_ASSERT(label(elements_node)=="Elements_t");
   ElementType_t elt_type = element_type(elements_node);
   I8 n_node_for_elt_type = number_of_nodes(elt_type);
   I8 n_elt = nb_of_elements(elements_node);
@@ -80,13 +80,11 @@ elts_types_are_unique(const Tree_range& elt_pools) -> bool {
 
 template<class I, class Tree> auto
 PointList(Tree& t) {
-  auto& pl_node = get_child_by_name(t,"PointList");
-  return view_as_span<I>(pl_node.value);
+  return get_child_value_by_name<I>(t,"PointList");
 }
 template<class I, class Tree> auto
 PointListDonor(Tree& t) {
-  auto& pl_node = get_child_by_name(t,"PointListDonor");
-  return view_as_span<I>(pl_node.value);
+  return get_child_value_by_name<I>(t,"PointListDonor");
 }
 
 

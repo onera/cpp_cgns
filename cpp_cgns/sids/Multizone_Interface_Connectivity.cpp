@@ -8,8 +8,8 @@
 namespace cgns {
 
 std::string ZoneDonorName(const tree& gc) {
-  STD_E_ASSERT(gc.label=="GridConnectivity_t");
-  return to_string(gc.value);
+  STD_E_ASSERT(label(gc)=="GridConnectivity_t");
+  return to_string(value(gc));
 }
 
 } // cgns

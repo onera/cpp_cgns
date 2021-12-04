@@ -15,16 +15,16 @@ TEST_CASE("find nodes") {
   SUBCASE("get_nodes_by_matching") {
     tree_range bs = get_children_by_label(t,"B_t");
     CHECK( bs.size() == 2 );
-    CHECK( bs[0].name == "B0" );
-    CHECK( bs[1].name == "B1" );
+    CHECK( name(bs[0]) == "B0" );
+    CHECK( name(bs[1]) == "B1" );
 
     SUBCASE("references") {
       //tree_range is made of references, we can assign to the origin tree through them
-      bs[0].name = "X2";
-      bs[1].name = "X3";
+      name(bs[0]) = "X2";
+      name(bs[1]) = "X3";
 
-      CHECK( t.children[0].name == "X2" );
-      CHECK( t.children[1].name == "X3" );
+      CHECK( name(child(t,0)) == "X2" );
+      CHECK( name(child(t,1)) == "X3" );
     }
   }
 
@@ -34,12 +34,12 @@ TEST_CASE("find nodes") {
     CHECK( ns.size() == 2 );
 
     const tree& n0 = ns[0];
-    CHECK( n0.name  == "D" );
-    CHECK( n0.label == "A_t" );
+    CHECK( name(n0)  == "D" );
+    CHECK( label(n0) == "A_t" );
 
     const tree& n1 = ns[1];
-    CHECK( n1.name  == "D" );
-    CHECK( n1.label == "D_t" );
+    CHECK( name(n1)  == "D" );
+    CHECK( label(n1) == "D_t" );
   }
 
   SUBCASE("get_nodes_by_matching -- const version") {
@@ -50,19 +50,19 @@ TEST_CASE("find nodes") {
     CHECK( ns.size() == 2 );
 
     const tree& n0 = ns[0];
-    CHECK( n0.name  == "D" );
-    CHECK( n0.label == "A_t" );
+    CHECK( name(n0)  == "D" );
+    CHECK( label(n0) == "A_t" );
 
     const tree& n1 = ns[1];
-    CHECK( n1.name  == "D" );
-    CHECK( n1.label == "D_t" );
+    CHECK( name(n1)  == "D" );
+    CHECK( label(n1) == "D_t" );
   }
 
   SUBCASE("get_node_by_matching") {
     auto& n = get_node_by_matching(t,"B_t/D");
 
-    CHECK( n.name  == "D" );
-    CHECK( n.label == "A_t" );
+    CHECK( name(n)  == "D" );
+    CHECK( label(n) == "A_t" );
   }
 
   SUBCASE("get_nodes_by_name") {
@@ -71,12 +71,12 @@ TEST_CASE("find nodes") {
     CHECK( ns.size() == 2 );
 
     const tree& n0 = ns[0];
-    CHECK( n0.name  == "D" );
-    CHECK( n0.label == "A_t" );
+    CHECK( name(n0)  == "D" );
+    CHECK( label(n0) == "A_t" );
 
     const tree& n1 = ns[1];
-    CHECK( n1.name  == "D" );
-    CHECK( n1.label == "D_t" );
+    CHECK( name(n1)  == "D" );
+    CHECK( label(n1) == "D_t" );
   }
 
   SUBCASE("get_nodes_by_label") {
@@ -85,12 +85,12 @@ TEST_CASE("find nodes") {
     CHECK( ns.size() == 2 );
 
     const tree& n0 = ns[0];
-    CHECK( n0.name  == "A" );
-    CHECK( n0.label == "A_t" );
+    CHECK( name(n0)  == "A" );
+    CHECK( label(n0) == "A_t" );
 
     const tree& n1 = ns[1];
-    CHECK( n1.name  == "D" );
-    CHECK( n1.label == "A_t" );
+    CHECK( name(n1)  == "D" );
+    CHECK( label(n1) == "A_t" );
   }
 
   SUBCASE("get values") {

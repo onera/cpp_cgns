@@ -14,12 +14,12 @@ namespace cgns {
 
 /// common predicates {
 auto
-is_of_name(const tree& t, const std::string& name) -> bool {
-  return t.name == name;
+is_of_name(const tree& t, const std::string& s) -> bool {
+  return name(t) == s;
 }
 auto
-is_of_label(const tree& t, const std::string& label) -> bool {
-  return t.label == label;
+is_of_label(const tree& t, const std::string& s) -> bool {
+  return label(t) == s;
 }
 auto
 is_of_labels(const tree& t, const std::vector<std::string>& labels) -> bool {

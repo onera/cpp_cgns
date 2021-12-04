@@ -31,7 +31,7 @@ const tree my_I8_tree = {"Test","Test_t", node_value(I8_value), {} };
 // The type I will either be I4 or I8
 template<class I> auto
 my_templated_query(const tree& node) -> I {
-  auto ptr = data_as<I>(node.value); // We need to know the type of the node value to correctly cast it
+  auto ptr = data_as<I>(value(node)); // We need to know the type of the node value to correctly cast it
   return *ptr; // if given my_I4_tree, will return 42
                // if given my_I8_tree, will return 10'000'000'000ll
 }

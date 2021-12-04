@@ -10,40 +10,55 @@ namespace cgns {
 
 template<class... Ts>
 // requires Ts...==C1,I4,I8,R4,R8;
-class dt_ref_variant : public std_e::reference_variant<Ts...> {
+class scalar_ref_variant : public std_e::reference_variant<Ts...> {
   public:
     using base = std_e::reference_variant<Ts...>;
     using base::base;
 
-  // assignement
-    // exact same type
-    template<class T>
-      requires std_e::exactly_once<T,Ts...>
+  // utility
     auto
-    operator=(const T& x) -> dt_ref_variant& {
-      base& self_as_base = *this;
-      self_as_base = x;
-      return *this;
+    data_type() const -> std::string {
+      const base& self_as_base = *this;
+      return visit([]<class T>(const T&){ return to_string<T>(); } , self_as_base);
     }
-    /// handle safe cases 
+
+  // assignement
+    /// I4 can be promoted to I8
     constexpr
-    dt_ref_variant& operator=(const I4& x) {
+    scalar_ref_variant& operator=(const I4& x) {
       static_assert(std_e::exactly_once<I4,Ts...>); // ensures non-const versions
       if (holds_alternative<I8>(*this)) {
         get<I8>(*this) = x;
-      } else {
+      } else if (holds_alternative<I4>(*this)) {
         get<I4>(*this) = x;
+      } else {
+        throw cgns_exception("Narrowing conversion from "+to_string<I4>()+" to "+data_type());
       }
       return *this;
     }
+    /// R4 can be promoted to R8
     constexpr
-    dt_ref_variant& operator=(const R4& x) {
+    scalar_ref_variant& operator=(const R4& x) {
       static_assert(std_e::exactly_once<R4,Ts...>); // ensures non-const versions
       if (holds_alternative<R8>(*this)) {
         get<R8>(*this) = x;
-      } else {
+      } else if (holds_alternative<R4>(*this)) {
         get<R4>(*this) = x;
+      } else {
+        throw cgns_exception("Narrowing conversion from "+to_string<R4>()+" to "+data_type());
       }
+      return *this;
+    }
+    /// else we require the same type
+    template<class T>
+      requires std_e::exactly_once<T,Ts...>
+    constexpr
+    scalar_ref_variant& operator=(const T& x) {
+      base& self_as_base = *this;
+      if (!holds_alternative<T>(self_as_base)) {
+        throw cgns_exception("Narrowing conversion from "+to_string<T>()+" to "+data_type());
+      }
+      self_as_base = x;
       return *this;
     }
 
@@ -79,12 +94,18 @@ class dt_ref_variant : public std_e::reference_variant<Ts...> {
 };
 
 
-using dt_ref_var = dt_ref_variant<C1,I4,I8,R4,R8>;
+using scalar_ref = scalar_ref_variant<C1,I4,I8,R4,R8>;
+using scalar_const_ref = scalar_ref_variant<const C1,const I4,const I8,const R4,const R8>;
+template<class T> concept Scalar_ref = std::is_same_v<T,scalar_ref> || std::is_same_v<T,scalar_const_ref>;
 
-template<class T>
-  requires std_e::exactly_once<T,C1,I4,I8,R4,R8>
+
+struct scalar {}; // Not used for now...
+template<class T> concept Scalar = std::is_same_v<T,scalar> || Scalar_ref<T>;
+
+
+template<Scalar S, Data_type T>
 constexpr auto
-operator==(const dt_ref_var& x, T y) -> bool {
+operator==(const S& x, T y) -> bool {
   if (holds_alternative<T>(x)) { // if same underlying type, cast and compare
     return T(x)==y;
   } else if (holds_alternative<R4>(x) && std::is_same_v<T,R8>) { // compare R4 and R8
@@ -99,22 +120,19 @@ operator==(const dt_ref_var& x, T y) -> bool {
     return false;
   }
 }
-template<class T>
-  requires std_e::exactly_once<T,C1,I4,I8,R4,R8>
+template<Scalar S, Data_type T>
 constexpr auto
-operator==(T x, const dt_ref_var& y) -> bool {
+operator==(T x, const S& y) -> bool {
   return y==x;
 }
-template<class T>
-  requires std_e::exactly_once<T,C1,I4,I8,R4,R8>
+template<Scalar S, Data_type T>
 constexpr auto
-operator!=(const dt_ref_var& x, T y) -> bool {
+operator!=(const S& x, T y) -> bool {
   return !(x==y);
 }
-template<class T>
-  requires std_e::exactly_once<T,C1,I4,I8,R4,R8>
+template<Scalar S, Data_type T>
 constexpr auto
-operator!=(T x, const dt_ref_var& y) -> bool {
+operator!=(T x, const S& y) -> bool {
   return !(x==y);
 }
 

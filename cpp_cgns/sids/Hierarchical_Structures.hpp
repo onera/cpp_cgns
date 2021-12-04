@@ -14,13 +14,13 @@ namespace cgns {
 /// 6.3 Zone Structure Definition: Zone_t
 template<class I, class Tree> auto
 dims_of_unstruct_zone(Tree& z) {
-  STD_E_ASSERT(z.label=="Zone_t");
+  STD_E_ASSERT(label(z)=="Zone_t");
   if (!is_unstructured_zone(z))
     throw cgns_exception("dims_of_unstruct_zone expects an unstructured z");
-  if (z.value.rank()!=2 || z.value.extent(0)!=1 || z.value.extent(1)!=3)
+  if (value(z).rank()!=2 || value(z).extent(0)!=1 || value(z).extent(1)!=3)
     throw cgns_exception("CGNS requires unstructured zone dimensions to be an array of shape {1x3}");
 
-  I* zone_dims_ptr = (I*)z.value.data();
+  I* zone_dims_ptr = (I*)value(z).data();
   return std_e::make_span<2>(zone_dims_ptr);
 }
 

@@ -16,8 +16,8 @@ same_tree_structure(const tree& x, const tree& y) -> bool {
   auto different_node = [&](const auto& xy){
     const tree& x = xy.first;
     const tree& y = xy.second;
-    bool same_node =  x.name==y.name  &&  x.label==y.label;
-    return !same_node  ||  x.children.size() != y.children.size();
+    bool same_node_structure =  name(x)==name(y)  &&  label(x)==label(y);
+    return !same_node_structure  ||  number_of_children(x) != number_of_children(y);
   };
   return !std_e::preorder_depth_first_find_adjacencies_b(xy,different_node);
 }
@@ -28,8 +28,8 @@ operator==(const tree& x, const tree& y) -> bool {
   auto different_node = [&](const auto& xy){
     const tree& x = xy.first;
     const tree& y = xy.second;
-    bool same_node =  x.name==y.name  &&  x.label==y.label  &&  x.value==y.value;
-    return !same_node  ||  x.children.size() != y.children.size();
+    bool same_node =  name(x)==name(y)  &&  label(x)==label(y)  &&  value(x)==value(y);
+    return !same_node  ||  number_of_children(x) != number_of_children(y);
   };
   return !std_e::preorder_depth_first_find_adjacencies_b(xy,different_node);
 }
@@ -45,8 +45,8 @@ operator!=(const tree& x, const tree& y) -> bool {
 auto to_string_impl(const tree& t, const std::string& indent, int threshold) -> std::string {
   // TODO replace by dfs
   static const std::string unit_indent = "  ";
-  std::string s = indent + t.name + ", " + to_string(t.value,threshold) + ", " + t.label + "\n";
-  for (const auto& c : t.children) {
+  std::string s = indent + name(t) + ", " + to_string(value(t),threshold) + ", " + label(t) + "\n";
+  for (const tree& c : children(t)) {
     s += to_string_impl(c,indent+unit_indent,threshold);
   }
   return s;

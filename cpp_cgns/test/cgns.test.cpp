@@ -13,18 +13,18 @@ TEST_CASE("Hand-written tree construction") {
     {} // children (none here)
   };
 
-  CHECK( t.name == "MyArray" );
+  CHECK( name(t) == "MyArray" );
 
-  CHECK( t.value.data_type() == "R8" );
-  CHECK( t.value.rank() == 1 );
-  CHECK( t.value.extent(0) == 3 );
-  CHECK( t.value(0) == 42. );
-  CHECK( t.value(1) == 43. );
-  CHECK( t.value(2) == 44. );
+  CHECK( value(t).data_type() == "R8" );
+  CHECK( value(t).rank() == 1 );
+  CHECK( value(t).extent(0) == 3 );
+  CHECK( value(t)(0) == 42. );
+  CHECK( value(t)(1) == 43. );
+  CHECK( value(t)(2) == 44. );
 
-  CHECK( t.children.size() == 0 );
+  CHECK( number_of_children(t) == 0 );
 
-  CHECK( t.label == "DataArray_t" );
+  CHECK( label(t) == "DataArray_t" );
 
 
 
@@ -39,8 +39,8 @@ TEST_CASE("Hand-written tree construction") {
     };
     emplace_child(t,std::move(sub_t));
 
-    CHECK( t.children.size() == 1 );
-    CHECK( t.children[0].name == "SubArray" );
+    CHECK( number_of_children(t) == 1 );
+    CHECK( name(child(t,0)) == "SubArray" );
   }
 }
 

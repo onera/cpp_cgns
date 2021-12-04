@@ -19,7 +19,7 @@ template<class T> using node_value_typed_array = std_e::polymorphic_array<T>;
 using node_value_array =
   std_e::variant_range<
     node_value_typed_array,
-    dt_ref_variant,
+    scalar_ref_variant,
     C1,I4,I8,R4,R8
   >;
 
@@ -43,7 +43,12 @@ class node_value : public node_value_impl {
     using base = node_value_impl;
 
   // ctor
+    /// special
     node_value() = default;
+    node_value(const node_value&) = delete;
+    node_value& operator=(const node_value&) = delete;
+    node_value(node_value&&) = default;
+    node_value& operator=(node_value&&) = default;
 
     /// from 1d range
     template<class Array>
@@ -89,19 +94,19 @@ class node_value : public node_value_impl {
 
     /// from init list
     template<class T>
-      requires is_cgns_data_type<T>
+      requires is_data_type<T>
     node_value(std::initializer_list<T>&& x)
       : node_value(std::vector<T>(x.begin(),x.end()))
     {}
     template<class T>
-      requires is_cgns_data_type<T>
+      requires is_data_type<T>
     node_value(std::initializer_list<std::initializer_list<T>>&& x)
       : node_value(md_array<T,dyn_rank>(std::move(x)))
     {}
 
     /// from scalar
     template<class T>
-      requires is_cgns_data_type<T>
+      requires is_data_type<T>
     node_value(T x)
       : node_value({x})
     {}
@@ -114,15 +119,9 @@ class node_value : public node_value_impl {
       : node_value(std::string(x))
     {}
 
-  // copy and move
-    node_value(const node_value&) = delete;
-    node_value& operator=(const node_value&) = delete;
-    node_value(node_value&&) = default;
-    node_value& operator=(node_value&&) = default;
-
   // data type
     template<class T>
-      requires is_cgns_data_type<T>
+      requires is_data_type<T>
         friend auto
     holds_alternative(const node_value& x) -> bool {
       const auto& rng = x.underlying_range();
@@ -156,14 +155,12 @@ class node_value : public node_value_impl {
     {}
 
 
-    template<class T> static auto
-    type_erase(std::vector<T>&& v) -> node_value_array {
-      std_e::polymorphic_array<T> parr(std::move(v));
-      return node_value_array(std::move(parr));
-    }
-    template<class T> static auto
-    type_erase(std_e::span<T>&& v) -> node_value_array {
-      std_e::polymorphic_array<T> parr(std::move(v));
+    template<class Array>
+      requires (std::is_rvalue_reference_v<Array&&>)
+       static auto
+    type_erase(Array&& arr) -> node_value_array {
+      using T = typename Array::value_type;
+      std_e::polymorphic_array<T> parr(std::move(arr));
       return node_value_array(std::move(parr));
     }
 };

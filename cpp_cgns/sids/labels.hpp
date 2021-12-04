@@ -4,7 +4,7 @@
 namespace cgns {
 
 
-enum class label {
+enum class cgns_label {
   DataClass_t,
   GridLocation_t,
   PointSetType_t,

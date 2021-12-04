@@ -129,6 +129,17 @@ TEST_CASE("node_value construction") {
       CHECK( x(2,0) == 2 ); CHECK( x(2,1) == 5 );
     }
   }
+
+  SUBCASE("const ") {
+    const node_value x(std::vector<I4>{42,43,44});
+
+    CHECK( x.rank() == 1 );
+    CHECK( x.extent(0) == 3 );
+    CHECK( x.data_type() == "I4" );
+    CHECK( x(0) == 42 );
+    CHECK( x(1) == 43 );
+    CHECK( x(2) == 44 );
+  }
 }
 
 
@@ -261,5 +272,15 @@ TEST_CASE("node_value assignments") {
       CHECK_THROWS_AS(x(0) = I4(0), const std::bad_variant_access&);
       CHECK_THROWS_AS(x(0) = I8(0), const std::bad_variant_access&);
     }
+  }
+
+  SUBCASE("multi dimensional") {
+    node_value x({{0,1,2},{3,4,5}});
+
+    x(0,0) = I4( 0);  x(0,1) = I4(10);  x(0,2) = I4(20);
+    x(1,0) = I4(30);  x(1,1) = I4(40);  x(1,2) = I4(50);
+
+    CHECK( x(0,0) ==  0 ); CHECK( x(0,1) == 10 ); CHECK( x(0,2) == 20 );
+    CHECK( x(1,0) == 30 ); CHECK( x(1,1) == 40 ); CHECK( x(1,2) == 50 );
   }
 }
