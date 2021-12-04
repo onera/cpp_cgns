@@ -1,6 +1,5 @@
 #include "std_e/unit_test/doctest.hpp"
 #include "cpp_cgns/base/node_value_conversion.hpp"
-#include "std_e/log.hpp"
 #include "std_e/multi_array/utils.hpp"
 
 

@@ -22,7 +22,7 @@ is_of_label(const tree& t, const std::string& s) -> bool {
   return label(t) == s;
 }
 auto
-is_of_labels(const tree& t, const std::vector<std::string>& labels) -> bool {
+is_one_of_labels(const tree& t, const std::vector<std::string>& labels) -> bool {
   return std::any_of(begin(labels),end(labels),[&t](const std::string& label){ return is_of_label(t,label); });
 }
 

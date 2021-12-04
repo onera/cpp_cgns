@@ -207,10 +207,10 @@ TEST_CASE("node_value assignments") {
     CHECK( x == std::string("Carol & Bob") );
 
     SUBCASE("forbidded conversions") {
-      CHECK_THROWS_AS(x(0) = I4(0), const std::bad_variant_access&);
-      CHECK_THROWS_AS(x(0) = I8(0), const std::bad_variant_access&);
-      CHECK_THROWS_AS(x(0) = R4(0.), const std::bad_variant_access&);
-      CHECK_THROWS_AS(x(0) = R8(0.), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = I4(0), const cgns_exception&);
+      CHECK_THROWS_AS(x(0) = I8(0), const cgns_exception&);
+      CHECK_THROWS_AS(x(0) = R4(0.), const cgns_exception&);
+      CHECK_THROWS_AS(x(0) = R8(0.), const cgns_exception&);
     }
   }
 
@@ -222,10 +222,10 @@ TEST_CASE("node_value assignments") {
     CHECK( x == std::vector<I4>({100,43,44}) );
 
     SUBCASE("forbidded conversions") {
-      CHECK_THROWS_AS(x(0) = C1('A'), const std::bad_variant_access&);
-      CHECK_THROWS_AS(x(0) = I8(0), const std::bad_variant_access&);
-      CHECK_THROWS_AS(x(0) = R4(0.), const std::bad_variant_access&);
-      CHECK_THROWS_AS(x(0) = R8(0.), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = C1('A'), const cgns_exception&);
+      CHECK_THROWS_AS(x(0) = I8(0), const cgns_exception&);
+      CHECK_THROWS_AS(x(0) = R4(0.), const cgns_exception&);
+      CHECK_THROWS_AS(x(0) = R8(0.), const cgns_exception&);
     }
   }
   SUBCASE("I8") {
@@ -237,9 +237,9 @@ TEST_CASE("node_value assignments") {
     CHECK( x == std::vector<I8>({10'000'000'000,46,100}) );
 
     SUBCASE("forbidded conversions") {
-      CHECK_THROWS_AS(x(0) = C1('A'), const std::bad_variant_access&);
-      CHECK_THROWS_AS(x(0) = R4(0.), const std::bad_variant_access&);
-      CHECK_THROWS_AS(x(0) = R8(0.), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = C1('A'), const cgns_exception&);
+      CHECK_THROWS_AS(x(0) = R4(0.), const cgns_exception&);
+      CHECK_THROWS_AS(x(0) = R8(0.), const cgns_exception&);
     }
   }
 
@@ -251,10 +251,10 @@ TEST_CASE("node_value assignments") {
     CHECK( x == std::vector<R4>({3.14f,1.5f}) );
 
     SUBCASE("forbidded conversions") {
-      CHECK_THROWS_AS(x(0) = C1('A'), const std::bad_variant_access&);
-      CHECK_THROWS_AS(x(0) = I4(0), const std::bad_variant_access&);
-      CHECK_THROWS_AS(x(0) = I8(0), const std::bad_variant_access&);
-      CHECK_THROWS_AS(x(0) = R8(0.), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = C1('A'), const cgns_exception&);
+      CHECK_THROWS_AS(x(0) = I4(0), const cgns_exception&);
+      CHECK_THROWS_AS(x(0) = I8(0), const cgns_exception&);
+      CHECK_THROWS_AS(x(0) = R8(0.), const cgns_exception&);
     }
   }
 
@@ -268,9 +268,9 @@ TEST_CASE("node_value assignments") {
     CHECK( x(1) == doctest::Approx(0.2) ); // Approx because 0.2f != 0.2
 
     SUBCASE("forbidded conversions") {
-      CHECK_THROWS_AS(x(0) = C1('A'), const std::bad_variant_access&);
-      CHECK_THROWS_AS(x(0) = I4(0), const std::bad_variant_access&);
-      CHECK_THROWS_AS(x(0) = I8(0), const std::bad_variant_access&);
+      CHECK_THROWS_AS(x(0) = C1('A'), const cgns_exception&);
+      CHECK_THROWS_AS(x(0) = I4(0), const cgns_exception&);
+      CHECK_THROWS_AS(x(0) = I8(0), const cgns_exception&);
     }
   }
 

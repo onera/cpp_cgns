@@ -12,7 +12,7 @@ namespace cgns {
 // predicates {
 auto is_of_name(const tree& tree, const std::string& name) -> bool;
 auto is_of_label(const tree& tree, const std::string& label) -> bool;
-auto is_of_labels(const tree& tree, const std::vector<std::string>& labels) -> bool;
+auto is_one_of_labels(const tree& tree, const std::vector<std::string>& labels) -> bool;
 
 template<class Unary_pred> auto has_child_by_predicate(const tree& t, Unary_pred p) -> bool;
                            auto has_child_of_name(const tree& t, const std::string& name) -> bool;
@@ -67,16 +67,6 @@ rm_child_by_predicate(tree& t, Unary_predicate p) -> void;
 // removal }
 
 
-
-
-// actions {
-//inline auto
-//deep_copy(const tree& /*t */, cgns_allocator& /* alloc */) -> tree {
-//  throw std_e::not_implemented_exception();
-//}
-// actions }
-
-
 // ====================== impl ======================
 
 /// by predicate {
@@ -118,7 +108,7 @@ get_children_by_label(Tree& t, const std::string& label) -> Tree_range<Tree> {
 }
 template<class Tree> auto
 get_children_by_labels(Tree& t, const std::vector<std::string>& labels) -> Tree_range<Tree> {
-  auto predicate = [&](const tree& child){ return is_of_labels(child,labels); };
+  auto predicate = [&](const tree& child){ return is_one_of_labels(child,labels); };
   return get_children_by_predicate(t,predicate);
 }
 template<class Tree> auto
@@ -244,7 +234,7 @@ get_nodes_by_label(Tree& t, const std::string& label) -> Tree_range<Tree> {
 }
 template<class Tree> auto
 get_nodes_by_labels(Tree& t, const std::vector<std::string>& labels) -> Tree_range<Tree> {
-  auto predicate = [&](auto& child){ return is_of_labels(child,labels); };
+  auto predicate = [&](auto& child){ return is_one_of_labels(child,labels); };
   return get_nodes_by_predicate(t,predicate);
 }
 template<class Tree> auto

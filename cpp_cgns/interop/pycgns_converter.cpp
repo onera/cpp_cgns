@@ -5,7 +5,6 @@
 
 #include "cpp_cgns/interop/node_value_conversion.hpp"
 #include "std_e/multi_index/cartesian_product_size.hpp"
-#include "std_e/log.hpp"
 
 
 namespace cgns {

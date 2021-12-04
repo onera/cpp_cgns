@@ -2,7 +2,6 @@
 
 
 #include <deque>
-#include <memory>
 #include "cpp_cgns/base/node_value.hpp"
 #include "std_e/meta/pack.hpp"
 #include <functional> // for std::reference_wrapper
@@ -14,9 +13,9 @@ namespace cgns {
 class tree;
 
 
-class tree_children : public std::vector<tree> {
+class tree_children : public std::deque<tree> {
   public:
-    using base = std::vector<tree>;// TODO use of std::deque to guarantee reference stability when adding childrens
+    using base = std::deque<tree>; // std::deque to guarantee reference stability when adding childrens
 
   // ctors
     /// special
@@ -173,16 +172,10 @@ child(const tree& t, int i) -> const tree& {
 
 
 // range {
-// TODO rename tree_range
 template<class Tree> using Tree_range = std::vector<std::reference_wrapper<Tree>>;
 
-//using tree_ref       = std::reference_wrapper<      tree>;
-//using const_tree_ref = std::reference_wrapper<const tree>;
-
-// TODO del
 using tree_range       = Tree_range<      tree>;
-//using const_tree_range = Tree_range<const tree>;
-
+using const_tree_range = Tree_range<const tree>;
 // range }
 
 
