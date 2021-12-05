@@ -1,53 +1,70 @@
 #include "std_e/unit_test/doctest.hpp"
 #include "cpp_cgns/cgns.hpp"
 
-
 using namespace cgns;
 
-
-TEST_CASE("Hand-written tree construction") {
+TEST_CASE("Hand-written tree construction - base") {
+  // [Sphinx Doc] cgns::tree first example {
   tree t = {
-    "MyArray", // name
-    "DataArray_t", // SIDS label
-    node_value({42.,43.,44.}), // value (here, the value will be hold by a std::vector)
-    {} // children (none here)
+    "Base", // node name
+    "CGNSBase_t", // SIDS label
+    node_value({3,3}), // 1D array of 3 I4
+    {
+      tree{"Z0","Zone_t",node_value({8 ,1,0})}, // first child
+      tree{"Z1","Zone_t",node_value({12,2,0})}  // second child
+    }
   };
 
-  CHECK( name(t) == "MyArray" );
+  CHECK( name(t) == "Base" ); // name(t) returns a `std::string&`
+  CHECK( label(t) == "CGNSBase_t" ); // label(t) returns a `std::string&`
 
-  CHECK( value(t).data_type() == "R8" );
+  // `value(t)` returns a `cgns::node_value`, which is a multi-dimensional array
+  CHECK( value(t).data_type() == "I4" );
   CHECK( value(t).rank() == 1 );
-  CHECK( value(t).extent(0) == 3 );
-  CHECK( value(t)(0) == 42. );
-  CHECK( value(t)(1) == 43. );
-  CHECK( value(t)(2) == 44. );
+  CHECK( value(t).extent(0) == 2 );
+  // since `value(t).rank()==1`, the array can be compared with a mono-dimensional array
+  CHECK( value(t) == std::vector{3,3} );
 
-  CHECK( number_of_children(t) == 0 );
+  // tree `t` has two children which are of type `cgns::tree` themselves
+  CHECK( number_of_children(t) == 2 );
 
-  CHECK( label(t) == "DataArray_t" );
+  // children can be accessed one by one through the `child(t,i)` function
+  CHECK( name(child(t,0)) == "Z0" );
+  CHECK( name(child(t,1)) == "Z1" );
 
-
-
-
-  SUBCASE("Adding a sub-tree as a child") {
-    md_array<I4,2> sub_values = {{2,3,4},{5,6,7}};
-    tree sub_t = {
-      "SubArray",
-      "IndexArray_t",
-      node_value(std::move(sub_values)),
-      {}
-    };
-    emplace_child(t,std::move(sub_t));
-
-    CHECK( number_of_children(t) == 1 );
-    CHECK( name(child(t,0)) == "SubArray" );
+  // the `children(t)` function can also be used
+  for (const tree& c : children(t)) {
+    CHECK( label(c) == "Zone_t" );
   }
+  // [Sphinx Doc] cgns::tree first example }
+}
+
+TEST_CASE("Adding a sub-tree as a child") {
+  // [Sphinx Doc] adding a child {
+  tree t = {
+    "MyNode",
+    "DataArray_t",
+    node_value({42.,43.,44.})
+  };
+
+  tree sub_t = {
+    "SubNode",
+    "IndexArray_t",
+    node_value({{2,3,4},{5,6,7}})
+  };
+
+  emplace_child(t,std::move(sub_t));
+
+  CHECK( number_of_children(t) == 1 );
+  CHECK( name(child(t,0)) == "SubNode" );
+  // [Sphinx Doc] adding a child }
 }
 
 
 
 
 TEST_CASE("tree equality") {
+  // [Sphinx Doc] tree equality {
   std::vector<I4> v0 = {0,1};
   std::vector<R8> v1 = {2.,3.,4.,5.};
   auto val0 = std_e::make_span(v0);
@@ -117,4 +134,5 @@ TEST_CASE("tree equality") {
   CHECK(  same_tree_structure(t0,t3) );
   CHECK( !same_tree_structure(t0,t4) );
   CHECK( !same_tree_structure(t0,t5) );
+  // [Sphinx Doc] tree equality }
 }

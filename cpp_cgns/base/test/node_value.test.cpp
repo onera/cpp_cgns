@@ -2,6 +2,7 @@
 #include "cpp_cgns/cgns.hpp"
 #include "cpp_cgns/base/node_value.hpp"
 #include <memory>
+#include "std_e/multi_array/utils.hpp"
 
 
 using namespace cgns;
@@ -9,13 +10,16 @@ using namespace cgns;
 
 TEST_CASE("node_value construction") {
   SUBCASE("empty") {
+    // [Sphinx Doc] empty node_value {
     node_value x;
     CHECK( x == MT() );
     CHECK( x.rank() == 0 );
     CHECK( x.data_type() == "MT" );
+    // [Sphinx Doc] empty node_value }
   }
 
   SUBCASE("from string") {
+    // [Sphinx Doc] node_value from string {
     node_value x("Alice & Bob");
 
     CHECK( x.rank() == 1 );
@@ -23,40 +27,51 @@ TEST_CASE("node_value construction") {
     CHECK( x.data_type() == "C1" );
     CHECK( x(0) == 'A' );
     CHECK( x(10) == 'b' );
+    // [Sphinx Doc] node_value from string }
   }
 
   SUBCASE("one dimension") {
     SUBCASE("from vector") {
-      node_value x0(std::vector<I4>{42,43,44});
-      node_value x1(std::vector<I8>{45,46,47});
-      node_value x2(std::vector<R4>{3.14f,2.7f});
-      node_value x3(std::vector<R8>{1.5,0.3});
-
-      CHECK( x0.rank() == 1 );
-      CHECK( x1.rank() == 1 );
-      CHECK( x2.rank() == 1 );
-      CHECK( x3.rank() == 1 );
-      CHECK( x0.extent(0) == 3 );
-      CHECK( x1.extent(0) == 3 );
-      CHECK( x2.extent(0) == 2 );
-      CHECK( x3.extent(0) == 2 );
-      CHECK( x0.data_type() == "I4" );
-      CHECK( x1.data_type() == "I8" );
-      CHECK( x2.data_type() == "R4" );
-      CHECK( x3.data_type() == "R8" );
-      CHECK( x0(0) == 42 );
-      CHECK( x0(1) == 43 );
-      CHECK( x0(2) == 44 );
-      CHECK( x1(0) == 45l );
-      CHECK( x1(1) == 46l );
-      CHECK( x1(2) == 47l );
-      CHECK( x2(0) == 3.14f );
-      CHECK( x2(1) == 2.7f );
-      CHECK( x3(0) == 1.5 );
-      CHECK( x3(1) == 0.3);
+      SUBCASE("I4") {
+        node_value x(std::vector<I4>{42,43,44});
+        CHECK( x.rank() == 1 );
+        CHECK( x.extent(0) == 3 );
+        CHECK( x.data_type() == "I4" );
+        CHECK( x(0) == I4(42) );
+        CHECK( x(1) == I4(43) );
+        CHECK( x(2) == I4(44) );
+      }
+      SUBCASE("I8") {
+        node_value x(std::vector<I8>{45,46,47});
+        CHECK( x.rank() == 1 );
+        CHECK( x.extent(0) == 3 );
+        CHECK( x.data_type() == "I8" );
+        CHECK( x(0) == I8(45) );
+        CHECK( x(1) == I8(46) );
+        CHECK( x(2) == I8(47) );
+      }
+      SUBCASE("R4") {
+        node_value x(std::vector<R4>{3.14f,2.7f});
+        CHECK( x.rank() == 1 );
+        CHECK( x.extent(0) == 2 );
+        CHECK( x.data_type() == "R4" );
+        CHECK( x(0) == 3.14f );
+        CHECK( x(1) == 2.7f );
+      }
+      SUBCASE("R8") {
+        // [Sphinx Doc] node_value from vec R8 {
+        node_value x(std::vector<R8>{1.5,0.3});
+        CHECK( x.rank() == 1 );
+        CHECK( x.extent(0) == 2 );
+        CHECK( x.data_type() == "R8" );
+        CHECK( x(0) == 1.5 );
+        CHECK( x(1) == 0.3);
+        // [Sphinx Doc] node_value from vec R8 }
+      }
     }
 
     SUBCASE("from initializer list") {
+      // [Sphinx Doc] node_value from init list {
       // Note: Shorthand for node_value(std::vector{...})
       // the underlying range of the node value will be a std::vector
       node_value x({42,43,44});
@@ -67,14 +82,16 @@ TEST_CASE("node_value construction") {
       CHECK( x(0) == 42 );
       CHECK( x(1) == 43 );
       CHECK( x(2) == 44 );
+      // [Sphinx Doc] node_value from init list }
     }
 
     SUBCASE("from span") {
+      // [Sphinx Doc] node_value from span I4 {
       std::vector<I4> v = {42,43,44};
       std_e::span<I4> s(v.data(),v.size());
       node_value x(s);
 
-      // Note: in this case, the node_value does not own its memory
+      // Note: the node_value does not own its memory
       CHECK( x.data() == v.data() );
 
       CHECK( x.rank() == 1 );
@@ -83,11 +100,13 @@ TEST_CASE("node_value construction") {
       CHECK( x(0) == 42 );
       CHECK( x(1) == 43 );
       CHECK( x(2) == 44 );
+      // [Sphinx Doc] node_value from span I4 }
     }
   }
 
   SUBCASE("multi dimensions") {
     SUBCASE("from md_array") {
+      // [Sphinx Doc] node_value from md_array {
       node_value x(md_array<I4,2>{{0,1,2},{3,4,5}});
       CHECK( x.rank() == 2 );
       CHECK( x.extent(0) == 2 );
@@ -95,9 +114,11 @@ TEST_CASE("node_value construction") {
       CHECK( x.data_type() == "I4" );
       CHECK( x(0,0) == 0 ); CHECK( x(0,1) == 1 ); CHECK( x(0,2) == 2 );
       CHECK( x(1,0) == 3 ); CHECK( x(1,1) == 4 ); CHECK( x(1,2) == 5 );
+      // [Sphinx Doc] node_value from md_array }
     }
 
     SUBCASE("from initializer list") {
+      // [Sphinx Doc] node_value from multi dim init_list {
       // Note: Shorthand for node_value(md_array{...})
       // the underlying range of the node value will be a vector
       node_value x({{0,1,2},{3,4,5}});
@@ -108,16 +129,18 @@ TEST_CASE("node_value construction") {
       CHECK( x.data_type() == "I4" );
       CHECK( x(0,0) == 0 ); CHECK( x(0,1) == 1 ); CHECK( x(0,2) == 2 );
       CHECK( x(1,0) == 3 ); CHECK( x(1,1) == 4 ); CHECK( x(1,2) == 5 );
+      // [Sphinx Doc] node_value from multi dim init_list }
     }
 
     SUBCASE("from md_array_view") {
+      // [Sphinx Doc] node_value from md_array_view {
       std::vector<I4> v = {0,1,2,3,4,5};
       md_array_shape<2> shape{{3,2}};
       auto s = std_e::make_span<I4>(v.data(),shape.size());
       md_array_view<I4,2> ma(s,shape);
       node_value x(std::move(ma));
 
-      // Note: in this case, the node_value does not own its memory
+      // Note: the node_value does not own its memory
       CHECK( x.data() == v.data() );
 
       CHECK( x.rank() == 2 );
@@ -127,6 +150,21 @@ TEST_CASE("node_value construction") {
       CHECK( x(0,0) == 0 ); CHECK( x(0,1) == 3 );
       CHECK( x(1,0) == 1 ); CHECK( x(1,1) == 4 );
       CHECK( x(2,0) == 2 ); CHECK( x(2,1) == 5 );
+      // [Sphinx Doc] node_value from md_array_view }
+    }
+
+    SUBCASE("from vector + reshape") {
+      // [Sphinx Doc] node_value reshape {
+      node_value x(std::vector<I4>{0,1,2,3,4,5});
+      cons_reshape(x,{2,3}); // `cons_` mean conservative: the total size should not change
+      CHECK( x.rank() == 2 );
+      CHECK( x.extent(0) == 2 );
+      CHECK( x.extent(1) == 3 );
+      CHECK( x.data_type() == "I4" );
+      // Note: Fortran order
+      CHECK( x(0,0) == 0 ); CHECK( x(0,1) == 2 ); CHECK( x(0,2) == 4 );
+      CHECK( x(1,0) == 1 ); CHECK( x(1,1) == 3 ); CHECK( x(1,2) == 5 );
+      // [Sphinx Doc] node_value reshape }
     }
   }
 
@@ -195,6 +233,26 @@ TEST_CASE("node_value comparisons") {
 }
 
 TEST_CASE("node_value assignments") {
+  SUBCASE("Principle of scalar_ref") {
+    // [Sphinx Doc] node_value scalar_ref {
+    node_value x({1.5,0.3});
+
+    scalar_ref x0 = x(0);
+
+    CHECK( x0.data_type() == "R8" );
+
+    x0 = 2.8; // x0 has reference semantics: assigning to it assigns to the underlying value
+    CHECK( x == std::vector{2.8,0.3} );
+
+    // promoting (here from R4 to R8) is allowed
+    x0 = R4(3.2);
+    CHECK( x0.data_type() == "R8" ); // the type didn't change, the R4 was converted to an R8
+    CHECK( x(0) == doctest::Approx(3.2) ); // Approx because 3.2f != 3.2
+
+    // narrowing (here from I4 to R8) is forbidden
+    CHECK_THROWS_AS( x0 = I4(0)  ,  const cgns_exception& );
+    // [Sphinx Doc] node_value scalar_ref }
+  }
 
   SUBCASE("C1") {
     node_value x("Alice & Bob");
@@ -207,10 +265,10 @@ TEST_CASE("node_value assignments") {
     CHECK( x == std::string("Carol & Bob") );
 
     SUBCASE("forbidded conversions") {
-      CHECK_THROWS_AS(x(0) = I4(0), const cgns_exception&);
-      CHECK_THROWS_AS(x(0) = I8(0), const cgns_exception&);
-      CHECK_THROWS_AS(x(0) = R4(0.), const cgns_exception&);
-      CHECK_THROWS_AS(x(0) = R8(0.), const cgns_exception&);
+      CHECK_THROWS_AS( x(0) = I4(0 )  ,  const cgns_exception& );
+      CHECK_THROWS_AS( x(0) = I8(0 )  ,  const cgns_exception& );
+      CHECK_THROWS_AS( x(0) = R4(0.)  ,  const cgns_exception& );
+      CHECK_THROWS_AS( x(0) = R8(0.)  ,  const cgns_exception& );
     }
   }
 
@@ -222,10 +280,10 @@ TEST_CASE("node_value assignments") {
     CHECK( x == std::vector<I4>({100,43,44}) );
 
     SUBCASE("forbidded conversions") {
-      CHECK_THROWS_AS(x(0) = C1('A'), const cgns_exception&);
-      CHECK_THROWS_AS(x(0) = I8(0), const cgns_exception&);
-      CHECK_THROWS_AS(x(0) = R4(0.), const cgns_exception&);
-      CHECK_THROWS_AS(x(0) = R8(0.), const cgns_exception&);
+      CHECK_THROWS_AS( x(0) = C1('A')  ,  const cgns_exception& );
+      CHECK_THROWS_AS( x(0) = I8(0)    ,  const cgns_exception& );
+      CHECK_THROWS_AS( x(0) = R4(0.)   ,  const cgns_exception& );
+      CHECK_THROWS_AS( x(0) = R8(0.)   ,  const cgns_exception& );
     }
   }
   SUBCASE("I8") {
@@ -237,9 +295,9 @@ TEST_CASE("node_value assignments") {
     CHECK( x == std::vector<I8>({10'000'000'000,46,100}) );
 
     SUBCASE("forbidded conversions") {
-      CHECK_THROWS_AS(x(0) = C1('A'), const cgns_exception&);
-      CHECK_THROWS_AS(x(0) = R4(0.), const cgns_exception&);
-      CHECK_THROWS_AS(x(0) = R8(0.), const cgns_exception&);
+      CHECK_THROWS_AS( x(0) = C1('A')  ,  const cgns_exception& );
+      CHECK_THROWS_AS( x(0) = R4(0.)   ,  const cgns_exception& );
+      CHECK_THROWS_AS( x(0) = R8(0.)   ,  const cgns_exception& );
     }
   }
 
@@ -251,10 +309,10 @@ TEST_CASE("node_value assignments") {
     CHECK( x == std::vector<R4>({3.14f,1.5f}) );
 
     SUBCASE("forbidded conversions") {
-      CHECK_THROWS_AS(x(0) = C1('A'), const cgns_exception&);
-      CHECK_THROWS_AS(x(0) = I4(0), const cgns_exception&);
-      CHECK_THROWS_AS(x(0) = I8(0), const cgns_exception&);
-      CHECK_THROWS_AS(x(0) = R8(0.), const cgns_exception&);
+      CHECK_THROWS_AS( x(0) = C1('A')  ,  const cgns_exception& );
+      CHECK_THROWS_AS( x(0) = I4(0)    ,  const cgns_exception& );
+      CHECK_THROWS_AS( x(0) = I8(0)    ,  const cgns_exception& );
+      CHECK_THROWS_AS( x(0) = R8(0.)   ,  const cgns_exception& );
     }
   }
 
@@ -268,9 +326,9 @@ TEST_CASE("node_value assignments") {
     CHECK( x(1) == doctest::Approx(0.2) ); // Approx because 0.2f != 0.2
 
     SUBCASE("forbidded conversions") {
-      CHECK_THROWS_AS(x(0) = C1('A'), const cgns_exception&);
-      CHECK_THROWS_AS(x(0) = I4(0), const cgns_exception&);
-      CHECK_THROWS_AS(x(0) = I8(0), const cgns_exception&);
+      CHECK_THROWS_AS( x(0) = C1('A')  ,  const cgns_exception& );
+      CHECK_THROWS_AS( x(0) = I4(0)    ,  const cgns_exception& );
+      CHECK_THROWS_AS( x(0) = I8(0)    ,  const cgns_exception& );
     }
   }
 

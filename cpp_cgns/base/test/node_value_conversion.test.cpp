@@ -7,6 +7,7 @@ using namespace cgns;
 
 TEST_CASE("view_as_span") {
   SUBCASE("non const") {
+    // [Sphinx Doc] node_value as span {
     node_value val = {42,43,44};
     std_e::span<I4> x = view_as_span<I4>(val);
 
@@ -21,6 +22,7 @@ TEST_CASE("view_as_span") {
       CHECK( val[1] == 43 );
       CHECK( val[2] == 44 );
     }
+    // [Sphinx Doc] node_value as span }
   }
 
   SUBCASE("const") {
@@ -34,6 +36,7 @@ TEST_CASE("view_as_span") {
 
 TEST_CASE("view_as_md_array") {
   SUBCASE("non const") {
+    // [Sphinx Doc] node_value as md_array {
     node_value val = {{2,3,4},
                       {5,6,7}};
     md_array_view<I4,2> x = view_as_md_array<I4,2>(val);
@@ -66,6 +69,7 @@ TEST_CASE("view_as_md_array") {
       CHECK( val(0,0) == 2 ); CHECK( val(0,1) == 3 ); CHECK( val(0,2) == 4 );
       CHECK( val(1,0) == 5 ); CHECK( val(1,1) == 6 ); CHECK( val(1,2) == 7 );
     }
+    // [Sphinx Doc] node_value as md_array }
   }
   SUBCASE("const") {
     const node_value val = {{2,3,4},
@@ -98,6 +102,7 @@ TEST_CASE("view_as_md_array") {
 }
 
 TEST_CASE("view_as_array") {
+  // [Sphinx Doc] node_value view_as_array {
   node_value x0 = {0,1,2};
   node_value x1 = {{3,4,5}};
   node_value x2 = {{6},{7},{8}};
@@ -114,13 +119,15 @@ TEST_CASE("view_as_array") {
   CHECK( view_as_array<I4>(x2) == std::vector{6,7,8} );
 
   // other rank changes result in an error
-  CHECK_THROWS_AS( (view_as_array<I4,2>(x0)) , const cgns_exception& );
-  CHECK_THROWS_AS( view_as_array<I4>(x3) , const cgns_exception& );
+  CHECK_THROWS_AS( (view_as_array<I4,2>(x0))  ,  const cgns_exception& );
+  CHECK_THROWS_AS(  view_as_array<I4>(x3)     ,  const cgns_exception& );
+  // [Sphinx Doc] node_value view_as_array }
 }
 
 
 
 TEST_CASE("node_value to string") {
+  // [Sphinx Doc] node_value to_string {
   node_value val0 = {0,1,2};
   node_value val1 = {{0},{1},{2}};
   node_value val2 = {{5,6},{7,8}};
@@ -130,4 +137,5 @@ TEST_CASE("node_value to string") {
   CHECK ( to_string(val1) == "[[0],[1],[2]]" );
   CHECK ( to_string(val2) == "[[5,6],[7,8]]" );
   CHECK ( to_string(val3) == "Totoro" );
+  // [Sphinx Doc] node_value to_string }
 }

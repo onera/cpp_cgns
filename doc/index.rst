@@ -6,7 +6,7 @@ Welcome to C++/CGNS!
 
 Installation
 ------------
-**cpp_cgns** is a C++17 library. It depends on **std_e**, which is header-only (provides generic algorithms and multi-dimensional array facilities). Python interoperability (:code:`cpp_cgns/interop` folder) requires Python and Numpy. The build process requires GCC>=8, Git>=2.14 and Cmake>=3.12. The unit tests use `doctest`.
+**cpp_cgns** is a C++20 library. It depends on **std_e** (generic algorithms and multi-dimensional array facilities). Python interoperability (:code:`cpp_cgns/interop` folder) requires Python, Numpy and uses Pybind11 for wrapping. The build process requires GCC>=8, Git>=2.14 and Cmake>=3.14. The unit tests use `doctest`.
 
 1. :code:`git clone https://github.com/BerengerBerthoul/cpp_cgns`
 2. :code:`cd cpp_cgns`

@@ -10,11 +10,13 @@ namespace cgns {
 
 
 // from http://cgns.github.io/CGNS_docs_current/filemap/general.html
+// [Sphinx Doc] cgns data types {
 using C1 = char;
 using I4 = std::int32_t;
 using I8 = std::int64_t;
 using R4 = float;
 using R8 = double;
+// [Sphinx Doc] cgns data types }
 
 
 template<class T> constexpr auto

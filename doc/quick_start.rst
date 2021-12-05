@@ -22,12 +22,6 @@ See :ref:`installation`.
 Note
 ----
 
-.. warning::
-   The cpp_cgns documentation is outdated!
-
-
-Below is a succinct presentation of the main facilities of the library. For a more detailed presentation, see the :ref:`user_manual`.
-
 Everything is defined within the :cpp:`cgns` namespace.
 
 In the examples below, when there is no ambiguity, we will assume that we are using the :cpp:`std` and :cpp:`cgns` namespaces:
@@ -37,6 +31,10 @@ In the examples below, when there is no ambiguity, we will assume that we are us
   using namespace std;
   using namespace cgns;
 
+.. note::
+
+  Most of the code snippets presented here are actually directly extracted from **cpp_cgns** unit tests. A :cpp:`TEST_CASE` allows to define a unit test. Each :cpp:`SUBCASE` is a subsection of the unit test. The :cpp:`CHECK` command allows to easily see what the expected result is supposed to be.
+
 .. .. sectnum::
 
 .. _cpp_cgns_mapping:
@@ -44,119 +42,278 @@ In the examples below, when there is no ambiguity, we will assume that we are us
 C++/CGNS mapping
 ----------------
 
+The :cpp:`cgns::tree` class
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A C++ CGNS tree is defined by the following recursive structure (file :cpp:`cpp_cgns.hpp`):
+A :cpp:`cgns::tree` is composed of:
 
-.. code:: c++
+* a name of type :cpp:`std::string`
+* a label of type :cpp:`std::string`
+* a multi-dimensional array of type :cpp:`cgns::node_value`
+* a list of children of type :cpp:`cgns::tree_children`
 
-  struct tree {
-    std::string name;
-    std::string label;
-    node_value value;
-    std::vector<tree> children;
-  };
+A :cpp:`cgns::tree` can be built and queried with the following base API:
 
-Where the value of a tree node is defined by the following data structure:
+.. literalinclude:: /../cpp_cgns/base/test/tree.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] cgns::tree first example {
+  :end-before: [Sphinx Doc] cgns::tree first example }
 
-.. code:: c++
+Adding a child
+~~~~~~~~~~~~~~~
 
-  struct node_value {
-    std::string data_type;
-    std::vector<I8> dims;
-    std_e::polymorphic_buffer buffer;
-  };
+We will see later the various possible manipulations of a :cpp:`cgns::tree`, but a very common one is to add a child:
 
-The :cpp:`buffer` attribute allows to take into account owning and non-owning memory. It can be any type following the :cpp:`Buffer` interface:
+.. literalinclude:: /../cpp_cgns/base/test/tree.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] adding a child {
+  :end-before: [Sphinx Doc] adding a child }
 
-.. code:: c++
-
-  struct Buffer {
-    auto data() -> void*; // Access data
-    auto is_owner() const -> bool; // Does the buffer own the memory?
-    auto release() -> void(*)(void*); // Make the buffer non-owning, and return a deallocation function
-
-In particular, it can be
-
-* a :cpp:`buffer_span` for non-owning arrays (constuctible from only a pointer)
-* a :cpp:`buffer_vector` for owning arrays (similar to :cpp:`std::vector`, but with possibility to release memory)
-
-.. _tree_manip:
-
-Tree manipulation
------------------
-
-The :cpp:`cgns::node_value` structure is very low-level so that each node in the tree has the same uniform structure. It does not provide by itself type-safe access, multi-dimensional array access, memory management, nor SIDS manipulation facilities. However, these functionnalities are provided non-intrusively by the library.
-
-Node values
-^^^^^^^^^^^
-
-:cpp:`node_value` objects do not need to be handled directly in most cases. Conversions functions towards more usable data structures are provided in file ``node_manip.hpp``:
-
-* Conversion to :cpp:`md_array_view` (non-owning multi-dimensional arrays):
+Note that the :cpp:`emplace_child(t,c)` function actually returns a reference to the emplaced child:
 
 .. code:: c++
 
-  node_value val = /* ... */;
-  md_array_view<I4,2> x = view_as_md_array<I4,2>(val);
-  // "x" is now a two-dimensional array of I4s pointing to the same memory as node_value "val"
-  std::cout << "dimensions of x: " << x.extent() << "\n";
-  std::cout << "value (0,1) of x: " << x(0,1) << "\n";
+  tree& c = emplace_child(t,std::move(sub_t));
+  CHECK( name(c) == "SubNode" );
 
-* Conversion to :cpp:`span`:
+To append several children at once, use :cpp:`emplace_children(t,cs)`
 
-.. code:: c++
+Move, but do not copy
+~~~~~~~~~~~~~~~~~~~~~
 
-  node_value val = /* ... */;
-  std_e::span<I4> x = view_as_span<I4>(val);
-  std::cout << "size of x: " << x.size() << "\n";
+In the previous example, :cpp:`sub_t` was moved as a child of :cpp:`t`. This is because trees may hold large arrays of data, and hence copying them would be inefficient. A CGNS tree is intended to be viewed as a simulation database. So when we create a CGNS node, we want to move it as a child of another tree.
 
-There is no memory copy involved, the created object point to the same memory the :cpp:`node_value` object does.
-
-In both cases, the :cpp:`value_type` of :cpp:`md_array_view` or :cpp:`span` (here `I4`) must be given at compile time. In general, the user knows the :cpp:`data_type` from the SIDS. For instance, node connectivities are required to be of the :cpp:`I4` or :cpp:`I8` type; field values are :cpp:`R4` or :cpp:`R8`... If the type does not match the string value of the :cpp:`data_type` attribute, an exception/assertion is raised.
-
-In case of :cpp:`view_as_md_array`, an array rank must also be given at compile time. If unknown, the value :cpp:`cgns::dyn_rank` should be given.
-
-Conversion the other way around are also possible:
+Because of this model, the :cpp:`cgns::tree` copy constructor and copy assignment are deleted. It prevents the accidental, unneeded copy of big arrays. Tree copy is seldom (if ever) needed anyways. So you have to use :cpp:`std::move` (or construct in-place). Just remember to not use the object after it has been moved:
 
 .. code:: c++
 
-  md_array_view<I4,2> arr_2D = /* ... */;
-  node_value v0 = view_as_node_value(arr_2D);
+  emplace_child(t,std::move(sub_t));
+  // WARNING `sub_t` is not a valid object anymore!
+  // You have to query the tree to retrieve information
 
-  span<I4> arr_1D = /* ... */;
-  node_value v1 = view_as_node_value(arr_1D);
+String representation
+~~~~~~~~~~~~~~~~~~~~~
 
-Here again, there is no copy.
-
-Creating new nodes - Memory management
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Because we don't want to impose a specific way to allocate memory as part of the C++/CGNS mapping, no memory allocation feature is bound to the :cpp:`cgns::tree`. While memory management could be done by hand through :cpp:`malloc/free` or :cpp:`new/delete`, a more scalable possibility is to use a :cpp:`cgns_allocator`. The idea is to bound the owning of the memory to the allocator: each time memory is needed for a node, the memory is asked to the allocator through the :cpp:`allocate` function:
+As most objects of the library, a :cpp:`cgns::tree` has an associated :cpp:`to_string` function that can be use the display the tree:
 
 .. code:: c++
 
-  tree create_my_node_node(cgns_allocator& alloc) {
-    int sz = 3;
-    I4* mem = allocate<I4>(alloc,sz);
-    mem[0] = 42;
-    mem[1] = 43;
-    mem[2] = 44;
+  #include "cpp_cgns/cgns.hpp"
+  #include <iostream>
+  std::cout << to_string(t);
 
-    return {
-      "my_node",
-      {"I4",{sz},mem},
-      {}, // no children
-      "UserDefinedData_t"
-    }
-  }
 
-**The memory is owned by the** :cpp:`cgns_allocator`. It means that the :cpp:`cgns_allocator` object **has to be kept alive as long as its memory is used** by a :cpp:`cgns::tree`.
+.. code:: text
 
-The interest of this strategy comes from the fact that it is not exclusive: there can be several allocators associated to several life durations of nodes of the tree; and it can be combined with other strategies, e.g. the external allocation of Python/CGNS tree if the tree is indeed also used on the Python side. Memory management is detailed :ref:`here <memory_management>`.
+  Base, [3,3], CGNSBase_t
+    Z0, [8,1,0], Zone_t
+    Z1, [12,2,0], Zone_t
 
+To avoid very long representations, big arrays are only represented by their dimensions, not their coefficients.
+
+
+Tree comparisons
+~~~~~~~~~~~~~~~~
+
+Trees can be compared for value equality through the usual :cpp:`operator==`. Also, :cpp:`same_tree_structure(t0,t1)` can be used to check if trees are equal irrespective their array values.
+
+.. literalinclude:: /../cpp_cgns/base/test/tree.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] tree equality {
+  :end-before: [Sphinx Doc] tree equality }
+
+The :cpp:`cgns::node_value` class
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Note: The CGNS node structure can be found `here <https://cgns.github.io/CGNS_docs_current/filemap/general.html>`_.
+
+CGNS data types
+~~~~~~~~~~~~~~~
+
+The CGNS standard defines possible 5 types for array coefficients, and they are defined in the library as aliases to C++ types:
+
+.. literalinclude:: /../cpp_cgns/base/data_type.hpp
+  :language: C++
+  :start-after: [Sphinx Doc] cgns data types {
+  :end-before: [Sphinx Doc] cgns data types }
+
+CGNS node value
+~~~~~~~~~~~~~~~
+
+The :cpp:`node_value` of a tree is a multi-dimensional array. It can be constructed from various types.
+
+Mono-dimensional arrays
+"""""""""""""""""""""""
+
+A mono-dimensional array can be constructed by any range whose memory is contiguous (and hence that has a :cpp:`data()` method).
+
+*  Example for a :cpp:`std::vector<R8>`:
+
+.. literalinclude:: /../cpp_cgns/base/test/node_value.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] node_value from vec R8 {
+  :end-before: [Sphinx Doc] node_value from vec R8 }
+
+The vector is moved into the :cpp:`node_value`. This means the lifetime of the data is bound to that of the :cpp:`node_value`.
+
+*  Example for a :cpp:`std_e::span<I4>`:
+
+.. literalinclude:: /../cpp_cgns/base/test/node_value.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] node_value from span I4 {
+  :end-before: [Sphinx Doc] node_value from span I4 }
+
+Here, the span is also held by the :cpp:`node_value`, but since the span does not own its memory, the lifetime of the data is that of the original container (here, the vector :cpp:`v`).
+
+*  For arrays of type :cpp:`C1`, a :cpp:`node_value` can be constructed from a :cpp:`std::vector<char>`, but a :cpp:`std::string` feels more natural:
+
+.. literalinclude:: /../cpp_cgns/base/test/node_value.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] node_value from string {
+  :end-before: [Sphinx Doc] node_value from string }
+
+*  As a shortcut, using a :cpp:`std::initalizer_list` to construct a :cpp:`node_value` will have the exact same effect as constructing it from a :cpp:`std::vector`:
+
+.. literalinclude:: /../cpp_cgns/base/test/node_value.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] node_value from init list {
+  :end-before: [Sphinx Doc] node_value from init list }
+
+
+Multi-dimensional arrays
+""""""""""""""""""""""""
+
+The principle of constructing multi-dimensional arrays is very similar.
+
+* Example with an :cpp:`cgns::md_array` (owning memory):
+
+.. literalinclude:: /../cpp_cgns/base/test/node_value.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] node_value from md_array {
+  :end-before: [Sphinx Doc] node_value from md_array }
+
+* Example with a 2D :cpp:`std::initializer_list` (syntactic sugar for exactly the same as above):
+
+.. literalinclude:: /../cpp_cgns/base/test/node_value.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] node_value from multi dim init_list {
+  :end-before: [Sphinx Doc] node_value from multi dim init_list }
+
+* Example with an :cpp:`cgns::md_array_view` (non-owning memory):
+
+.. literalinclude:: /../cpp_cgns/base/test/node_value.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] node_value from md_array_view {
+  :end-before: [Sphinx Doc] node_value from md_array_view }
+
+* A multi-dimensional array can also be obtained by simply reshaping a mono- or multi-dimensional array:
+
+.. literalinclude:: /../cpp_cgns/base/test/node_value.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] node_value reshape {
+  :end-before: [Sphinx Doc] node_value reshape }
+
+Note that CGNS arrays are Fortran-ordered.
+
+
+Empty arrays
+""""""""""""
+
+A default-initialized :cpp:`node_value` will be of rank 0 and have the special data_type :cpp:`"MT"`. The :cpp:`MT()` function is a syntactic sugar to build an empty :cpp:`node_value`.
+
+.. literalinclude:: /../cpp_cgns/base/test/node_value.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] empty node_value {
+  :end-before: [Sphinx Doc] empty node_value }
+
+How does it work underneath?
+""""""""""""""""""""""""""""
+
+CGNS arrays handle three kinds of variability:
+
+1. multiple ranks and extents
+2. multiple coefficient types
+3. multiple construction methods and memory ownership
+
+Dynamic ranks
+'''''''''''''
+
+The :cpp:`node_value` class inherits from :cpp:`std_e::multi_array`, which supports dynamic-sized ranks.
+
+Multiple scalar types
+'''''''''''''''''''''
+
+A multi-dimensional array is just syntacic sugar built on top of a mono-dimensional range.
+
+The range underneath :cpp:`node_value` is a :cpp:`std_e::variant_range`. In a nutshell, for a range :cpp:`Rng`, a :cpp:`std_e::variant_range` is a wrapper around a :cpp:`std::variant<Rng<C1>,Rng<I4>,Rng<I8>,Rng<R4>,Rng<R8>>`. A structure like :cpp:`std::variant<Rng<T>>` is quite efficient because even if the whole range can have multiple possible coefficient types (i.e. :cpp:`C1`, :cpp:`I4`, :cpp:`I8`, :cpp:`R4` or :cpp:`R8`), however its individual elements are all of that same type.
+
+Coefficients of a :cpp:`node_value` are of type :cpp:`scalar_ref`.
+
+.. literalinclude:: /../cpp_cgns/base/test/node_value.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] node_value scalar_ref {
+  :end-before: [Sphinx Doc] node_value scalar_ref }
+
+
+:cpp:`scalar_ref` is a variant reference: something that behaves like a :cpp:`C1&`, a :cpp:`I4&`, a :cpp:`I8&`, a :cpp:`R4&`, or a :cpp:`R8&`. Assigning it the wrong type is an error, since the type is imposed by the origin range of the reference, and individual elements of the range can't change type.
+
+Multiple construction methods
+'''''''''''''''''''''''''''''
+
+We talked about :cpp:`std_e::variant_range<Rng<T>...>` and how we handled the five possible types for T. However, we did not specify what is the actual type of :cpp:`Rng<T>`. This is because there is another difficulty here. If we have a vector of data (e.g. because we just created this data), then we would like to take :cpp:`Rng==std::vector`. On the other hand, if we happen to just reference data that what given to us, through a span for instance, then we would like to take :cpp:`Rng==std_e::span`. And if we were to use memory created with a special allocator (e.g. :cpp:`MPI_Alloc_mem`), then we would need still another range type.
+
+The solution is then to take a class that type-erases any contiguous range. This is what is done by using a :cpp:`std_e::polymorphic_array`.
+
+Conclusion
+''''''''''
+
+At the end, our :cpp:`node_value` is more or less a :cpp:`multi_array<variant_range<polymorphic_array>>`: a multi-dimensional array of dynamic rank, whose underlying range is type-erased both regarding its scalar coefficients type and its creation method.
+
+This allows :cpp:`node_value` to be built from various types, and to offer a flexible, unified interface. Of course this flexibility comes at the cost of several levels of indirection that are not needed if the user knows the specific kind of array to be dealt with. That is why the type-erased interface must be used carefully, for example for small arrays (e.g. the arrys of `PointRange`, `ElementRange`, `Zone_t`, `Element_t`, which contain only 2 to 6 coefficients).
+
+So in order to use arrays efficiently, the user must view the :cpp:`node_value` with a fixed rank and a static scalar type, see :ref:`view_with_type`. This is easy most of the time, because the SIDS enforces this parameters.
+
+
+.. _view_with_type:
+
+Viewing node values with static types and ranks
+"""""""""""""""""""""""""""""""""""""""""""""""
+
+The :cpp:`node_value` interface is flexible and can be used for small arrays. Moreover, having one single type for a node value is mandatory to built proper tree structure. However, for efficiency reasons, and also because it is often nice to use static typing, a :cpp:`node_value` can be viewed as a "regular" multi-dimensional array with fixed type and fixed rank.
+
+* For mono-dimensional arrays:
+
+.. literalinclude:: /../cpp_cgns/base/test/node_value_conversion.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] node_value as span {
+  :end-before: [Sphinx Doc] node_value as span }
+
+* For multi-dimensional arrays:
+
+.. literalinclude:: /../cpp_cgns/base/test/node_value_conversion.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] node_value as md_array {
+  :end-before: [Sphinx Doc] node_value as md_array }
+
+* The :cpp:`view_as_array<T,rank=1>(node_value& x)` function can be used and will dispatch to either :cpp:`span` or :cpp:`md_array_view`:
+
+.. literalinclude:: /../cpp_cgns/base/test/node_value_conversion.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] node_value view_as_array {
+  :end-before: [Sphinx Doc] node_value view_as_array }
+
+* Convert to a string: works with any scalar type, but especially useful for :cpp:`C1`
+
+.. literalinclude:: /../cpp_cgns/base/test/node_value_conversion.test.cpp
+  :language: C++
+  :start-after: [Sphinx Doc] node_value to_string {
+  :end-before: [Sphinx Doc] node_value to_string }
 
 SIDS
 ^^^^
+
+TODO expand (Tree_range, tree_manip, sids/creation)
+For and tree_manip, sids/creation: exhaustive (example of Cassiopee)
 
 Tree manipulation (``tree_manip.hpp``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -184,29 +341,6 @@ The :cpp:`gen_path` argument of the two last functions is a "generalized" path: 
   tree_range bcdata_nodes = get_nodes_by_matching(zone_node,"ZoneBC/BC_t/BCDataSet_t/BCData_t");
   // "ZoneBC" is the name of a node, and "BC_t", "BCDataSet_t", and "BCData_t" are labels of a node
 
-Node creation and removal (``sids/creation.hpp``)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Although it is possible to use a :cpp:`cgns_allocator` directly to create nodes, SIDS creation facilities are provided. The :cpp:`cgns_allocator` is still the owner of the allocated memory, however, it delegates node creation/removal to a :cpp:`cgns::factory`.
-
-.. code:: c++
-
-  create_and_manip_tree(cgns_allocator& alloc) {
-    cgns::factory F(&alloc); // create the factory. The factory *does not* own the allocator,
-                             // it will just ask it to create memory
-
-    // creation
-    tree base = F.newCGNSBase("Base_0",3,3));
-    emplace_child(base, F.newUnstructuredZone("Zone_0",10000,6075));
-
-    emplace_child(t, std::move(base));
-
-    // use
-    use_tree(t)
-
-    // removing
-    F.remove_child_by_label(t,"CGNSBase_t"); // erase tree from "Base_0", and deallocate its memory recursively
-  }
 
 
 .. _interoperability:
@@ -216,6 +350,8 @@ Interoperability
 
 Python/CGNS
 ^^^^^^^^^^^
+
+TODO update (here, outdated)
 
 C++/CGNS trees are compatible with Python/CGNS trees. The library uses `PyBind11 <https://github.com/pybind/pybind11>`_ to give access to Python types on the C++ side.
 
