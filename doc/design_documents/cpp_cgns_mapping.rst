@@ -20,7 +20,7 @@ More specifically,
     std::vector<Zone_t> zones;
   };
 
-This way, the type safety ensures that the semantics of the SIDS constructs are bound to C++ objects. However, we find this approach inconvenient in practice. First, it forces people to agree on the data mapping of all SIDS structures; second, it is impossible to execute tree-wide operation when we do not care about the SIDS (write to a file, serialization...); third, the type system is actually not sufficient to ensure SIDS semantics. 
+This way, the type safety ensures that the semantics of the SIDS constructs are bound to C++ objects. However, we find this approach inconvenient in practice. First, it forces people to agree on the data mapping of all SIDS structures; second, it is impossible to execute tree-wide operation when we do not care about the SIDS (write to a file, serialization...); third, the type system is actually not sufficient to ensure SIDS semantics.
 
 On the contrary, the approach here is to use a uniform tree without SIDS semantics. This mapping is very compact and regular. We think that semantics can be checked otherwise (check functions, preconditions...).
 

@@ -13,7 +13,7 @@ namespace cgns {
 // Then the range will be type-erased and stored in a node_value
 // For now, this is only done for std::vector
 
-// creation according to SIDS
+// [Sphinx Doc] creation according to SIDS {
 auto new_CGNSTree() -> tree;
 auto new_CGNSVersionNode(R4 version = 3.1) -> tree;
 
@@ -34,36 +34,24 @@ auto new_Descriptor(const std::string& name, const std::string& val) -> tree;
 auto new_GridConnectivityType(const std::string& gc_type) -> tree;
 auto new_GridConnectivity(const std::string& name, const std::string& z_donor_name, const std::string& loc, const std::string& connec_type) -> tree;
 
-auto
-new_DataArray(const std::string& name, node_value&& value) -> tree;
-template<class I, int N> auto
-new_DataArray(const std::string& name, const I(&arr)[N]) -> tree;
-template<class T> auto
-new_DataArray(const std::string& name, std::vector<T>&& v) -> tree;
-template<class T, int rank> auto
-new_DataArray(const std::string& name, md_array<T,rank>&& arr) -> tree;
-//template<class T, int rank> auto
-//new_DataArray(const std::string& name, md_array_view<T,rank>& arr) -> tree;
+auto new_Distribution(const std::string& entity_kind, std::vector<I8>&& partial_dist) -> tree;
 
-auto
-new_UserDefinedData(const std::string& name, node_value value = MT()) -> tree;
-auto
-new_UserDefinedData(const std::string& name, const std::string& val) -> tree;
-template<class T> auto
-new_UserDefinedData(const std::string& name, const T& val) -> tree;
-template<class T> auto
-new_UserDefinedData(const std::string& name, std::vector<T>&& v) -> tree;
+                            auto new_DataArray(const std::string& name, node_value&& value) -> tree;
+template<class T, int N   > auto new_DataArray(const std::string& name, const T(&arr)[N]) -> tree;
+template<class T          > auto new_DataArray(const std::string& name, std::vector<T>&& v) -> tree;
+template<class T, int rank> auto new_DataArray(const std::string& name, md_array<T,rank>&& arr) -> tree;
 
-template<class I> auto
-new_CGNSBase(const std::string& name, I cellDim, I physDim) -> tree;
-template<class I> auto
-new_UnstructuredZone(const std::string& name, const I(&dims)[3] = {0,0,0}) -> tree;
-template<class I> auto
-new_ZoneSubRegion(const std::string& name, I dim, const std::string& gridLoc) -> tree;
-template<class I> auto
-new_PointRange(I first, I last) -> tree;
-template<class I> auto
-new_ElementRange(I first, I last) -> tree;
+                  auto new_UserDefinedData(const std::string& name, node_value value = MT()) -> tree;
+                  auto new_UserDefinedData(const std::string& name, const std::string& val) -> tree;
+template<class T> auto new_UserDefinedData(const std::string& name, const T& val) -> tree;
+template<class T> auto new_UserDefinedData(const std::string& name, std::vector<T>&& v) -> tree;
+
+template<class I> auto new_CGNSBase(const std::string& name, I cellDim, I physDim) -> tree;
+template<class I> auto new_UnstructuredZone(const std::string& name, const I(&dims)[3] = {0,0,0}) -> tree;
+template<class I> auto new_ZoneSubRegion(const std::string& name, I dim, const std::string& gridLoc) -> tree;
+
+template<class I> auto new_PointRange(I first, I last) -> tree;
+template<class I> auto new_ElementRange(I first, I last) -> tree;
 
 template<class I> auto
 new_Elements(const std::string& name, I type, std::vector<I>&& connectivity, I first, I last, I nb_bnd_elts = 0) -> tree;
@@ -76,24 +64,16 @@ new_NgonElements(const std::string& name, std::vector<I>&& connectivity, I first
 template<class I> auto
 new_NfaceElements(const std::string& name, std::vector<I>&& connectivity, I first, I last) -> tree;
 
-template<class I> auto
-new_PointList(const std::string& name, std::vector<I>&& pl) -> tree;
-template<class I> auto
-new_PointList(const std::string& name, std::initializer_list<I> pl) -> tree;
+template<class I> auto new_PointList(const std::string& name, std::vector<I>&& pl) -> tree;
+template<class I> auto new_PointList(const std::string& name, std::initializer_list<I> pl) -> tree;
 
-template<class I> auto
-new_BC(const std::string& name, const std::string& loc, std::vector<I>&& point_list) -> tree;
-template<class I> auto
-new_BC(const std::string& name, const std::string& loc, std::initializer_list<I> pl) -> tree;
+template<class I> auto new_BC(const std::string& name, const std::string& loc, std::vector<I>&& point_list) -> tree;
+template<class I> auto new_BC(const std::string& name, const std::string& loc, std::initializer_list<I> pl) -> tree;
 
-template<class I> auto
-new_Rind(std::vector<I>&& rind_planes) -> tree;
+template<class I> auto new_Rind(std::vector<I>&& rind_planes) -> tree;
 
-template<class I> auto
-new_Ordinal(I i) -> tree;
-
-auto
-new_Distribution(const std::string& entity_kind, std::vector<I8>&& partial_dist) -> tree;
+template<class I> auto new_Ordinal(I i) -> tree;
+// [Sphinx Doc] creation according to SIDS }
 
 
 // ====================== impl ======================

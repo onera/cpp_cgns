@@ -153,9 +153,9 @@ PYBIND_TEST_CASE("view_as_cpptree") {
 }
 
 
-PYBIND_TEST_CASE("view_as_pytree") {
+PYBIND_TEST_CASE("view_as_py_tree") {
   auto cpp_tree = cpp_tree_example();
-  auto py_tree_from_cpp = to_py_tree(cpp_tree);
+  auto py_tree_from_cpp = view_as_py_tree(cpp_tree);
 
   CHECK( to_cpp_tree(py_tree_from_cpp) == cpp_tree );
 }
@@ -165,7 +165,7 @@ PYBIND_TEST_CASE("pytree_with_transfered_ownership") {
   py::list py_tree;
   {
     auto cpp_tree = cpp_tree_example();
-    py_tree = to_owning_py_tree(std::move(cpp_tree));
+    py_tree = to_py_tree(std::move(cpp_tree));
   } // At this point, cpp_tree is destroyed, but the memory ownership has been transfered to Python
 
 
@@ -180,7 +180,7 @@ my_test_operation(tree& t) {
   rm_child_by_name(z0,"ZoneType");
 }
 
-PYBIND_TEST_CASE("update_and_transfer_ownership") {
+PYBIND_TEST_CASE("update_py_tree") {
   // Typical workflow :
   /// 0. Start with a tree in Python
   auto py_tree = py_tree_example();
@@ -190,7 +190,7 @@ PYBIND_TEST_CASE("update_and_transfer_ownership") {
     /// 3. Permform operations that add nodes (hence, memory) to the C++ tree
     my_test_operation(cpp_tree);
     /// 4. Update the py_tree and give it the ownership
-    update_and_transfer_ownership_to_py_tree(std::move(cpp_tree),py_tree);
+    update_py_tree(std::move(cpp_tree),py_tree);
   } /// 5. Return to Python. At this point, C++ node_value objects are destroyed, but the memory they where holding has been transfered to Python
 
   auto expected_cpp_tree = cpp_tree_example();

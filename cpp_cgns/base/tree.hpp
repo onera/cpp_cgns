@@ -11,8 +11,34 @@ namespace cgns {
 
 
 class tree;
+class tree_children;
 
 
+// [Sphinx Doc] tree access {
+auto name    (      tree& t) ->       std::string  &;
+auto name    (const tree& t) -> const std::string  &;
+
+auto label   (      tree& t) ->       std::string  &;
+auto label   (const tree& t) -> const std::string  &;
+
+auto value   (      tree& t) ->       node_value   &;
+auto value   (const tree& t) -> const node_value   &;
+
+auto children(      tree& t) ->       tree_children&;
+auto children(const tree& t) -> const tree_children&;
+// [Sphinx Doc] tree access }
+
+
+// [Sphinx Doc] tree children {
+auto emplace_child(tree& t, tree&& c) -> tree&;
+auto emplace_children(tree& t, std::vector<tree>&& cs) -> void;
+
+auto number_of_children(const tree& t) -> int;
+template<class Tree> auto child(Tree& t, int i) -> auto&;
+// [Sphinx Doc] tree children }
+
+
+// ====================== impl ======================
 class tree_children : public std::deque<tree> {
   public:
     using base = std::deque<tree>; // std::deque to guarantee reference stability when adding childrens
@@ -156,16 +182,8 @@ inline auto
 number_of_children(const tree& t) -> int {
   return children(t).size();
 }
-inline auto
-child(tree& t, int i) -> tree& {
-  return children(t)[i];
-}
-inline auto
-child(tree&& t, int i) -> tree& {
-  return children(t)[i];
-}
-inline auto
-child(const tree& t, int i) -> const tree& {
+template<class Tree> auto
+child(Tree& t, int i) -> auto& {
   return children(t)[i];
 }
 // children }

@@ -21,4 +21,9 @@ template<class T, int rank>
 using md_array = std_e::dyn_multi_array<T,rank,I8>;
 
 
+template<class T, int rank> auto
+make_md_array_view(std_e::span<T> x, std_e::dyn_shape<I8,rank> shape) {
+  return md_array_view<T,rank>(x,std::move(shape));
+}
+
 } // cgns

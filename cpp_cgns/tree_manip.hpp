@@ -9,6 +9,7 @@
 namespace cgns {
 
 
+// [Sphinx Doc] Tree manip {
 // predicates {
 auto is_of_name(const tree& tree, const std::string& name) -> bool;
 auto is_of_label(const tree& tree, const std::string& label) -> bool;
@@ -65,6 +66,7 @@ rm_children_by_predicate(tree& t, Unary_predicate p) -> void;
 template<class Unary_predicate> auto
 rm_child_by_predicate(tree& t, Unary_predicate p) -> void;
 // removal }
+// [Sphinx Doc] Tree manip }
 
 
 // ====================== impl ======================
