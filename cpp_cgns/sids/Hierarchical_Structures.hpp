@@ -41,6 +41,9 @@ VertexBoundarySize_U(Tree& z) -> auto& {
 }
 
 auto
+ZoneType(const tree& z) -> std::string;
+
+auto
 is_unstructured_zone(const tree& z) -> bool;
 
 template<class I> auto

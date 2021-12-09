@@ -3,10 +3,16 @@
 namespace cgns {
 
 auto
-is_unstructured_zone(const tree& z) -> bool {
+ZoneType(const tree& z) -> std::string {
   STD_E_ASSERT(label(z)=="Zone_t");
   const tree& zone_type = get_child_by_label(z,"ZoneType_t");
-  return to_string(value(zone_type))=="Unstructured";
+  return to_string(value(zone_type));
+}
+
+auto
+is_unstructured_zone(const tree& z) -> bool {
+  STD_E_ASSERT(label(z)=="Zone_t");
+  return ZoneType(z)=="Unstructured";
 }
 
 template<class I> auto

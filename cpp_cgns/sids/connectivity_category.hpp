@@ -3,6 +3,7 @@
 
 #include "cpp_cgns/sids/elements_utils.hpp"
 #include "cpp_cgns/base/exception.hpp"
+#include "cpp_cgns/tree.hpp"
 
 
 namespace cgns {

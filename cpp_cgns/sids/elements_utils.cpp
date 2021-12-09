@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include "std_e/algorithm/algorithm.hpp"
+#include "cpp_cgns/base/exception.hpp"
 
 
 namespace cgns {
@@ -19,14 +20,6 @@ auto find_by_elt_type(ElementType_t elt) {
   }
 }
 
-auto to_string(ElementType_t elt) -> std::string {
-  return find_by_elt_type(elt)->name;
-}
-
-
-auto element_dimension(ElementType_t elt_type) -> int {
-  return find_by_elt_type(elt_type)->dimension;
-}
 auto grid_location(ElementType_t elt_type) -> std::string {
   auto elt_dim = element_dimension(elt_type);
   if (elt_dim==0) return "Vertex";

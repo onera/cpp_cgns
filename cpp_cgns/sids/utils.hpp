@@ -32,7 +32,7 @@ template<class I, class Tree> auto
 regular_elements_connectivities(Tree& elements_node) -> md_array_view<I,2> {
   STD_E_ASSERT(label(elements_node)=="Elements_t");
   ElementType_t elt_type = element_type(elements_node);
-  I8 n_node_for_elt_type = number_of_nodes(elt_type);
+  I8 n_node_for_elt_type = number_of_vertices(elt_type);
   I8 n_elt = nb_of_elements(elements_node);
   Tree& element_connectivity_node = get_child_by_name(elements_node, "ElementConnectivity");
 

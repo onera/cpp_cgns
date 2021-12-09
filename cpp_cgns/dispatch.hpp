@@ -17,6 +17,27 @@ dispatch_I4_I8(const std::string& type, F f, Args&&... args) {
   }
   throw cgns_exception("dispatch_I4_I8 expects an integer data_type, but got "+type);
 }
+template<class F, class... Args> auto
+dispatch_I(F f, const std::string& type, Args&&... args) {
+  if (type=="I4") {
+    return f(I4{},FWD(args)...);
+  }
+  if (type=="I8") {
+    return f(I8{},FWD(args)...);
+  }
+  throw cgns_exception("dispatch_I expects a I4 or I8, but got "+type);
+}
+template<class F, class Node_value, class... Args> auto
+dispatch_integral_node_value(F f, Node_value& val, Args&&... args) {
+  std::string type = val.data_type();
+  if (type=="I4") {
+    return f(view_as_span<I4>(val),FWD(args)...);
+  }
+  if (type=="I8") {
+    return f(view_as_span<I8>(val),FWD(args)...);
+  }
+  throw cgns_exception("dispatch_integral_node_value expects a node_value of I4 or I8, but got "+type);
+}
 
 
 template<class F, class... Args> auto
