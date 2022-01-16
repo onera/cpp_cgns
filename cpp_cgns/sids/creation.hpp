@@ -40,6 +40,7 @@ auto new_Distribution(const std::string& entity_kind, std::vector<I8>&& partial_
 template<class T, int N   > auto new_DataArray(const std::string& name, const T(&arr)[N]) -> tree;
 template<class T          > auto new_DataArray(const std::string& name, std::vector<T>&& v) -> tree;
 template<class T, int rank> auto new_DataArray(const std::string& name, md_array<T,rank>&& arr) -> tree;
+template<class T, int rank> auto new_DataArray(const std::string& name, md_array_view<T,rank>& arr) -> tree;
 
                   auto new_UserDefinedData(const std::string& name, node_value value = MT()) -> tree;
                   auto new_UserDefinedData(const std::string& name, const std::string& val) -> tree;
@@ -207,10 +208,10 @@ template<class T, int rank> auto
 new_DataArray(const std::string& name, md_array<T,rank>&& arr) -> tree {
   return new_DataArray(name,node_value(std::move(arr)));
 }
-//template<class T, int rank> auto
-//new_DataArray(const std::string& name, md_array_view<T,rank>& arr) -> tree {
-//  return new_DataArray(name,view_as_node_value(arr));
-//}
+template<class T, int rank> auto
+new_DataArray(const std::string& name, md_array_view<T,rank>& arr) -> tree {
+  return new_DataArray(name,node_value(std::move(arr)));
+}
 
 
 } // cgns

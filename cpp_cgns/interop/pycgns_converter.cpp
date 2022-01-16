@@ -167,7 +167,7 @@ update_py_tree(tree&& t, py::list py_tree) -> void {
   STD_E_ASSERT(name (t)==to_string_from_py(name (py_tree)));
   STD_E_ASSERT(label(t)==to_string_from_py(label(py_tree)));
 
-  bool node_data_was_coming_from_python = same_data(value(t),to_node_value(value(py_tree)));
+  bool node_data_was_coming_from_python = same_data(value(t),to_node_value(value(py_tree))); // TODO unit test for MT cases
   if (!node_data_was_coming_from_python) {
     value(py_tree) = to_owning_py_value(std::move(value(t)));
   }
