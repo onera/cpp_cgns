@@ -193,11 +193,6 @@ update_py_tree(tree&& t, py::list py_tree) -> void {
     py_children.append(py_child);
   }
 }
-
-auto
-update_and_transfer_ownership_to_py_tree(tree&& t, py::list py_tree) -> void {
-  update_py_tree(std::move(t),py_tree);
-}
 /// ownership transfer to python }
 // tree <-> py_tree }
 
