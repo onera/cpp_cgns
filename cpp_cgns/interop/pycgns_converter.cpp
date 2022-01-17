@@ -72,7 +72,7 @@ to_owning_py_value(node_value&& value) -> py::object {
   if (value.data_type()=="MT") {
     return py::none{};
   } else if (std_e::cartesian_product_size(value.extent())==0) {
-    return to_empty_np_array(value.data_type());
+    return to_empty_np_array(value.data_type(),value.extent());
   } else {
     return to_owning_np_array(std::move(value));
   }

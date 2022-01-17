@@ -118,12 +118,11 @@ to_owning_np_array(node_value&& n) -> py::array {
   return py::array(dt,n.extent(),strides,data,capsule);
 }
 auto
-to_empty_np_array(const std::string& data_type) -> py::array {
+to_empty_np_array(const std::string& data_type, const std_e::multi_index<I8>& dims) -> py::array {
   auto np_type = cgns_type_to_numpy_type(data_type);
   auto dt = py::dtype(np_type);
-  std::vector<I8> no_dims = {};
-  auto strides = py::detail::f_strides(no_dims, dt.itemsize());
-  return py::array(dt,no_dims,strides,nullptr);
+  auto strides = py::detail::f_strides(dims, dt.itemsize());
+  return py::array(dt,dims,strides,nullptr);
 }
 // numpy array <-> node_value }
 
