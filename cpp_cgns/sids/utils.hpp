@@ -5,9 +5,11 @@
 #include "cpp_cgns/sids/cgnslib.h"
 #include "cpp_cgns/sids/elements_utils.hpp"
 #include "std_e/interval/interval.hpp"
+#include "std_e/interval/interval_sequence.hpp"
 
 
 namespace cgns {
+
 
 template<class I> using interval = std_e::closed_interval<I>; // CGNS intervals are always closed
 
@@ -60,22 +62,37 @@ face_is_boundary(const Array& parent_elts) -> bool {
 
 
 template<class Tree_range> auto
-elts_ranges_are_contiguous(const Tree_range& elt_pools) -> bool {
-  STD_E_ASSERT(std::is_sorted(begin(elt_pools),end(elt_pools),compare_by_range));
-  int nb_of_elt_types = elt_pools.size();
-  for (int i=0; i<nb_of_elt_types-1; ++i) {
-    auto current_range = element_range(elt_pools[i]);
-    auto next_range = element_range(elt_pools[i+1]);
+elts_ranges_are_contiguous(const Tree_range& elt_sections) -> bool {
+  for (const tree& e : elt_sections) {
+    STD_E_ASSERT(label(e)=="Elements_t");
+  }
+  STD_E_ASSERT(std::is_sorted(begin(elt_sections),end(elt_sections),compare_by_range));
+  int n_section = elt_sections.size();
+  for (int i=0; i<n_section-1; ++i) {
+    auto current_range = element_range(elt_sections[i]);
+    auto next_range = element_range(elt_sections[i+1]);
     return contiguous(current_range,next_range);
   }
   return true;
 }
+template<class I, class Tree_range> auto
+element_sections_interval_vector(const Tree_range& elt_sections) -> std_e::interval_vector<I> {
+  STD_E_ASSERT(elts_ranges_are_contiguous(elt_sections));
+
+  int n_section = elt_sections.size();
+  std_e::interval_vector<I> res(n_section); // TODO change ctor with +1
+  for (int i=0; i<n_section; ++i) {
+    res[i] = element_range(elt_sections[i]).first();
+  }
+  res[n_section] = element_range(elt_sections[n_section-1]).last()+1; // +1 because CGNS ranges are closed
+  return res;
+}
 
 template<class Tree_range> auto
-elts_types_are_unique(const Tree_range& elt_pools) -> bool {
-  STD_E_ASSERT(std::is_sorted(begin(elt_pools),end(elt_pools),compare_by_elt_type));
-  auto last = std::adjacent_find(begin(elt_pools),end(elt_pools),equal_by_elt_type);
-  return last==end(elt_pools);
+elts_types_are_unique(const Tree_range& elt_sections) -> bool {
+  STD_E_ASSERT(std::is_sorted(begin(elt_sections),end(elt_sections),compare_by_elt_type));
+  auto last = std::adjacent_find(begin(elt_sections),end(elt_sections),equal_by_elt_type);
+  return last==end(elt_sections);
 }
 
 template<class I, class Tree> auto

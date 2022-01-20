@@ -93,6 +93,11 @@ constexpr auto element_dimension      (ElementType_t elt_type) -> int   { return
 constexpr auto face_types             (ElementType_t elt_type) -> auto& { return elements_traits[elt_type].face_types; }
 constexpr auto number_of_faces_by_type(ElementType_t elt_type) -> auto& { return elements_traits[elt_type].n_face_by_type; }
 
+constexpr auto number_of_faces(ElementType_t elt_type) -> int {
+  auto n_by_type = number_of_faces_by_type(elt_type);
+  return std::accumulate(begin(n_by_type),end(n_by_type),0);
+}
+
 auto grid_location(ElementType_t elt_type) -> std::string;
 
 } // cgns

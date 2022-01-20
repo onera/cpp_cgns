@@ -50,6 +50,12 @@ rm_child_by_name(tree& t, const std::string& name) -> void {
   auto predicate = [&](const tree& child){ return is_of_name(child,name); };
   rm_child_by_predicate(t,predicate);
 }
+auto rm_children_by_names(tree& t, const std::vector<std::string>& names) -> void {
+  for (const auto& name : names) {
+    rm_child_by_name(t,name);
+  }
+}
+
 auto
 rm_child_by_label(tree& t, const std::string& label) -> void {
   auto predicate = [&](const tree& child){ return is_of_label(child,label); };

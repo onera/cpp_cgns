@@ -55,6 +55,7 @@ template<class T, int N=1, class Tree> auto get_node_value_by_matching(Tree& t, 
 // removal {
 auto rm_child(tree& t, const tree& c) -> void;
 auto rm_child_by_name(tree& t, const std::string& name) -> void;
+auto rm_children_by_names(tree& t, const std::vector<std::string>& names) -> void;
 auto rm_child_by_label(tree& t, const std::string& label) -> void;
 auto rm_children_by_label(tree& t, const std::string& label) -> void;
 
