@@ -63,9 +63,11 @@ template<class Tree_range>
 auto rm_children(tree& t, Tree_range& children) -> void;
 
 template<class Unary_predicate> auto
-rm_children_by_predicate(tree& t, Unary_predicate p) -> void;
+rm_child_by_predicate(tree& t, Unary_predicate p, const cgns_exception& e) -> void;
 template<class Unary_predicate> auto
 rm_child_by_predicate(tree& t, Unary_predicate p) -> void;
+template<class Unary_predicate> auto
+rm_children_by_predicate(tree& t, Unary_predicate p) -> void;
 // removal }
 // [Sphinx Doc] Tree manip }
 
@@ -292,14 +294,19 @@ get_node_value_by_matching(Tree& t, const std::string& s) {
 
 /// node removal {
 template<class Unary_predicate> auto
-rm_child_by_predicate(tree& t, Unary_predicate p) -> void {
+rm_child_by_predicate(tree& t, Unary_predicate p, const cgns_exception& e) -> void {
   auto& cs = children(t);
   auto pos = std::find_if(begin(cs),end(cs),p);
   if (pos==end(cs)) {
-    throw cgns_exception("No node to erase");
+    throw e;
   } else {
     cs.erase(pos);
   }
+}
+template<class Unary_predicate> auto
+rm_child_by_predicate(tree& t, Unary_predicate p) -> void {
+  const cgns_exception e("No child to erase satisfying predicate in tree \""+name(t)+"\"");
+  return rm_child_by_predicate(t,p,e);
 }
 template<class Unary_predicate> auto
 rm_children_by_predicate(tree& t, Unary_predicate p) -> void {

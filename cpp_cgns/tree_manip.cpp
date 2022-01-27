@@ -43,12 +43,14 @@ has_child_of_label(const tree& t, const std::string& label) -> bool {
 auto
 rm_child(tree& t, const tree& c) -> void {
   auto predicate = [&](const tree& child){ return &child==&c; };
-  rm_child_by_predicate(t,predicate);
+  const cgns_exception e("Impossible to erase child "+name(c)+": it is not a child of tree "+name(t));
+  rm_child_by_predicate(t,predicate,e);
 }
 auto
-rm_child_by_name(tree& t, const std::string& name) -> void {
-  auto predicate = [&](const tree& child){ return is_of_name(child,name); };
-  rm_child_by_predicate(t,predicate);
+rm_child_by_name(tree& t, const std::string& name_) -> void {
+  auto predicate = [&](const tree& child){ return is_of_name(child,name_); };
+  const cgns_exception e("Impossible to erase child of name "+name_+" in tree "+name(t)+": no such child with such name");
+  rm_child_by_predicate(t,predicate,e);
 }
 auto rm_children_by_names(tree& t, const std::vector<std::string>& names) -> void {
   for (const auto& name : names) {
@@ -59,7 +61,8 @@ auto rm_children_by_names(tree& t, const std::vector<std::string>& names) -> voi
 auto
 rm_child_by_label(tree& t, const std::string& label) -> void {
   auto predicate = [&](const tree& child){ return is_of_label(child,label); };
-  rm_child_by_predicate(t,predicate);
+  const cgns_exception e("Impossible to erase child of label "+label+" in tree "+name(t)+": no such child with such label");
+  rm_child_by_predicate(t,predicate,e);
 }
 auto
 rm_children_by_label(tree& t, const std::string& label) -> void {
