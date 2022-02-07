@@ -145,32 +145,34 @@ py_tree_example() -> py::list {
 
 
 PYBIND_TEST_CASE("view_as_cpptree") {
-  auto cpp_tree = cpp_tree_example();
+  tree cpp_tree = cpp_tree_example();
   auto py_tree = py_tree_example();
 
-  auto cpp_tree_from_py = to_cpp_tree(py_tree);
+  tree cpp_tree_from_py = to_cpp_tree(py_tree);
   CHECK( cpp_tree_from_py == cpp_tree );
 }
 
 
 PYBIND_TEST_CASE("view_as_py_tree") {
-  auto cpp_tree = cpp_tree_example();
+  tree cpp_tree = cpp_tree_example();
   auto py_tree_from_cpp = view_as_py_tree(cpp_tree);
 
-  CHECK( to_cpp_tree(py_tree_from_cpp) == cpp_tree );
+  tree cpp_tree_from_py = to_cpp_tree(py_tree_from_cpp);
+  CHECK( cpp_tree_from_py == cpp_tree );
 }
 
 
 PYBIND_TEST_CASE("pytree_with_transfered_ownership") {
   py::list py_tree;
   {
-    auto cpp_tree = cpp_tree_example();
+    tree cpp_tree = cpp_tree_example();
     py_tree = to_py_tree(std::move(cpp_tree));
   } // At this point, cpp_tree is destroyed, but the memory ownership has been transfered to Python
 
 
-  auto expected_cpp_tree = cpp_tree_example();
-  CHECK( to_cpp_tree(py_tree) == expected_cpp_tree);
+  tree cpp_tree_from_py = to_cpp_tree(py_tree);
+  tree expected_cpp_tree = cpp_tree_example();
+  CHECK( cpp_tree_from_py == expected_cpp_tree);
 }
 
 auto
@@ -186,14 +188,15 @@ PYBIND_TEST_CASE("update_py_tree") {
   auto py_tree = py_tree_example();
   { /// 1. Call a binary module (here represented by this opening scope)
     /// 2. Convert from a py_tree
-    auto cpp_tree = to_cpp_tree(py_tree);
+    tree cpp_tree = to_cpp_tree(py_tree);
     /// 3. Permform operations that add nodes (hence, memory) to the C++ tree
     my_test_operation(cpp_tree);
     /// 4. Update the py_tree and give it the ownership
     update_py_tree(std::move(cpp_tree),py_tree);
   } /// 5. Return to Python. At this point, C++ node_value objects are destroyed, but the memory they where holding has been transfered to Python
 
-  auto expected_cpp_tree = cpp_tree_example();
+  tree cpp_tree_from_py = to_cpp_tree(py_tree);
+  tree expected_cpp_tree = cpp_tree_example();
   my_test_operation(expected_cpp_tree);
-  CHECK( to_cpp_tree(py_tree) == expected_cpp_tree );
+  CHECK( cpp_tree_from_py == expected_cpp_tree );
 }
