@@ -90,8 +90,15 @@ using all_basic_2D_and_3D_elements = std::integer_sequence<ElementType_t,TRI_3,Q
 
 constexpr auto number_of_vertices     (ElementType_t elt_type) -> int   { return elements_traits[elt_type].n_vtx; };
 constexpr auto element_dimension      (ElementType_t elt_type) -> int   { return elements_traits[elt_type].dimension; }
-constexpr auto face_types             (ElementType_t elt_type) -> auto& { return elements_traits[elt_type].face_types; }
-constexpr auto number_of_faces_by_type(ElementType_t elt_type) -> auto& { return elements_traits[elt_type].n_face_by_type; }
+constexpr auto face_types             (ElementType_t elt_type) -> const auto& { return elements_traits[elt_type].face_types; }
+constexpr auto number_of_faces_by_type(ElementType_t elt_type) -> const auto& { return elements_traits[elt_type].n_face_by_type; }
+
+constexpr auto number_of_faces(ElementType_t elt_type, ElementType_t face_type) -> int {
+  auto& ts = face_types(elt_type);
+  auto pos = std_e::find_if(begin(ts),end(ts),[face_type](const auto& t){ return t==face_type; });
+  auto idx = pos-begin(ts);
+  return number_of_faces_by_type(elt_type)[idx];
+}
 
 constexpr auto number_of_faces(ElementType_t elt_type) -> int {
   auto n_by_type = number_of_faces_by_type(elt_type);
