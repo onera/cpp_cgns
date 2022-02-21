@@ -84,32 +84,6 @@ inline constexpr std::array elements_traits = std_e::make_array(
   element_traits{ /*56*/ HEXA_125                ,  125 ,  3 , {}               , {} }
 );
 
-constexpr auto
-_is_regular_face(const element_traits& x) {
-  return x.dimension==2 && x.elt_type!=NGON_n;
-}
-constexpr auto
-_compute_n_face_types() -> int {
-  return std_e::count_if(begin(elements_traits),end(elements_traits) , _is_regular_face);
-}
-constexpr auto
-_compute_all_face_types() {
-  constexpr int N = _compute_n_face_types();
-  std::array<ElementType_t,N> fs;
-  auto first = begin(fs);
-  for (const element_traits& x : elements_traits) {
-    if (_is_regular_face(x)) {
-      *first++ = x.elt_type;
-    }
-  }
-  return fs;
-}
-
-//inline constexpr int n_face_types = _compute_n_face_types();
-//inline constexpr std::array all_face_types = _compute_all_face_types();
-inline constexpr int n_face_types = 2;
-inline constexpr std::array all_face_types = std_e::make_array(TRI_3,QUAD_4);
-
 using all_basic_2D_elements = std::integer_sequence<ElementType_t,TRI_3,QUAD_4>;
 using all_basic_3D_elements = std::integer_sequence<ElementType_t,TETRA_4,PYRA_5,PENTA_6,HEXA_8>;
 using all_homogenous_basic_2D_and_3D_elements = std::integer_sequence<ElementType_t,TRI_3,QUAD_4,TETRA_4,PYRA_5,PENTA_6,HEXA_8>;
