@@ -29,14 +29,14 @@ _compute_all_face_types() {
 }
 
 
-//inline constexpr int n_face_types = _compute_n_face_types();
+//inline constexpr int n_face_type = _compute_n_face_types();
 //inline constexpr std::array all_face_types = _compute_all_face_types();
-inline constexpr int n_face_types = 2;
+inline constexpr int n_face_type = 2;
 inline constexpr std::array all_face_types = std_e::make_array(TRI_3,QUAD_4);
 
 
 template<class T>
-using array_by_face_types = std::array<T,n_face_types>;
+using array_by_face_types = std::array<T,n_face_type>;
 
 
 template<class T> auto
@@ -47,11 +47,11 @@ _get_face_type(T& x, ElementType_t face_type) -> auto& {
   return x[idx];
 }
 template<class T> auto
-get_face_type(      array_by_face_types<T>& x, ElementType_t face_type) ->       T& {
+at_face_type(      array_by_face_types<T>& x, ElementType_t face_type) ->       T& {
   return _get_face_type(x,face_type);
 }
 template<class T> auto
-get_face_type(const array_by_face_types<T>& x, ElementType_t face_type) -> const T& {
+at_face_type(const array_by_face_types<T>& x, ElementType_t face_type) -> const T& {
   return _get_face_type(x,face_type);
 }
 
