@@ -86,6 +86,12 @@ ParentElements(Tree& e) {
   STD_E_ASSERT(label(e)=="Elements_t");
   return get_child_value_by_name<I,2>(e,"ParentElements");
 }
+template<class I, class Tree> auto
+ParentElementsPosition(Tree& e) {
+  STD_E_ASSERT(label(e)=="Elements_t");
+  return get_child_value_by_name<I,2>(e,"ParentElementsPosition");
+}
+
 
 template<class I, class Tree> auto
 ElementStartOffset(Tree& e) {
