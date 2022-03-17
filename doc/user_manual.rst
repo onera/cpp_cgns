@@ -73,7 +73,7 @@ Move, but do not copy
 
 In the previous example, :cpp:`sub_t` was moved as a child of :cpp:`t`. This is because trees may hold large arrays of data, and hence copying them would be inefficient. A CGNS tree is intended to be viewed as a simulation database. So when we create a CGNS node, we want to move it as a child of another tree.
 
-Because of this model, the :cpp:`cgns::tree` copy constructor and copy assignment are deleted. It prevents the accidental, unneeded copy of big arrays. Tree copy is seldom (if ever) needed anyways. So you have to use :cpp:`std::move` (or construct in-place). Just remember to not use the object after it has been moved:
+Because of this model, the :cpp:`cgns::tree` copy constructor and copy assignment are deleted. It prevents accidental, unneeded copies of big arrays. Tree copy is seldom (if ever) needed anyways. So you have to use :cpp:`std::move` (or construct in-place). Just remember to not use the object after it has been moved:
 
 .. code:: c++
 
@@ -261,7 +261,7 @@ At the end, our :cpp:`node_value` is more or less a :cpp:`multi_array<variant_ra
 
 This allows :cpp:`node_value` to be built from various types, and to offer a flexible, unified interface. Of course this flexibility comes at the cost of several levels of indirection that are not needed if the user knows the specific kind of array to be dealt with. That is why the type-erased interface must be used carefully, for example for small arrays (e.g. the arrys of `PointRange`, `ElementRange`, `Zone_t`, `Element_t`, which contain only 2 to 6 coefficients).
 
-So in order to use arrays efficiently, the user must view the :cpp:`node_value` with a fixed rank and a static scalar type, see :ref:`view_with_type`. This is easy most of the time, because the SIDS enforces this parameters.
+In order to use arrays efficiently, the user must view the :cpp:`node_value` with a fixed rank and a compile-time scalar type, see :ref:`view_with_type`. This is easy most of the time, because the SIDS enforces this parameters.
 
 
 .. _view_with_type:

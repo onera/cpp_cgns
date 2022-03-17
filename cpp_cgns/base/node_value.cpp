@@ -32,7 +32,7 @@ auto to_string(const node_value& x, int threshold) -> std::string {
   if (x.data_type()=="MT") return "MT";
   if (x.data_type()=="C1") return std::string((const char*)x.data(),x.extent(0));
   if (std_e::cartesian_product_size(x.extent())<=threshold) return x.data_type()+to_complete_string(x);
-  else return "{"+x.data_type()+":"+dims_to_string(x.extent())+"}";
+  else return x.data_type()+"{"+dims_to_string(x.extent())+"}";
 }
 // to_string }
 
