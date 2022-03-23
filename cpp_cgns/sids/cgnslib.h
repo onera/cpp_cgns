@@ -1,8 +1,6 @@
 #pragma once
 
-
 #include "std_e/utils/enum.hpp"
-
 
 namespace cgns {
 

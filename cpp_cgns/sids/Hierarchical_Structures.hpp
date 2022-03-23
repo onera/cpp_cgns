@@ -47,6 +47,6 @@ auto
 is_unstructured_zone(const tree& z) -> bool;
 
 template<class I> auto
-is_boundary_partitionned_zone(const tree& z) -> bool;
+is_boundary_partitioned_zone(const tree& z) -> bool;
 
 } // cgns

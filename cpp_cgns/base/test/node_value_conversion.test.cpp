@@ -131,11 +131,11 @@ TEST_CASE("node_value to string") {
   node_value val0 = {0,1,2};
   node_value val1 = {{0},{1},{2}};
   node_value val2 = {{5,6},{7,8}};
-  node_value val3 = "Totoro";
+  node_value val3 = "My_string";
 
-  CHECK ( to_string(val0) == "[0,1,2]" );
-  CHECK ( to_string(val1) == "[[0],[1],[2]]" );
-  CHECK ( to_string(val2) == "[[5,6],[7,8]]" );
-  CHECK ( to_string(val3) == "Totoro" );
+  CHECK ( to_string(val0) == "I4[0,1,2]" );
+  CHECK ( to_string(val1) == "I4[[0],[1],[2]]" );
+  CHECK ( to_string(val2) == "I4[[5,6],[7,8]]" );
+  CHECK ( to_string(val3) == "My_string" );
   // [Sphinx Doc] node_value to_string }
 }

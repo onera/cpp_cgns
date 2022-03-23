@@ -33,7 +33,7 @@ ElementSizeBoundary(Tree& e) -> Scalar_ref auto {
 }
 
 template<class I> auto
-is_boundary_partitionned_element_pool(const tree& e) -> bool;
+is_boundary_partitioned_element_section(const tree& e) -> bool;
 
 template<class I, class Tree> auto
 ElementRange(Tree& e) {

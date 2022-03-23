@@ -51,8 +51,11 @@ auto
 compare_by_elt_type(const tree& elts_node0, const tree& elts_node1) -> bool;
 
 
-template<class I> auto
-is_boundary(const md_array_view<I,2>& parent_elts, I i) -> bool;
+template<class md_array_type, class I> auto
+is_boundary(const md_array_type& pe, I i) -> bool {
+  return (pe(i,0)==0) || (pe(i,1)==0); // 0 means no parent element, as per CGNS SIDS 7.3
+}
+
 
 template<class Array> auto
 // requires Array, size==2, value_type==Integer

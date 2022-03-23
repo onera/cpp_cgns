@@ -3,13 +3,13 @@
 namespace cgns {
 
 template<class I> auto
-is_boundary_partitionned_element_pool(const tree& e) -> bool {
+is_boundary_partitioned_element_section(const tree& e) -> bool {
   STD_E_ASSERT(label(e)=="Elements_t");
   return ElementSizeBoundary(e) != 0; // per CGNS SIDS 7.3
 }
 
 // explicit instanciations (do not pollute the header for only 2 instanciations)
-template auto is_boundary_partitionned_element_pool<I4>(const tree& e) -> bool;
-template auto is_boundary_partitionned_element_pool<I8>(const tree& e) -> bool;
+template auto is_boundary_partitioned_element_section<I4>(const tree& e) -> bool;
+template auto is_boundary_partitioned_element_section<I8>(const tree& e) -> bool;
 
 } // cgns
