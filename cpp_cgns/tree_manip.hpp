@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "cpp_cgns/cgns.hpp"
+#include "cpp_cgns/tree.hpp"
 #include "std_e/graph/algorithm/algo_adjacencies.hpp"
 #include "std_e/utils/concatenate.hpp"
 

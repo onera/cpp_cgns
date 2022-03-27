@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cpp_cgns/cgns.hpp"
+#include "cpp_cgns/tree.hpp"
 #include "cpp_cgns/tree_manip.hpp"
 #include "std_e/future/span.hpp"
 #include "std_e/future/span.hpp"

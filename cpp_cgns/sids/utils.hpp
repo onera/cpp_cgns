@@ -1,9 +1,12 @@
 #pragma once
 
-#include "cpp_cgns/cgns.hpp"
+#include "cpp_cgns/tree.hpp"
+#include "cpp_cgns/tree_manip.hpp"
 
 #include "cpp_cgns/sids/cgnslib.h"
 #include "cpp_cgns/sids/elements_utils.hpp"
+#include "cpp_cgns/sids/Building_Block_Structure_Definitions.hpp"
+
 #include "std_e/interval/interval.hpp"
 #include "std_e/interval/interval_sequence.hpp"
 
@@ -105,6 +108,20 @@ PointList(Tree& t) {
 template<class I, class Tree> auto
 PointListDonor(Tree& t) {
   return get_child_value_by_name<I>(t,"PointListDonor");
+}
+
+
+template<class I> auto
+get_zone_point_lists(tree& z, const std::string& grid_location) -> std::vector<std_e::span<I>> {
+  STD_E_ASSERT(label(z)=="Zone_t");
+  std::vector<std::string> search_gen_paths = {"ZoneBC/BC_t","ZoneGridConnectivity/GridConnectivity_t"}; // TODO and other places!
+  std::vector<std_e::span<I>> pls;
+  for (tree& bc : get_nodes_by_matching(z,search_gen_paths)) {
+    if (GridLocation(bc)==grid_location) {
+      pls.emplace_back(get_child_value_by_name<I>(bc,"PointList"));
+    }
+  }
+  return pls;
 }
 
 
