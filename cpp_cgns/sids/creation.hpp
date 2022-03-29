@@ -34,8 +34,6 @@ auto new_Descriptor(const std::string& name, const std::string& val) -> tree;
 auto new_GridConnectivityType(const std::string& gc_type) -> tree;
 auto new_GridConnectivity(const std::string& name, const std::string& z_donor_name, const std::string& loc, const std::string& connec_type) -> tree;
 
-auto new_Distribution(const std::string& entity_kind, std::vector<I8>&& partial_dist) -> tree;
-
                             auto new_DataArray(const std::string& name, node_value&& value) -> tree;
 template<class T, int N   > auto new_DataArray(const std::string& name, const T(&arr)[N]) -> tree;
 template<class T          > auto new_DataArray(const std::string& name, std::vector<T>&& v) -> tree;
@@ -74,6 +72,8 @@ template<class I> auto new_BC(const std::string& name, const std::string& loc, s
 template<class I> auto new_Rind(std::vector<I>&& rind_planes) -> tree;
 
 template<class I> auto new_Ordinal(I i) -> tree;
+
+template<class I> auto new_Distribution(const std::string& entity_kind, std::vector<I>&& partial_dist) -> tree;
 // [Sphinx Doc] creation according to SIDS }
 
 
@@ -185,6 +185,14 @@ new_Rind(std::vector<I>&& rind_planes) -> tree {
 template<class I> auto
 new_Ordinal(I i) -> tree {
   return {"Ordinal", "Ordinal_t", node_value(i)};
+}
+
+template<class I> auto
+new_Distribution(const std::string& entity_kind, std::vector<I>&& partial_dist) -> tree {
+  tree vtx_dist = cgns::new_DataArray(entity_kind,std::move(partial_dist));
+  tree dist = cgns::new_UserDefinedData(":CGNS#Distribution");
+  emplace_child(dist,std::move(vtx_dist));
+  return dist;
 }
 
 template<class T> auto

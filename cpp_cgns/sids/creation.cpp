@@ -96,13 +96,5 @@ new_GridConnectivity(const std::string& name, const std::string& z_donor_name, c
         new_GridConnectivityType(connec_type) } };
 }
 
-auto
-new_Distribution(const std::string& entity_kind, std::vector<I8>&& partial_dist) -> tree {
-  tree vtx_dist = cgns::new_DataArray(entity_kind,std::move(partial_dist));
-  tree dist = cgns::new_UserDefinedData(":CGNS#Distribution");
-  emplace_child(dist,std::move(vtx_dist));
-  return dist;
-}
-
 
 } // cgns

@@ -41,36 +41,36 @@ ElementRange(Tree& e) {
   return get_child_value_by_name<I>(e,"ElementRange");
 }
 
-template<class Tree> auto
+template<class I, class Tree> auto
 ElementDistribution(Tree& e) {
   STD_E_ASSERT(label(e)=="Elements_t");
-  return get_node_value_by_matching<I8>(e,":CGNS#Distribution/Element");
+  return get_node_value_by_matching<I>(e,":CGNS#Distribution/Element");
 }
 
-inline auto
-is_distribution(std_e::span<const I8> distri) -> bool {
+template<class I> auto
+is_distribution(std_e::span<const I> distri) -> bool {
   if (distri.size()!=3) return false;
   if (distri[0] > distri[1]) return false;
   if ((distri[1]-distri[0]) > distri[2]) return false;
   return true;
 }
-inline auto
-distribution_inf(std_e::span<const I8> distri) -> I8 {
+template<class I> auto
+distribution_inf(std_e::span<const I> distri) -> I {
   STD_E_ASSERT(is_distribution(distri));
   return distri[0];
 }
-inline auto
-distribution_sup(std_e::span<const I8> distri) -> I8 {
+template<class I> auto
+distribution_sup(std_e::span<const I> distri) -> I {
   STD_E_ASSERT(is_distribution(distri));
   return distri[1];
 }
-inline auto
-distribution_global_size(std_e::span<const I8> distri) -> I8 {
+template<class I> auto
+distribution_global_size(std_e::span<const I> distri) -> I {
   STD_E_ASSERT(is_distribution(distri));
   return distri[2];
 }
-inline auto
-distribution_local_size(std_e::span<const I8> distri) -> I8 {
+template<class I> auto
+distribution_local_size(std_e::span<const I> distri) -> I {
   STD_E_ASSERT(is_distribution(distri));
   return distri[1]-distri[0];
 }
