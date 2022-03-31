@@ -1,9 +1,9 @@
 #pragma once
 
-#include "cpp_cgns/cgns.hpp"
+#include "cpp_cgns/tree.hpp"
+#include "cpp_cgns/tree_manip.hpp"
 #include "std_e/future/contract.hpp"
 #include "std_e/future/span.hpp"
-#include "cpp_cgns/tree_manip.hpp"
 
 // SEE http://cgns.github.io/CGNS_docs_current/sids/cgnsbase.html
 // From SIDS §6: Hierarchical Structures
