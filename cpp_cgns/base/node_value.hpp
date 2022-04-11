@@ -123,14 +123,11 @@ class node_value : public node_value_impl {
     template<class T>
       requires is_data_type<T>
         friend auto
-    holds_alternative(const node_value& x) -> bool {
-      const auto& rng = x.underlying_range();
-      return holds_alternative<T>(rng);
-    }
+    holds_alternative(const node_value& x) -> bool;
     auto
     data_type() const -> std::string {
       const auto& rng = underlying_range();
-      if (holds_alternative<C1>(rng) && get<C1>(rng).is_null()) return "MT";
+      if (std_e::holds_alternative<C1>(rng) && std_e::get<C1>(rng).is_null()) return "MT";
       return this->visit([]<class T>(const std_e::polymorphic_array<T>& x){ return to_string<T>(); });
     }
 
@@ -165,6 +162,13 @@ class node_value : public node_value_impl {
     }
 };
 
+template<class T>
+  requires is_data_type<T>
+    auto
+holds_alternative(const node_value& x) -> bool {
+  const auto& rng = x.underlying_range();
+  return std_e::holds_alternative<T>(rng);
+}
 
 // comparison {
 template<class T> auto

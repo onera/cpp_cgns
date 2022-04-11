@@ -80,6 +80,7 @@ class tree {
     tree() = default;
     tree(tree&&) = default;
     tree& operator=(tree&&) = default;
+
     tree(const tree&) = delete;
     tree& operator=(const tree&) = delete;
 

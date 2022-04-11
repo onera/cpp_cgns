@@ -27,10 +27,10 @@ class scalar_ref_variant : public std_e::reference_variant<Ts...> {
     constexpr
     scalar_ref_variant& operator=(const I4& x) {
       static_assert(std_e::exactly_once<I4,Ts...>); // ensures non-const versions
-      if (holds_alternative<I8>(*this)) {
-        get<I8>(*this) = x;
-      } else if (holds_alternative<I4>(*this)) {
-        get<I4>(*this) = x;
+      if (std_e::holds_alternative<I8>(*this)) {
+        std_e::get<I8>(*this) = x;
+      } else if (std_e::holds_alternative<I4>(*this)) {
+        std_e::get<I4>(*this) = x;
       } else {
         throw cgns_exception("Narrowing conversion from "+to_string<I4>()+" to "+data_type());
       }
@@ -40,10 +40,10 @@ class scalar_ref_variant : public std_e::reference_variant<Ts...> {
     constexpr
     scalar_ref_variant& operator=(const R4& x) {
       static_assert(std_e::exactly_once<R4,Ts...>); // ensures non-const versions
-      if (holds_alternative<R8>(*this)) {
-        get<R8>(*this) = x;
-      } else if (holds_alternative<R4>(*this)) {
-        get<R4>(*this) = x;
+      if (std_e::holds_alternative<R8>(*this)) {
+        std_e::get<R8>(*this) = x;
+      } else if (std_e::holds_alternative<R4>(*this)) {
+        std_e::get<R4>(*this) = x;
       } else {
         throw cgns_exception("Narrowing conversion from "+to_string<R4>()+" to "+data_type());
       }
@@ -55,7 +55,7 @@ class scalar_ref_variant : public std_e::reference_variant<Ts...> {
     constexpr
     scalar_ref_variant& operator=(const T& x) {
       base& self_as_base = *this;
-      if (!holds_alternative<T>(self_as_base)) {
+      if (!std_e::holds_alternative<T>(self_as_base)) {
         throw cgns_exception("Narrowing conversion from "+to_string<T>()+" to "+data_type());
       }
       self_as_base = x;
@@ -65,30 +65,30 @@ class scalar_ref_variant : public std_e::reference_variant<Ts...> {
     // conversions to value: only to exact type or I4->I8 and R4->R8
     constexpr
     operator C1() const {
-      return get<C1>(*this);
+      return std_e::get<C1>(*this);
     }
     constexpr
     operator I4() const {
-      return get<I4>(*this);
+      return std_e::get<I4>(*this);
     }
     constexpr
     operator I8() const {
-      if (holds_alternative<I8>(*this)) {
-        return get<I8>(*this);
+      if (std_e::holds_alternative<I8>(*this)) {
+        return std_e::get<I8>(*this);
       } else {
-        return get<I4>(*this);
+        return std_e::get<I4>(*this);
       }
     }
     constexpr
     operator R4() const {
-      return get<R4>(*this);
+      return std_e::get<R4>(*this);
     }
     constexpr
     operator R8() const {
-      if (holds_alternative<R8>(*this)) {
-        return get<R8>(*this);
+      if (std_e::holds_alternative<R8>(*this)) {
+        return std_e::get<R8>(*this);
       } else {
-        return get<R4>(*this);
+        return std_e::get<R4>(*this);
       }
     }
 };
@@ -106,15 +106,15 @@ template<class T> concept Scalar = std::is_same_v<T,scalar> || Scalar_ref<T>;
 template<Scalar S, Data_type T>
 constexpr auto
 operator==(const S& x, T y) -> bool {
-  if (holds_alternative<T>(x)) { // if same underlying type, cast and compare
+  if (std_e::holds_alternative<T>(x)) { // if same underlying type, cast and compare
     return T(x)==y;
-  } else if (holds_alternative<R4>(x) && std::is_same_v<T,R8>) { // compare R4 and R8
+  } else if (std_e::holds_alternative<R4>(x) && std::is_same_v<T,R8>) { // compare R4 and R8
     return R4(x)==y;
-  } else if (holds_alternative<R8>(x) && std::is_same_v<T,R4>) { // compare R8 and R4
+  } else if (std_e::holds_alternative<R8>(x) && std::is_same_v<T,R4>) { // compare R8 and R4
     return R8(x)==y;
-  } else if (holds_alternative<I4>(x) && std::is_same_v<T,I8>) { // compare I4 and I8
+  } else if (std_e::holds_alternative<I4>(x) && std::is_same_v<T,I8>) { // compare I4 and I8
     return I4(x)==y;
-  } else if (holds_alternative<I8>(x) && std::is_same_v<T,I4>) { // compare I8 and I4
+  } else if (std_e::holds_alternative<I8>(x) && std::is_same_v<T,I4>) { // compare I8 and I4
     return I8(x)==y;
   } else { // compare a floating point and an integer, or worse: consider not equal
     return false;

@@ -258,7 +258,7 @@ get_node_by_name(Tree& t, const std::string& s) -> tree_ref<Tree> {
 // tree search }
 template<class T, int N> auto
 throw_if_incorrect_array_type(const tree& x) -> void {
-  if (!holds_alternative<T>(value(x))) {
+  if (!cgns::holds_alternative<T>(value(x))) {
     throw cgns_exception("Value of node \""+name(x)+"\" is of type "+value(x).data_type()
                        + " but was asked to be of type "+to_string<T>());
   }
