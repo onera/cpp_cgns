@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "cpp_cgns/sids/elements_utils.hpp"
 
 
@@ -30,3 +31,4 @@ auto grid_location(ElementType_t elt_type) -> std::string {
 }
 
 } // cgns
+#endif // C++>17

@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "cpp_cgns/interop/node_value_conversion.hpp"
 
 
@@ -143,3 +144,4 @@ copy_py_string_to_node_value(py::object str) -> node_value {
 
 
 } // cgns
+#endif // C++>17

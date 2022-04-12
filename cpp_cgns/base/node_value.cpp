@@ -1,3 +1,5 @@
+#if __cplusplus > 201703L
+
 #include "cpp_cgns/base/node_value.hpp"
 
 
@@ -75,3 +77,4 @@ make_non_owning_node_value(const std::string& data_type, void* data, std::vector
 // make_node_value }
 
 } // cgns
+#endif // C++>17

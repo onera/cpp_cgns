@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "cpp_cgns/sids/creation.hpp"
 #include "cpp_cgns/tree_manip.hpp"
 #include <functional>
@@ -98,3 +99,4 @@ new_GridConnectivity(const std::string& name, const std::string& z_donor_name, c
 
 
 } // cgns
+#endif // C++>17

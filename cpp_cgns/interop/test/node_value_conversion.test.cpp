@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "std_e/unit_test/doctest_pybind.hpp"
 
 #include "cpp_cgns/interop/node_value_conversion.hpp"
@@ -114,3 +115,4 @@ PYBIND_TEST_CASE("to_np_array") {
   // Check the data is shared
   CHECK( np_arr.data() == val.data() );
 }
+#endif // C++>17

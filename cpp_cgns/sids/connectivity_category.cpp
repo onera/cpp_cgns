@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "cpp_cgns/sids/connectivity_category.hpp"
 
 #include "cpp_cgns/sids/utils.hpp"
@@ -29,3 +30,4 @@ template auto connectivity_category_of<I4>(const tree& e) -> connectivity_catego
 template auto connectivity_category_of<I8>(const tree& e) -> connectivity_category;
 
 } // cgns
+#endif // C++>17

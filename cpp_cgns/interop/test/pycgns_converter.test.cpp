@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "std_e/unit_test/doctest_pybind.hpp"
 
 #include "cpp_cgns/interop/pycgns_converter.hpp"
@@ -200,3 +201,4 @@ PYBIND_TEST_CASE("update_py_tree") {
   my_test_operation(expected_cpp_tree);
   CHECK( cpp_tree_from_py == expected_cpp_tree );
 }
+#endif // C++>17

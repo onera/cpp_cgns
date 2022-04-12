@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "std_e/unit_test/doctest.hpp"
 #include "cpp_cgns/cgns.hpp"
 
@@ -136,3 +137,4 @@ TEST_CASE("tree equality") {
   CHECK( !same_tree_structure(t0,t5) );
   // [Sphinx Doc] tree equality }
 }
+#endif // C++>17

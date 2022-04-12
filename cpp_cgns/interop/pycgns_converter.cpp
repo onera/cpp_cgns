@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "cpp_cgns/interop/pycgns_converter.hpp"
 
 #include <algorithm>
@@ -198,3 +199,4 @@ update_py_tree(tree&& t, py::list py_tree) -> void {
 
 
 } // cgns
+#endif // C++>17

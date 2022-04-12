@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "std_e/unit_test/doctest.hpp"
 
 #include "cpp_cgns/base/node_value_conversion.hpp"
@@ -130,3 +131,4 @@ TEST_CASE("dispatch_on_data_type") {
   CHECK( my_complete_node_query(my_R8_node_value) == true  );
 }
 // Test dispatch_on_data_type }
+#endif // C++>17

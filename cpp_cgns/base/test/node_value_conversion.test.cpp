@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "std_e/unit_test/doctest.hpp"
 #include "cpp_cgns/base/node_value_conversion.hpp"
 #include "std_e/multi_array/utils.hpp"
@@ -139,3 +140,4 @@ TEST_CASE("node_value to string") {
   CHECK ( to_string(val3) == "My_string" );
   // [Sphinx Doc] node_value to_string }
 }
+#endif // C++>17

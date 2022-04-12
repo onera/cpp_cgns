@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "cpp_cgns/tree_manip.hpp"
 
 #include "std_e/utils/string.hpp"
@@ -73,3 +74,4 @@ rm_children_by_label(tree& t, const std::string& label) -> void {
 
 
 } // cgns
+#endif // C++>17

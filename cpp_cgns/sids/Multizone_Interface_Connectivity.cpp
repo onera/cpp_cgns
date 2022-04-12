@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "cpp_cgns/sids/Multizone_Interface_Connectivity.hpp"
 
 #include "std_e/future/contract.hpp"
@@ -13,3 +14,4 @@ std::string ZoneDonorName(const tree& gc) {
 }
 
 } // cgns
+#endif // C++>17

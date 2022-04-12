@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "std_e/unit_test/doctest.hpp"
 #include "cpp_cgns/cgns.hpp"
 #include "cpp_cgns/base/node_value.hpp"
@@ -342,3 +343,4 @@ TEST_CASE("node_value assignments") {
     CHECK( x(1,0) == 30 ); CHECK( x(1,1) == 40 ); CHECK( x(1,2) == 50 );
   }
 }
+#endif // C++>17

@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "cpp_cgns/base/tree.hpp"
 
 
@@ -59,3 +60,4 @@ auto to_string(const tree& t, int threshold) -> std::string {
 
 
 } // cgns
+#endif // C++>17

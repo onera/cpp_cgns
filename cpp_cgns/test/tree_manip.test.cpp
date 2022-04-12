@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "std_e/unit_test/doctest.hpp"
 #include "cpp_cgns/tree_manip.hpp"
 
@@ -107,3 +108,4 @@ TEST_CASE("find nodes") {
     CHECK( val_D == md_array<R8,2>{{3.,4.,5.},{6.,7.,8.}} );
   }
 }
+#endif // C++>17

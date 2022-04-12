@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "cpp_cgns/sids/utils.hpp"
 
 #include "cpp_cgns/tree_manip.hpp"
@@ -77,3 +78,4 @@ compare_by_elt_type(const tree& elts_node0, const tree& elts_node1) -> bool {
 
 
 } // cgns
+#endif // C++>17

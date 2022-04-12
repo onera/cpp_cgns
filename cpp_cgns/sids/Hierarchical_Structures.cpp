@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "cpp_cgns/sids/Hierarchical_Structures.hpp"
 
 namespace cgns {
@@ -26,3 +27,4 @@ template auto is_boundary_partitioned_zone<I4>(const tree& z) -> bool;
 template auto is_boundary_partitioned_zone<I8>(const tree& z) -> bool;
 
 } // cgns
+#endif // C++>17
