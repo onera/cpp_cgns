@@ -47,8 +47,8 @@ include(FetchContent)
 ### doctest ###
 FetchContent_Declare(
   doctest
-  GIT_REPOSITORY https://github.com/onqtam/doctest.git
-  GIT_TAG        v2.4.8
+  GIT_REPOSITORY https://github.com/doctest/doctest.git
+  GIT_TAG        110d305 # corrected MPI SUBCASE
 )
 FetchContent_MakeAvailable(doctest)
 ### pybind11 ###

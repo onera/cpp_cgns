@@ -1,11 +1,10 @@
 #pragma once
 
-
-/// Extracted from the real "cgnslib.hpp" (because of incompatibility problems. Should be replaced by the real third-party library.)
+#include "std_e/utils/enum.hpp"
 
 namespace cgns {
 
-enum ElementType_t {
+STD_E_ENUM(ElementType_t,
   ElementTypeNull  =0,
   ElementTypeUserDefined =1,
   NODE =2,
@@ -63,6 +62,6 @@ enum ElementType_t {
   HEXA_44 =54,
   HEXA_98 =55,
   HEXA_125 =56
-};
+);
 
 } // cgns

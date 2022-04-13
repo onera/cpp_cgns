@@ -1,10 +1,8 @@
 #pragma once
 
 #include "cpp_cgns/cgns.hpp"
-#include "cpp_cgns/node_manip.hpp"
 #include "std_e/future/span.hpp"
 #include "std_e/future/contract.hpp"
-#include "cpp_cgns/exception.hpp"
 #include "cpp_cgns/tree_manip.hpp"
 #include "cpp_cgns/sids/cgnslib.h"
 #include "cpp_cgns/sids/Hierarchical_Structures.hpp"
@@ -16,75 +14,108 @@ namespace cgns {
 
 // NOTE: template parameter Tree is only here to have the const and non-const versions all-at-once (i.e Tree should be substituted by either tree or const tree)
 
-template<class I, class Tree> auto
-ElementType_ElementSizeBoundary(Tree& e) {
+template<class Tree> auto
+ElementType_ElementSizeBoundary(Tree& e) -> auto& {
   STD_E_ASSERT(label(e)=="Elements_t");
-  auto I_str = to_string<I>();
-  if (value(e).data_type!=I_str)
-    throw cgns_exception("CGNS requires zone dimensions to be of type \""+I_str+"\"");
-  I* e_ptr = (I*)data(value(e));
-  return std_e::make_span<2>(e_ptr);
+  return value(e);
 }
 
-template<class I, class Tree> auto
-ElementType(Tree& e) -> I& {
+template<class Tree> auto
+ElementType(Tree& e) -> Scalar_ref auto {
   STD_E_ASSERT(label(e)=="Elements_t");
-  return ElementType_ElementSizeBoundary<I>(e)[0];
+  return ElementType_ElementSizeBoundary(e)(0);
 }
 
-template<class I, class Tree> auto
-ElementSizeBoundary(Tree& e) -> I& {
+template<class Tree> auto
+ElementSizeBoundary(Tree& e) -> Scalar_ref auto {
   STD_E_ASSERT(label(e)=="Elements_t");
-  return ElementType_ElementSizeBoundary<I>(e)[1];
+  return ElementType_ElementSizeBoundary(e)(1);
 }
 
 template<class I> auto
-is_boundary_partitionned_element_pool(const tree& e) -> bool;
+is_boundary_partitioned_element_section(const tree& e) -> bool;
 
 template<class I, class Tree> auto
 ElementRange(Tree& e) {
   STD_E_ASSERT(label(e)=="Elements_t");
-  auto& elt_range = get_child_by_name(e,"ElementRange");
-  return view_as_span<I,2>(elt_range.value);
+  return get_child_value_by_name<I>(e,"ElementRange");
 }
 
 template<class I, class Tree> auto
-ElementConnectivity(Tree& e) {
+ElementDistribution(Tree& e) {
   STD_E_ASSERT(label(e)=="Elements_t");
-  auto& elt_conn = get_child_by_name(e,"ElementConnectivity");
-  return view_as_span<I>(elt_conn.value);
+  return get_node_value_by_matching<I>(e,":CGNS#Distribution/Element");
+}
+
+template<class I> auto
+is_distribution(std_e::span<const I> distri) -> bool {
+  if (distri.size()!=3) return false;
+  if (distri[0] > distri[1]) return false;
+  if ((distri[1]-distri[0]) > distri[2]) return false;
+  return true;
+}
+template<class I> auto
+distribution_inf(std_e::span<const I> distri) -> I {
+  STD_E_ASSERT(is_distribution(distri));
+  return distri[0];
+}
+template<class I> auto
+distribution_sup(std_e::span<const I> distri) -> I {
+  STD_E_ASSERT(is_distribution(distri));
+  return distri[1];
+}
+template<class I> auto
+distribution_global_size(std_e::span<const I> distri) -> I {
+  STD_E_ASSERT(is_distribution(distri));
+  return distri[2];
+}
+template<class I> auto
+distribution_local_size(std_e::span<const I> distri) -> I {
+  STD_E_ASSERT(is_distribution(distri));
+  return distri[1]-distri[0];
+}
+
+template<class I, class Tree> auto
+ElementConnectivity(Tree& e)  {
+  STD_E_ASSERT(label(e)=="Elements_t");
+  return get_child_value_by_name<I>(e,"ElementConnectivity");
 }
 
 template<class I, class Tree> auto
 ParentElements(Tree& e) {
   STD_E_ASSERT(label(e)=="Elements_t");
-  auto& parent_elts = get_child_by_name(e,"ParentElements");
-  return view_as_md_array<I,2>(parent_elts.value);
+  return get_child_value_by_name<I,2>(e,"ParentElements");
 }
+template<class I, class Tree> auto
+ParentElementsPosition(Tree& e) {
+  STD_E_ASSERT(label(e)=="Elements_t");
+  return get_child_value_by_name<I,2>(e,"ParentElementsPosition");
+}
+
 
 template<class I, class Tree> auto
 ElementStartOffset(Tree& e) {
   STD_E_ASSERT(label(e)=="Elements_t");
-  auto& eso = get_child_by_name(e,"ElementStartOffset");
-  return view_as_span<I>(eso.value);
+  return get_child_value_by_name<I>(e,"ElementStartOffset");
 }
 
 
-template<class I, class Tree> auto
-element_pool(Tree& z, ElementType_t e_type) -> tree& {
+template<class Tree> auto
+element_section(Tree& z, ElementType_t e_type) -> tree& {
   STD_E_ASSERT(label(z)=="Zone_t");
   auto elt_pools = get_children_by_label(z,"Elements_t");
-  auto elt_pool_it = std::find_if(begin(elt_pools),end(elt_pools),[e_type](const auto& e_pool){ return ElementType<I>(e_pool)==e_type; });
+  auto match_elt_type = [e_type](const tree& e_pool){ return ElementType(e_pool)==I4(e_type); };
+  auto elt_pool_it = std::find_if(begin(elt_pools),end(elt_pools),match_elt_type);
   STD_E_ASSERT(elt_pool_it!=end(elt_pools));
   return *elt_pool_it;
 }
 
 template<class Tree, class F> auto
 for_each_unstructured_zone(Tree& b, F f) -> void {
-  STD_E_ASSERT(b.label=="CGNSBase_t");
+  STD_E_ASSERT(label(b)=="CGNSBase_t");
   auto zs = get_children_by_label(b,"Zone_t");
 
-  for (auto& z : zs) {
+  for (Tree& z : zs) {
     if (is_unstructured_zone(z)) {
       f(z);
     }

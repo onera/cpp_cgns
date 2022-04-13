@@ -1,11 +1,14 @@
+#if __cplusplus > 201703L
 #include "cpp_cgns/sids/connectivity_category.hpp"
+
+#include "cpp_cgns/sids/utils.hpp"
 
 namespace cgns {
 
 template<class I> auto 
 connectivity_category_of(const tree& e) -> connectivity_category {
-  STD_E_ASSERT(e.label=="Elements_t");
-  auto elt_type = ElementType<I>(e);
+  STD_E_ASSERT(label(e)=="Elements_t");
+  auto elt_type = element_type(e);
   bool has_offsets = has_child_of_name(e,"ElementStartOffset");
   if (elt_type==NGON_n) {
     if (has_offsets) { return connectivity_category::ngon;             }
@@ -27,3 +30,4 @@ template auto connectivity_category_of<I4>(const tree& e) -> connectivity_catego
 template auto connectivity_category_of<I8>(const tree& e) -> connectivity_category;
 
 } // cgns
+#endif // C++>17

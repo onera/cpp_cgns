@@ -12,7 +12,6 @@ namespace py = pybind11;
 
 PYBIND11_EXPORT auto view_as_node_value(py::array np_arr) -> node_value;
 PYBIND11_EXPORT auto copy_to_node_value(py::array np_arr) -> node_value;
-PYBIND11_EXPORT auto view_py_string_as_node_value(py::object str) -> node_value;
 PYBIND11_EXPORT auto copy_py_string_to_node_value(py::object str) -> node_value;
 
 // Turn a node_value into a numpy array
@@ -22,8 +21,9 @@ PYBIND11_EXPORT auto copy_py_string_to_node_value(py::object str) -> node_value;
 //   Else pybind allocates an array and copies the data
 //   SEE https://github.com/pybind/pybind11/issues/2533
 PYBIND11_EXPORT auto to_np_array(node_value& n, py::handle capsule = py::none()) -> py::array;
+PYBIND11_EXPORT auto to_owning_np_array(node_value&& n) -> py::array;
 
-PYBIND11_EXPORT auto to_empty_np_array(node_value& n) -> py::array;
+PYBIND11_EXPORT auto to_empty_np_array(const std::string& data_type, const std_e::multi_index<I8>& dims) -> py::array;
 
 
 } // cgns

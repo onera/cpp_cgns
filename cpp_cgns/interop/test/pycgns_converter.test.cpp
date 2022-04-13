@@ -1,3 +1,4 @@
+#if __cplusplus > 201703L
 #include "std_e/unit_test/doctest_pybind.hpp"
 
 #include "cpp_cgns/interop/pycgns_converter.hpp"
@@ -14,11 +15,11 @@ auto
 cpp_tree_example() -> tree {
   tree b = new_CGNSBase("Base",2,2);
     tree z0 = new_UnstructuredZone("Z0",{5,3,0});
-      auto elt_con_z0 = std_e::make_buffer_vector({1,2,3, 2,3,4, 3,4,5});
+      std::vector elt_con_z0 = {1,2,3, 2,3,4, 3,4,5};
       emplace_child( z0 , new_Elements("tris", TRI_3, std::move(elt_con_z0), 1, 3) );
 
     tree z1 = new_UnstructuredZone("Z1",{7,4,0});
-      auto elt_con_z1 = std_e::make_buffer_vector({5,6,7, 1,2,3, 2,3,4, 3,4,5});
+      std::vector elt_con_z1 = {5,6,7, 1,2,3, 2,3,4, 3,4,5};
       emplace_child( z1 ,new_Elements("tris", TRI_3, std::move(elt_con_z1), 1, 4) );
 
     emplace_child(b,std::move(z0));
@@ -100,7 +101,7 @@ py_tree_example() -> py::list {
 
       py::list z1_type(4);
       z1_type[0] = "ZoneType";
-      z1_type[1] = py::array(py::dtype("|S1"),12,"Unstructured");
+      z1_type[1] = py::str("Unstructured");
       z1_type[2] = py::list();
       z1_type[3] = "ZoneType_t";
 
@@ -153,9 +154,9 @@ PYBIND_TEST_CASE("view_as_cpptree") {
 }
 
 
-PYBIND_TEST_CASE("view_as_pytree") {
+PYBIND_TEST_CASE("view_as_py_tree") {
   tree cpp_tree = cpp_tree_example();
-  auto py_tree_from_cpp = to_py_tree(cpp_tree);
+  auto py_tree_from_cpp = view_as_py_tree(cpp_tree);
 
   tree cpp_tree_from_py = to_cpp_tree(py_tree_from_cpp);
   CHECK( cpp_tree_from_py == cpp_tree );
@@ -166,7 +167,7 @@ PYBIND_TEST_CASE("pytree_with_transfered_ownership") {
   py::list py_tree;
   {
     tree cpp_tree = cpp_tree_example();
-    py_tree = to_owning_py_tree(cpp_tree);
+    py_tree = to_py_tree(std::move(cpp_tree));
   } // At this point, cpp_tree is destroyed, but the memory ownership has been transfered to Python
 
 
@@ -177,12 +178,12 @@ PYBIND_TEST_CASE("pytree_with_transfered_ownership") {
 
 auto
 my_test_operation(tree& t) {
-  emplace_child(t,new_DataArray("MyData",create_node_value({0,1,2})));
+  emplace_child(t,new_DataArray("MyData",std::vector{0,1,2}));
   tree& z0 = get_child_by_name(t,"Z0");
   rm_child_by_name(z0,"ZoneType");
 }
 
-PYBIND_TEST_CASE("update_and_transfer_ownership") {
+PYBIND_TEST_CASE("update_py_tree") {
   // Typical workflow :
   /// 0. Start with a tree in Python
   auto py_tree = py_tree_example();
@@ -192,11 +193,12 @@ PYBIND_TEST_CASE("update_and_transfer_ownership") {
     /// 3. Permform operations that add nodes (hence, memory) to the C++ tree
     my_test_operation(cpp_tree);
     /// 4. Update the py_tree and give it the ownership
-    update_and_transfer_ownership_to_py_tree(cpp_tree,py_tree);
-  } /// 5. Return to Python. At this point, alloc is destroyed, but the memory it was holding has been transfered to Python
+    update_py_tree(std::move(cpp_tree),py_tree);
+  } /// 5. Return to Python. At this point, C++ node_value objects are destroyed, but the memory they where holding has been transfered to Python
 
   tree cpp_tree_from_py = to_cpp_tree(py_tree);
   tree expected_cpp_tree = cpp_tree_example();
   my_test_operation(expected_cpp_tree);
   CHECK( cpp_tree_from_py == expected_cpp_tree );
 }
+#endif // C++>17
