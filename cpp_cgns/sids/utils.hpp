@@ -124,5 +124,10 @@ get_zone_point_lists(tree& z, const std::string& grid_location) -> std::vector<s
   return pls;
 }
 
+template<class I, class Tree> auto
+Distribution(Tree& x, const std::string& entity) {
+  return get_node_value_by_matching<I>(x,":CGNS#Distribution/"+entity);
+}
+
 
 } // cgns
