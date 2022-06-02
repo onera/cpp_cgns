@@ -36,9 +36,31 @@ project(
   LANGUAGES	CXX
 )
 
+option(${PROJECT_NAME}_ENABLE_CPP20 "Enable c++20 for ${PROJECT_NAME}" ON)
 option(${PROJECT_NAME}_ENABLE_FETCH_PYBIND "Fetch Pybind11 sources on-the-fly if not found by find_package()" ON)
 option(${PROJECT_NAME}_ENABLE_COVERAGE "Enable coverage for ${PROJECT_NAME}" OFF)
 option(${PROJECT_NAME}_ENABLE_DOCUMENTATION "Build ${PROJECT_NAME} documentation" OFF)
+
+## Compiler flags
+### C++ standard
+if (${PROJECT_NAME}_ENABLE_CPP20)
+  set(CMAKE_CXX_STANDARD 20)
+  set(std_e_ENABLE_CPP20 ON CACHE BOOL "${PROJECT_NAME} uses C++20, so force C++20 for std_e" FORCE)
+else()
+  set(CMAKE_CXX_STANDARD 17)
+endif()
+set(CMAKE_CXX_EXTENSIONS        OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON )
+### fPIC
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+### Compiler-dependent flags
+include(${PROJECT_UTILS_CMAKE_DIR}/default_flags.cmake)
+### Default build type
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE) # default to Release
+endif()
+### Additionnal build types
+include(${PROJECT_UTILS_CMAKE_DIR}/additional_build_types.cmake)
 
 # ------------------------------------------------------------------------------
 # Dependencies
