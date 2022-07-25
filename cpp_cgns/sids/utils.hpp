@@ -52,6 +52,8 @@ auto
 equal_by_elt_type(const tree& elts_node0, const tree& elts_node1) -> bool;
 auto
 compare_by_elt_type(const tree& elts_node0, const tree& elts_node1) -> bool;
+auto
+compare_by_elt_type_dim(const tree& elts_node0, const tree& elts_node1) -> bool;
 
 
 template<class md_array_type, class I> auto

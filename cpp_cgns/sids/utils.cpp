@@ -75,6 +75,16 @@ compare_by_elt_type(const tree& elts_node0, const tree& elts_node1) -> bool {
   STD_E_ASSERT(label(elts_node1)=="Elements_t");
   return element_type(elts_node0) < element_type(elts_node1);
 }
+auto
+compare_by_elt_type_dim(const tree& elts_node0, const tree& elts_node1) -> bool {
+  STD_E_ASSERT(label(elts_node0)=="Elements_t");
+  STD_E_ASSERT(label(elts_node1)=="Elements_t");
+  auto type_0 = element_type(elts_node0);
+  auto type_1 = element_type(elts_node1);
+  auto dim_0 = element_dimension(type_0);
+  auto dim_1 = element_dimension(type_1);
+  return std::tie(dim_0,type_0) < std::tie(dim_1,type_1);
+}
 
 
 } // cgns
