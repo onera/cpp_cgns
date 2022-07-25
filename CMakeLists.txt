@@ -36,19 +36,20 @@ project(
   LANGUAGES	CXX
 )
 
-option(${PROJECT_NAME}_ENABLE_CPP20 "Enable c++20 for ${PROJECT_NAME}" ON)
 option(${PROJECT_NAME}_ENABLE_FETCH_PYBIND "Fetch Pybind11 sources on-the-fly if not found by find_package()" ON)
 option(${PROJECT_NAME}_ENABLE_COVERAGE "Enable coverage for ${PROJECT_NAME}" OFF)
 option(${PROJECT_NAME}_ENABLE_DOCUMENTATION "Build ${PROJECT_NAME} documentation" OFF)
 
 ## Compiler flags
 ### C++ standard
-if (${PROJECT_NAME}_ENABLE_CPP20)
-  set(CMAKE_CXX_STANDARD 20)
-  set(std_e_ENABLE_CPP20 ON CACHE BOOL "${PROJECT_NAME} uses C++20, so force C++20 for std_e" FORCE)
-else()
-  set(CMAKE_CXX_STANDARD 17)
+set(SUPPORTED_CXX_STANDARDS 17 20)
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 20 CACHE STRING "C++ standard to compile against")
 endif()
+if(NOT CMAKE_CXX_STANDARD IN_LIST SUPPORTED_CXX_STANDARDS)
+  message(FATAL_ERROR "Supported CXX standards are: ${SUPPORTED_CXX_STANDARDS}.")
+endif()
+
 set(CMAKE_CXX_EXTENSIONS        OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON )
 ### fPIC
