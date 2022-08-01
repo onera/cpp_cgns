@@ -73,5 +73,20 @@ rm_children_by_label(tree& t, const std::string& label) -> void {
 /// node removal }
 
 
+auto
+replace_child(tree& t, tree&& c) -> tree& {
+  if (has_child_of_name(t,name(c))) {
+    rm_child_by_name(t,name(c));
+  }
+  return emplace_child(t,std::move(c));
+}
+auto
+replace_children(tree& t, std::vector<tree>&& cs) -> void {
+  for (size_t i=0; i<cs.size(); ++i) {
+    replace_child(t,std::move(cs[i]));
+  }
+}
+
+
 } // cgns
 #endif // C++>17

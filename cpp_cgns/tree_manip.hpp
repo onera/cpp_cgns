@@ -69,6 +69,12 @@ rm_child_by_predicate(tree& t, Unary_predicate p) -> void;
 template<class Unary_predicate> auto
 rm_children_by_predicate(tree& t, Unary_predicate p) -> void;
 // removal }
+
+// replace {
+auto replace_child(tree& t, tree&& c) -> tree&;
+auto replace_children(tree& t, std::vector<tree>&& cs) -> void;
+template<class Tree> auto get_child_by_name_or_create(Tree& t, tree&& c) -> Tree&;
+// replace }
 // [Sphinx Doc] Tree manip }
 
 
@@ -327,6 +333,16 @@ auto rm_children(tree& t, Tree_range& children) -> void {
   }
 }
 /// node removal }
+
+
+template<class Tree> auto
+get_child_by_name_or_create(Tree& t, tree&& c) -> Tree& {
+  if (has_child_of_name(t,name(c))) {
+    return get_child_by_name(t,name(c));
+  } else {
+    return emplace_child(t,std::move(c));
+  }
+}
 
 
 } // cgns
