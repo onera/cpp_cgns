@@ -155,11 +155,13 @@ class visitor_for_matching_path {
 
     auto
     pre(Tree& t) -> bool {
+      STD_E_ASSERT(depth>=0);
+      if (depth > max_depth) return true; // continue if gen_path reached the end
       bool is_matching = identifiers[depth]==name(t) || identifiers[depth]==label(t);
       if (is_matching && depth==max_depth) {
         matching_nodes.emplace_back(t);
       }
-      return !is_matching || depth > max_depth; // continue if not matching or gen_path reached the end
+      return !is_matching; // continue if not matching
     }
 
     auto
