@@ -66,6 +66,14 @@ class tree_children : public std::deque<tree> {
 };
 
 
+// rooted graph interface {
+inline auto  first_root(      tree_children& tc) -> auto { return tc.begin(); }
+inline auto  first_root(const tree_children& tc) -> auto { return tc.begin(); }
+inline auto   last_root(      tree_children& tc) -> auto { return tc.end()  ; }
+inline auto   last_root(const tree_children& tc) -> auto { return tc.end()  ; }
+// rooted graph interface }
+
+
 
 
 class tree {
