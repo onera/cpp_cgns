@@ -7,7 +7,8 @@ using namespace cgns;
 TEST_CASE("get_node_by_matching") {
   tree z = {
     "Zone", "Zone_t", MT(), {
-      tree{"ZoneType", "ZoneType_t", MT()} ,
+      tree{"ZoneType", "ZoneType_t", MT(), {
+          tree{"Wrong", "BC_t", MT()} } },
       tree{"ZoneBC", "ZoneBC_t", MT(), {
           tree{"MyBC_0", "BC_t", MT(), { tree{"GridLocation","GridLocation_t",MT()} } } } } } };
 

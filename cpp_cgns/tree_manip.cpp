@@ -37,6 +37,15 @@ has_child_of_label(const tree& t, const std::string& label) -> bool {
   auto predicate = [&](const tree& child){ return is_of_label(child,label); };
   return has_child_by_predicate(t,predicate);
 }
+auto
+has_node(const tree& t, const std::string& gen_path) -> bool {
+  auto ts = get_nodes_by_matching(t,gen_path);
+  if (ts.size() == 0) {
+    return false;
+  } else {
+    return true;
+  }
+}
 /// common predicates }
 
 

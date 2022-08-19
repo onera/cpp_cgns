@@ -33,7 +33,7 @@ template<class Tree>                   auto get_child_by_label        (Tree& t, 
 template<class Tree>                   auto get_children_by_label     (Tree& t, const std::string& label) -> Tree_range<Tree>;
 template<class Tree>                   auto get_children_by_labels    (Tree& t, const std::vector<std::string>& labels) -> Tree_range<Tree>;
 
-template<class Tree>                   auto get_node_by_matching      (Tree& t, const std::string& gen_path) -> tree_ref<Tree>;
+template<class Tree>                   auto get_node_by_matching      (Tree& t, const std::string& gen_path) -> Tree&;
 template<class Tree>                   auto get_nodes_by_matching     (Tree& t, const std::string& gen_path) -> Tree_range<Tree>;
 template<class Tree>                   auto get_nodes_by_matching     (Tree& t, const std::vector<std::string>& gen_paths) -> Tree_range<Tree>;
 
@@ -142,7 +142,7 @@ get_child_by_label(Tree& t, const std::string& label) -> tree_ref<Tree> {
 }
 
 
-//// get_nodes_by_matching {
+//// get_node_by_matching {
 template<class Tree>
 // requires Tree==tree or Tree==const tree
 class visitor_for_matching_path {
@@ -154,14 +154,14 @@ class visitor_for_matching_path {
     {}
 
     auto
-    pre(Tree& t) -> bool {
+    pre(Tree& t) -> std_e::step {
       STD_E_ASSERT(depth>=0);
-      if (depth > max_depth) return true; // continue if gen_path reached the end
+      if (depth > max_depth) return std_e::step::over; // continue if gen_path reached the end
       bool is_matching = identifiers[depth]==name(t) || identifiers[depth]==label(t);
-      if (is_matching && depth==max_depth) {
-        matching_nodes.emplace_back(t);
-      }
-      return !is_matching; // continue if not matching
+      if (!is_matching)                    return std_e::step::over; // prune
+      if (is_matching && depth<max_depth)  return std_e::step::into; // continue to match path
+      if (is_matching && depth==max_depth) return std_e::step::out ; // found!
+      STD_E_ASSERT(0); throw; // all cases treated
     }
 
     auto
@@ -175,46 +175,62 @@ class visitor_for_matching_path {
     down(Tree&, Tree&) -> void {
       ++depth;
     }
+  private:
+    const std::vector<std::string> identifiers;
+    const int max_depth;
+
+    int depth;
+};
+template<class Tree> auto
+get_node_by_matching(Tree& t, const std::string& gen_path) -> Tree& {
+  visitor_for_matching_path<Tree> v(gen_path);
+  auto res = std_e::depth_first_search_adjacencies(children(t),v);
+  if (res == children(t).end()) {
+    throw cgns_exception("No sub-tree matching \""+gen_path+"\" in tree \""+name(t)+"\"");
+  } else {
+    return *res;
+  }
+}
+//// get_node_by_matching }
+
+//// get_nodes_by_matching {
+template<class Tree>
+// requires Tree==tree or Tree==const tree
+class visitor_for_matching_paths : public visitor_for_matching_path<Tree> {
+  public:
+    using base = visitor_for_matching_path<Tree>;
+    using base::base;
+
+    auto
+    pre(Tree& t) -> bool {
+      switch (base::pre(t)) {
+        case std_e::step::out : { // found
+          matching_nodes.emplace_back(t);
+          return true;
+        }
+        case std_e::step::over: { // prune
+          return true;
+        }
+        case std_e::step::into: { // continue matching
+          return false;
+        }
+      }
+      STD_E_ASSERT(0); throw; // all cases treated
+    }
 
     auto
     retrieve_nodes() -> Tree_range<Tree> {
       return std::move(matching_nodes);
     }
   private:
-    const std::vector<std::string> identifiers;
-    const int max_depth;
-
-    int depth;
     Tree_range<Tree> matching_nodes;
 };
 
 template<class Tree> auto
 get_nodes_by_matching(Tree& t, const std::string& gen_path) -> Tree_range<Tree> {
-  visitor_for_matching_path<Tree> v(name(t)+'/'+gen_path);
-  std_e::depth_first_prune_adjacencies(t,v);
+  visitor_for_matching_paths<Tree> v(gen_path);
+  std_e::depth_first_prune_adjacencies(children(t),v);
   return v.retrieve_nodes();
-}
-template<class Tree> auto
-get_node_by_matching(Tree& t, const std::string& gen_path) -> tree_ref<Tree> {
-  // TODO the commented code is bugged (wrong predicate in visitor_for_matching_path.pre)
-  //visitor_for_matching_path<Tree> v(name(t)+'/'+gen_path);
-  //std_e::depth_first_find_adjacencies(t,v);
-  //auto ts = v.retrieve_nodes();
-  auto ts = get_nodes_by_matching(t,gen_path);
-  if (ts.size() == 0) {
-    throw cgns_exception("No sub-tree matching \""+gen_path+"\" in tree \""+name(t)+"\"");
-  } else {
-    return ts[0];
-  }
-}
-inline auto
-has_node(const tree& t, const std::string& gen_path) -> bool {
-  auto ts = get_nodes_by_matching(t,gen_path);
-  if (ts.size() == 0) {
-    return false;
-  } else {
-    return true;
-  }
 }
 template<class Tree> auto
 get_nodes_by_matching(Tree& t, const std::vector<std::string>& gen_paths) -> Tree_range<Tree> {
