@@ -161,7 +161,7 @@ class visitor_for_matching_path {
       if (!is_matching)                    return std_e::step::over; // prune
       if (is_matching && depth<max_depth)  return std_e::step::into; // continue to match path
       if (is_matching && depth==max_depth) return std_e::step::out ; // found!
-      STD_E_ASSERT(0); throw; // all cases treated
+      STD_E_ASSERT(0); throw; // unreachable: all cases treated
     }
 
     auto
@@ -205,17 +205,17 @@ class visitor_for_matching_paths : public visitor_for_matching_path<Tree> {
     pre(Tree& t) -> bool {
       switch (base::pre(t)) {
         case std_e::step::out : { // found
-          matching_nodes.emplace_back(t);
-          return true;
+          matching_nodes.emplace_back(t); // register the node
+          return true; // prune
         }
-        case std_e::step::over: { // prune
-          return true;
+        case std_e::step::over: {
+          return true; // prune
         }
-        case std_e::step::into: { // continue matching
-          return false;
+        case std_e::step::into: {
+          return false; // do not prune, continue matching deeper
         }
       }
-      STD_E_ASSERT(0); throw; // all cases treated
+      STD_E_ASSERT(0); throw; // unreachable: all cases treated
     }
 
     auto
