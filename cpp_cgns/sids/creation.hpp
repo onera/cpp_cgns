@@ -74,6 +74,7 @@ template<class I> auto new_Rind(std::vector<I>&& rind_planes) -> tree;
 template<class I> auto new_Ordinal(I i) -> tree;
 
 template<class I> auto new_Distribution(const std::string& entity_kind, std::vector<I>&& partial_dist) -> tree;
+template<class I> auto new_ElementDistribution(std::vector<I>&& partial_dist) -> tree;
 template<class I> auto new_ElementDistribution(std::vector<I>&& partial_dist, std::vector<I>&& partial_dist_connec) -> tree;
 // [Sphinx Doc] creation according to SIDS }
 
@@ -194,6 +195,10 @@ new_Distribution(const std::string& entity_kind, std::vector<I>&& partial_dist) 
   tree dist = cgns::new_UserDefinedData(":CGNS#Distribution");
   emplace_child(dist,std::move(vtx_dist));
   return dist;
+}
+template<class I> auto
+new_ElementDistribution(std::vector<I>&& partial_dist) -> tree {
+  return new_Distribution("Element",std::move(partial_dist));
 }
 template<class I> auto
 new_ElementDistribution(std::vector<I>&& partial_dist, std::vector<I>&& partial_dist_connec) -> tree {
