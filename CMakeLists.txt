@@ -66,31 +66,10 @@ include(${PROJECT_UTILS_CMAKE_DIR}/additional_build_types.cmake)
 # ------------------------------------------------------------------------------
 # Dependencies
 # ------------------------------------------------------------------------------
-include(FetchContent)
-### doctest ###
-FetchContent_Declare(
-  doctest
-  GIT_REPOSITORY https://github.com/doctest/doctest.git
-  GIT_TAG        110d305 # corrected MPI SUBCASE
-)
-FetchContent_MakeAvailable(doctest)
-### pybind11 ###
-project_find_package(pybind11 CONFIG)
-if (NOT pybind11_FOUND)
-  if (${PROJECT_NAME}_ENABLE_FETCH_PYBIND)
-    message("Pybind11 was not found by find_package(). Fetching sources on-the-fly")
-    set(PYBIND11_INSTALL ON CACHE BOOL "cpp_cgns requires PyBind" FORCE)
-    include(FetchContent)
-    FetchContent_Declare(
-      pybind11
-      GIT_REPOSITORY https://github.com/pybind/pybind11.git
-      GIT_TAG        v2.6
-    )
-    FetchContent_MakeAvailable(pybind11)
-  else()
-    message(FATAL_ERROR "Pybind11 was not found by find_package() and ${PROJECT_NAME}_ENABLE_FETCH_PYBIND is OFF")
-  endif()
-endif()
+include(${PROJECT_UTILS_CMAKE_DIR}/find_or_fetch.cmake)
+find_or_fetch_doctest()
+find_or_fetch_fmt()
+find_or_fetch_pybind11()
 ### std_e ###
 project_add_subdir_or_package(std_e REQUIRED)
 ### Python ###
