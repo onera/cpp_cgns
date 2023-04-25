@@ -68,7 +68,6 @@ include(${PROJECT_UTILS_CMAKE_DIR}/additional_build_types.cmake)
 # ------------------------------------------------------------------------------
 include(${PROJECT_UTILS_CMAKE_DIR}/find_or_fetch.cmake)
 find_or_fetch_doctest()
-find_or_fetch_fmt()
 find_or_fetch_pybind11()
 ### std_e ###
 project_add_subdir_or_package(std_e REQUIRED)
