@@ -72,7 +72,9 @@ find_or_fetch_pybind11()
 ### std_e ###
 project_add_subdir_or_package(std_e REQUIRED)
 ### Python ###
-project_find_package(Python REQUIRED COMPONENTS Interpreter Development NumPy)
+if (NOT TARGET Python::Python OR NOT TARGET Python::NumPy)
+  project_find_package(Python REQUIRED COMPONENTS Development NumPy)
+endif()
 
 
 # ------------------------------------------------------------------------------
