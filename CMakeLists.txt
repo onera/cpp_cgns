@@ -39,6 +39,7 @@ project(
 option(${PROJECT_NAME}_ENABLE_FETCH_PYBIND "Fetch Pybind11 sources on-the-fly if not found by find_package()" ON)
 option(${PROJECT_NAME}_ENABLE_COVERAGE "Enable coverage for ${PROJECT_NAME}" OFF)
 option(${PROJECT_NAME}_ENABLE_DOCUMENTATION "Build ${PROJECT_NAME} documentation" OFF)
+option(${PROJECT_NAME}_ENABLE_TESTS "Make CTest run the tests" ON)
 
 ## Compiler flags
 ### C++ standard
@@ -117,12 +118,13 @@ target_link_libraries(${PROJECT_NAME}
 target_install(${PROJECT_NAME})
 
 
-## ------------------------------------------------------------------------------
-## Testing
-## ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Testing
+# ------------------------------------------------------------------------------
 include(CTest)
-add_subdirectory(test)
-
+if (${PROJECT_NAME}_ENABLE_TESTS)
+  add_subdirectory(test)
+endif()
 
 # ------------------------------------------------------------------------------
 # Build documentation
