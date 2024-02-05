@@ -84,7 +84,7 @@ Because of this model, the :cpp:`cgns::tree` copy constructor and copy assignmen
 String representation
 ---------------------
 
-As most objects of the library, a :cpp:`cgns::tree` has an associated :cpp:`to_string` function that can be use the display the tree:
+As most objects of the library, a :cpp:`cgns::tree` has an associated :cpp:`to_string` function that can be used the display the tree:
 
 .. code:: c++
 

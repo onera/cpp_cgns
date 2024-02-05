@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = '@PROJECT_NAME@'
+project = 'cpp_cgns'
 copyright = '2021, ONERA The French Aerospace Lab'
 author = 'ONERA'
 
@@ -27,7 +27,7 @@ author = 'ONERA'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["breathe","sphinx.ext.graphviz"]
+extensions = ["sphinx.ext.graphviz"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -48,8 +48,7 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['@PROJECT_SOURCE_DIR@/doc/_static']
-#html_static_path = ['_static']
+html_static_path = ['_static']
 
 # These paths are either relative to html_static_path
 # or fully qualified paths (eg. https://...)
@@ -70,9 +69,6 @@ html_theme_options = {
 
 # Graphviz config
 graphviz_output_format = "svg"
-
-# Breathe config
-breathe_default_project = '@PROJECT_NAME@'
 
 rst_prolog = """
 .. role:: cpp(code)
