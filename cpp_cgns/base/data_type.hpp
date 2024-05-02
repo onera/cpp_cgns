@@ -2,6 +2,7 @@
 
 
 #include <string>
+#include <cstdint>
 #include "cpp_cgns/base/exception.hpp"
 #include "std_e/utils/enum.hpp"
 
