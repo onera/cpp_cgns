@@ -36,6 +36,7 @@ project(
   LANGUAGES	CXX
 )
 
+option(${PROJECT_NAME}_ENABLE_PYTHON "Python bindings" ON)
 option(${PROJECT_NAME}_ENABLE_FETCH_PYBIND "Fetch Pybind11 sources on-the-fly if not found by find_package()" ON)
 option(${PROJECT_NAME}_ENABLE_COVERAGE "Enable coverage for ${PROJECT_NAME}" OFF)
 option(${PROJECT_NAME}_ENABLE_DOCUMENTATION "Build ${PROJECT_NAME} documentation" OFF)
@@ -68,12 +69,13 @@ include(${PROJECT_UTILS_CMAKE_DIR}/additional_build_types.cmake)
 # Dependencies
 # ------------------------------------------------------------------------------
 include(${PROJECT_UTILS_CMAKE_DIR}/find_or_fetch.cmake)
-find_or_fetch_pybind11()
-### std_e ###
 project_add_subdir_or_package(std_e REQUIRED)
-### Python ###
-if (NOT TARGET Python::Python OR NOT TARGET Python::NumPy)
-  project_find_package(Python REQUIRED COMPONENTS Development NumPy)
+
+if (${PROJECT_NAME}_ENABLE_PYTHON)
+  find_or_fetch_pybind11()
+  if (NOT TARGET Python::Python OR NOT TARGET Python::NumPy)
+    project_find_package(Python REQUIRED COMPONENTS Development NumPy)
+  endif()
 endif()
 
 
@@ -88,6 +90,9 @@ file(GLOB_RECURSE cpp_and_test_files
   CONFIGURE_DEPENDS
   "${src_dir}/*.cpp"
 )
+if (NOT ${PROJECT_NAME}_ENABLE_PYTHON)
+  list(FILTER cpp_and_test_files EXCLUDE REGEX "^${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/interop.*")
+endif()
 set(cpp_files ${cpp_and_test_files})
 list(FILTER cpp_files EXCLUDE REGEX ".*\\.test\\.cpp$")
 list(FILTER cpp_files EXCLUDE REGEX ".*\\.pybind\\.cpp$")
@@ -105,10 +110,15 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
     std_e::std_e
-    pybind11::pybind11_headers
-    Python::Python
-    Python::NumPy
 )
+if (${PROJECT_NAME}_ENABLE_PYTHON)
+  target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+      pybind11::pybind11_headers
+      Python::Python
+      Python::NumPy
+  )
+endif()
 
 
 # ------------------------------------------------------------------------------
