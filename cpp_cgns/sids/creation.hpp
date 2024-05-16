@@ -37,6 +37,7 @@ auto new_GridConnectivity(const std::string& name, const std::string& z_donor_na
                             auto new_DataArray(const std::string& name, node_value&& value) -> tree;
 template<class T, int N   > auto new_DataArray(const std::string& name, const T(&arr)[N]) -> tree;
 template<class T          > auto new_DataArray(const std::string& name, std::vector<T>&& v) -> tree;
+template<class T          > auto new_DataArray(const std::string& name, std_e::dynarray<T>&& arr) -> tree;
 template<class T, int rank> auto new_DataArray(const std::string& name, md_array<T,rank>&& arr) -> tree;
 template<class T, int rank> auto new_DataArray(const std::string& name, md_array_view<T,rank>& arr) -> tree;
 
@@ -76,6 +77,9 @@ template<class I> auto new_Ordinal(I i) -> tree;
 template<class I> auto new_Distribution(const std::string& entity_kind, std::vector<I>&& partial_dist) -> tree;
 template<class I> auto new_ElementDistribution(std::vector<I>&& partial_dist) -> tree;
 template<class I> auto new_ElementDistribution(std::vector<I>&& partial_dist, std::vector<I>&& partial_dist_connec) -> tree;
+
+
+template<class I> auto new_ConvergenceHistory(const std::string& name, I n_iteration) -> tree;
 // [Sphinx Doc] creation according to SIDS }
 
 
@@ -227,6 +231,10 @@ template<class T> auto
 new_DataArray(const std::string& name, std::vector<T>&& v) -> tree {
   return new_DataArray(name,node_value(std::move(v)));
 }
+template<class T> auto
+new_DataArray(const std::string& name, std_e::dynarray<T>&& arr) -> tree {
+  return new_DataArray(name,node_value(std::move(arr)));
+}
 template<class T, int rank> auto
 new_DataArray(const std::string& name, md_array<T,rank>&& arr) -> tree {
   return new_DataArray(name,node_value(std::move(arr)));
@@ -234,6 +242,11 @@ new_DataArray(const std::string& name, md_array<T,rank>&& arr) -> tree {
 template<class T, int rank> auto
 new_DataArray(const std::string& name, md_array_view<T,rank>& arr) -> tree {
   return new_DataArray(name,node_value(std::move(arr)));
+}
+
+template<class I> auto
+new_ConvergenceHistory(const std::string& name, I n_iteration) -> tree {
+  return {name, "ConvergenceHistory_t", node_value(std::vector<I>{n_iteration})};
 }
 
 

@@ -3,6 +3,7 @@
 
 #include "std_e/buffer/polymorphic_array.hpp"
 #include "std_e/multi_array/multi_array.hpp"
+#include "std_e/future/dynarray.hpp"
 #include "cpp_cgns/base/data_type_variant.hpp"
 #include "cpp_cgns/base/md_array.hpp"
 
@@ -66,6 +67,11 @@ class node_value : public node_value_impl {
     //// specialization for vector (for clearer error messages)
     template<class T>
     node_value(std::vector<T>&& x)
+      : node_value(x,x.size(),tag_1d{}) // extract size before moving
+    {}
+    //// specialization for dynarray (for clearer error messages)
+    template<class T>
+    node_value(std_e::dynarray<T>&& x)
       : node_value(x,x.size(),tag_1d{}) // extract size before moving
     {}
 
