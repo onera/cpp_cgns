@@ -150,12 +150,12 @@ class visitor_for_matching_path {
     visitor_for_matching_path(const std::string& gen_path)
       : identifiers(std_e::split(gen_path,'/'))
       , max_depth(identifiers.size()-1)
-      , depth(0)
     {}
 
     auto
-    pre(Tree& t) -> std_e::step {
-      STD_E_ASSERT(depth>=0);
+    pre(auto nodes) -> std_e::step {
+      const Tree& t = *nodes.back();
+      int depth = nodes.size()-1;
       if (depth > max_depth) return std_e::step::over; // continue if gen_path reached the end
       bool is_matching = identifiers[depth]==name(t) || identifiers[depth]==label(t);
       if (!is_matching)                    return std_e::step::over; // prune
@@ -164,27 +164,17 @@ class visitor_for_matching_path {
       STD_E_ASSERT(0); throw; // unreachable: all cases treated
     }
 
-    auto
-    post(Tree&) {}
-
-    auto
-    up(Tree&, Tree&) -> void {
-      --depth;
-    }
-    auto
-    down(Tree&, Tree&) -> void {
-      ++depth;
-    }
+    auto post(auto&&) {}
+    auto up  (auto&&) {}
+    auto down(auto&&) {}
   private:
     const std::vector<std::string> identifiers;
     const int max_depth;
-
-    int depth;
 };
 template<class Tree> auto
 get_node_by_matching(Tree& t, const std::string& gen_path) -> Tree& {
   visitor_for_matching_path<Tree> v(gen_path);
-  auto res = std_e::depth_first_search_adjacencies(children(t),v);
+  auto res = std_e::depth_first_search_adjacencies(children(t),v,std_e::depth::all);
   if (res == children(t).end()) {
     throw cgns_exception("No sub-tree matching \""+gen_path+"\" in tree \""+name(t)+"\"");
   } else {
@@ -202,20 +192,14 @@ class visitor_for_matching_paths : public visitor_for_matching_path<Tree> {
     using base::base;
 
     auto
-    pre(Tree& t) -> bool {
-      switch (base::pre(t)) {
-        case std_e::step::out : { // found
-          matching_nodes.emplace_back(t); // register the node
-          return true; // prune
-        }
-        case std_e::step::over: {
-          return true; // prune
-        }
-        case std_e::step::into: {
-          return false; // do not prune, continue matching deeper
-        }
+    pre(auto nodes) -> std_e::step {
+      auto next_step = base::pre(nodes);
+      if (next_step == std_e::step::out) { // found
+        Tree& t = *nodes.back();
+        matching_nodes.emplace_back(t); // register the node
+        next_step = std_e::step::over; // continue search for siblings
       }
-      STD_E_ASSERT(0); throw; // unreachable: all cases treated
+      return next_step;
     }
 
     auto
@@ -229,7 +213,7 @@ class visitor_for_matching_paths : public visitor_for_matching_path<Tree> {
 template<class Tree> auto
 get_nodes_by_matching(Tree& t, const std::string& gen_path) -> Tree_range<Tree> {
   visitor_for_matching_paths<Tree> v(gen_path);
-  std_e::depth_first_prune_adjacencies(children(t),v);
+  std_e::depth_first_search_adjacencies(children(t),v,std_e::depth::all);
   return v.retrieve_nodes();
 }
 template<class Tree> auto
