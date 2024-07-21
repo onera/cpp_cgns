@@ -41,6 +41,8 @@ template<class T          > auto new_DataArray(const std::string& name, std_e::d
 template<class T, int rank> auto new_DataArray(const std::string& name, md_array<T,rank>&& arr) -> tree;
 template<class T, int rank> auto new_DataArray(const std::string& name, md_array_view<T,rank>& arr) -> tree;
 
+template<class Array_type> auto append_DataArray(tree& t, const std::string& name, Array_type&& arr) -> tree&;
+
                   auto new_UserDefinedData(const std::string& name, node_value value = MT()) -> tree;
                   auto new_UserDefinedData(const std::string& name, const std::string& val) -> tree;
 template<class T> auto new_UserDefinedData(const std::string& name, const T& val) -> tree;
@@ -249,5 +251,11 @@ new_ConvergenceHistory(const std::string& name, I n_iteration) -> tree {
   return {name, "ConvergenceHistory_t", node_value(std::vector<I>{n_iteration})};
 }
 
+template<class Array_type> auto
+append_DataArray(tree& t, const std::string& name, Array_type&& arr) -> tree& {
+  auto new_node = new_DataArray(name, FWD(arr));
+  emplace_child(t, std::move(new_node));
+  return children(t).back();
+}
 
 } // cgns
