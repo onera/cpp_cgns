@@ -101,7 +101,7 @@ ElementStartOffset(Tree& e) {
 
 
 template<class Tree> auto
-element_section(Tree& z, ElementType_t e_type) -> tree& {
+element_section(Tree& z, ElementType_t e_type) -> Tree& {
   STD_E_ASSERT(label(z)=="Zone_t");
   auto elt_pools = get_children_by_label(z,"Elements_t");
   auto match_elt_type = [e_type](const tree& e_pool){ return ElementType(e_pool)==I4(e_type); };
