@@ -11,6 +11,7 @@
 namespace cgns {
 
 
+
 // polymorphic_array allow the CGNS node value
 // to hide memory allocation and ownership under a unique type
 template<class T> using node_value_typed_array = std_e::polymorphic_array<T>;
@@ -242,6 +243,57 @@ auto make_non_owning_node_value(const std::string& data_type, void* data, std::v
 inline constexpr int default_threshold_to_print_whole_array = 10;
 auto to_string(const node_value& x, int threshold = default_threshold_to_print_whole_array) -> std::string;
 /// to_string }
+
+
+/// types that can be used to create a `node_value` {
+// We could give any range for creating `node_value` objects
+// Then the range will be type-erased and stored in the `node_value`
+// For now, this is only done for
+//   - node_value&&, std::vector&&, std_e::dynarray&&, md_array&& (we force a `std::move` to prevent needless copies)
+//   - std_e::span (copies are very cheap)
+//   - md_array_view (copying dimensions is not free, but we don't prevent the user if he doesn't `std::move`)
+// While we can make things more general (with owning/non-owning array concepts), we don't need this for now
+
+template<class Arr> struct _is_span : std::false_type {};
+template<class T> struct _is_span<std_e::span<T>> : std::true_type {};
+
+template<class Arr> struct _is_dynarray : std::false_type {};
+template<class T, class A> struct _is_dynarray<std_e::dynarray<T,A>> : std::true_type {};
+
+template<class Arr> struct _is_vector : std::false_type {};
+template<class T, class A> struct _is_vector<std::vector<T,A>> : std::true_type {};
+
+template<class Arr> struct _is_md_array : std::false_type {};
+template<class T, int rank> struct _is_md_array<md_array<T,rank>> : std::true_type {};
+
+template<class Arr> struct _is_md_array_view : std::false_type {};
+template<class T, int rank> struct _is_md_array_view<md_array_view<T,rank>> : std::true_type {};
+
+template<class Arr> constexpr auto
+_movable_to_node_value_impl() -> bool {
+  using Decayed = std::decay_t<Arr>;
+  constexpr bool is_node_value    = std::is_same_v<Decayed, node_value>;
+  constexpr bool is_span          = _is_span         <Decayed>::value;
+  constexpr bool is_dynarray      = _is_dynarray     <Decayed>::value;
+  constexpr bool is_vector        = _is_vector       <Decayed>::value;
+  constexpr bool is_md_array      = _is_md_array     <Decayed>::value;
+  constexpr bool is_md_array_view = _is_md_array_view<Decayed>::value;
+
+  constexpr bool is_non_owning_array = is_span || is_md_array_view;
+  constexpr bool is_owning_array = is_node_value || is_dynarray || is_vector || is_md_array;
+
+  if constexpr (is_non_owning_array) { return true; }
+
+  if constexpr (is_owning_array) {
+    return not std::is_lvalue_reference_v<Arr>; // don't allow implicit copies (force move)
+  }
+
+  return false;
+}
+
+template<class Arr>
+constexpr bool _movable_to_node_value = _movable_to_node_value_impl<Arr>();
+/// types that can be used to create a `node_value` }
 
 
 } // cgns
