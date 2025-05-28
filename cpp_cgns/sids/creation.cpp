@@ -27,8 +27,8 @@ new_CGNSVersionNode(R4 version) -> tree {
 }
 
 auto
-new_CGNSTree() -> tree {
-  return { "CGNSTree", "CGNSTree_t", MT(), {new_CGNSVersionNode()} };
+new_CGNSTree(R4 version) -> tree {
+  return { "CGNSTree", "CGNSTree_t", MT(), {new_CGNSVersionNode(version)} };
 }
 
 

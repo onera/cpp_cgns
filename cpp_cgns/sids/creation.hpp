@@ -12,7 +12,7 @@ namespace cgns {
 
 
 // [Sphinx Doc] creation according to SIDS {
-auto new_CGNSTree() -> tree;
+auto new_CGNSTree(R4 version = 3.1) -> tree;
 auto new_CGNSVersionNode(R4 version = 3.1) -> tree;
 
 auto new_GridCoordinates(const std::string& name="GridCoordinates") -> tree;

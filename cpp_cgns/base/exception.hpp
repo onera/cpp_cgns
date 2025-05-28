@@ -2,6 +2,7 @@
 
 
 #include "std_e/base/msg_exception.hpp"
+// TODO use assertion_exception (that may be renamed to stacktrace_exception)
 
 
 namespace cgns {
