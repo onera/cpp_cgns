@@ -14,7 +14,9 @@ namespace cgns {
 // [Sphinx Doc] cgns data types {
 using C1 = char;
 using I4 = std::int32_t;
-using I8 = std::int64_t;
+using I8 = long; // NOTE: not std::int64_t: must match PDM_g_num_t (typedef'd as plain `long` in
+                  // ParaDiGM), which is the same type as int64_t on Linux (LP64) but a distinct
+                  // type from int64_t/long long on macOS (also LP64, but long != long long there)
 using R4 = float;
 using R8 = double;
 // [Sphinx Doc] cgns data types }
