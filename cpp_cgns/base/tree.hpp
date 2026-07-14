@@ -1,7 +1,8 @@
 #pragma once
 
 
-#include <deque>
+#include <list>
+#include <iterator>
 #include "cpp_cgns/base/node_value.hpp"
 #include "std_e/meta/pack.hpp"
 #include <functional> // for std::reference_wrapper
@@ -39,9 +40,13 @@ template<class Tree> auto child(Tree& t, int i) -> auto&;
 
 
 // ====================== impl ======================
-class tree_children : public std::deque<tree> {
+class tree_children : public std::list<tree> {
   public:
-    using base = std::deque<tree>; // std::deque to guarantee reference stability when adding childrens
+    // std::list is used (rather than std::deque) because it is the container guaranteed
+    // by the standard to support an incomplete value_type (needed here since tree_children
+    // stores tree by value, and tree itself owns a tree_children) while also guaranteeing
+    // reference stability when adding children.
+    using base = std::list<tree>;
 
   // ctors
     /// special
@@ -63,6 +68,10 @@ class tree_children : public std::deque<tree> {
     template<class... Trees>
       requires (std_e::are_all_of<tree,Trees...>)
     tree_children(Trees&&... ts);
+
+  // random access (std::list has no operator[]; emulate it since callers rely on it)
+    auto operator[](size_t i)       ->       tree& { return *std::next(begin(),i); }
+    auto operator[](size_t i) const -> const tree& { return *std::next(begin(),i); }
 };
 
 
