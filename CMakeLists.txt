@@ -72,7 +72,7 @@ find_or_fetch_pybind11()
 ### std_e ###
 project_add_subdir_or_package(std_e REQUIRED)
 ### Python ###
-if (NOT TARGET Python::Python OR NOT TARGET Python::NumPy)
+if (NOT TARGET Python::Module OR NOT TARGET Python::NumPy)
   project_find_package(Python REQUIRED COMPONENTS Development NumPy)
 endif()
 
@@ -106,7 +106,7 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC
     std_e::std_e
     pybind11::pybind11_headers
-    Python::Python
+    Python::Module
     Python::NumPy
 )
 
