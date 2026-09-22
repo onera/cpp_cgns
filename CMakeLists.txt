@@ -46,7 +46,7 @@ option(${PROJECT_NAME}_ENABLE_TESTS "Make CTest run the tests" ON)
 
 ## Compiler flags
 ### C++ standard
-set(SUPPORTED_CXX_STANDARDS 17 20)
+set(SUPPORTED_CXX_STANDARDS 17 20 23)
 if(NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 20 CACHE STRING "C++ standard to compile against")
 endif()
