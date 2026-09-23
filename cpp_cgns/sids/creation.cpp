@@ -97,6 +97,30 @@ new_GridConnectivity(const std::string& name, const std::string& z_donor_name, c
         new_GridConnectivityType(connec_type) } };
 }
 
+auto
+append_DataArray(tree& t, const std::string& name, const std::vector<std::string>& ss) -> tree& {
+  int n = ss.size();
+  cgns::md_array<cgns::C1,2> arr(32,n);
+  for (int i=0; i<n; ++i) {
+    auto& s = ss[i];
+    if (s.size()>32) {
+      throw std_e::msg_exception("Name \"" + s + "\" is too long");
+    }
+    for (int j=0; j<32; ++j) {
+      if (j<s.size()) {
+        arr(j,i) = s[j];
+      } else {
+        arr(j,i) = ' ';
+      }
+    }
+  }
+  return append_DataArray(t, name, std::move(arr));
+}
+
+auto
+new_IntegralData(const std::string& name) -> tree {
+  return {name, "IntegralData_t", MT()};
+}
 
 } // cgns
 #endif // C++>17

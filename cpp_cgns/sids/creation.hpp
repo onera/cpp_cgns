@@ -36,7 +36,9 @@ auto new_GridConnectivity(const std::string& name, const std::string& z_donor_na
 template<class T, int N   > auto new_DataArray(const std::string& name, const T(&arr)[N]) -> tree;
 template<class Arr>         auto new_DataArray(const std::string& name, Arr arr) -> tree requires _movable_to_node_value<Arr>;
 
-template<class Array_type> auto append_DataArray(tree& t, const std::string& name, Array_type&& arr) -> tree&;
+template<class Arr> auto append_DataArray(tree& t, const std::string& name, Arr&& arr) -> tree&
+  requires _movable_to_node_value<Arr>;
+                    auto append_DataArray(tree& t, const std::string& name, const std::vector<std::string>& ss) -> tree&;
 
                     auto new_UserDefinedData(const std::string& name, node_value value = MT()) -> tree;
                     auto new_UserDefinedData(const std::string& name, const std::string& val) -> tree;
@@ -88,6 +90,8 @@ template<class Arr> auto new_ElementDistribution(Arr partial_dist, Arr partial_d
 
 
 template<class I> auto new_ConvergenceHistory(const std::string& name, I n_iteration) -> tree;
+
+auto new_IntegralData(const std::string& name = "IntegralData") -> tree;
 // [Sphinx Doc] creation according to SIDS }
 
 
@@ -263,17 +267,25 @@ new_DataArray(const std::string& name, Arr arr) -> tree
 {
   return new_DataArray(name,node_value(std::move(arr)));
 }
+template<class T> auto
+new_DataArray(const std::string& name, std_e::polymorphic_array<T>&& arr) -> tree
+{
+  return new_DataArray(name,node_value(std::move(arr)));
+}
 
 template<class I> auto
 new_ConvergenceHistory(const std::string& name, I n_iteration) -> tree {
   return {name, "ConvergenceHistory_t", node_value(std::vector<I>{n_iteration})};
 }
 
-template<class Array_type> auto
-append_DataArray(tree& t, const std::string& name, Array_type&& arr) -> tree& {
+template<class Arr> auto
+append_DataArray(tree& t, const std::string& name, Arr&& arr) -> tree&
+  requires _movable_to_node_value<Arr>
+{
   auto new_node = new_DataArray(name, FWD(arr));
   emplace_child(t, std::move(new_node));
   return children(t).back();
 }
+
 
 } // cgns
