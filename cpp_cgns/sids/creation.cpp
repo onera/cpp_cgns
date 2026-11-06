@@ -99,15 +99,16 @@ new_GridConnectivity(const std::string& name, const std::string& z_donor_name, c
 
 auto
 append_DataArray(tree& t, const std::string& name, const std::vector<std::string>& ss) -> tree& {
-  int n = ss.size();
-  cgns::md_array<cgns::C1,2> arr(32,n);
-  for (int i=0; i<n; ++i) {
+  int nn = ss.size();
+  cgns::md_array<cgns::C1,2> arr(32,nn);
+  for (int i=0; i<nn; ++i) {
     auto& s = ss[i];
-    if (s.size()>32) {
+    int n = s.size();
+    if (n>32) {
       throw std_e::msg_exception("Name \"" + s + "\" is too long");
     }
     for (int j=0; j<32; ++j) {
-      if (j<s.size()) {
+      if (j<n) {
         arr(j,i) = s[j];
       } else {
         arr(j,i) = ' ';

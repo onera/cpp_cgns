@@ -6,7 +6,7 @@
 namespace cgns {
 
 std::string GridLocation(const tree& t) {
-  const tree& gl = get_child_by_name(t,"GridLocation"); // note: GCC 14 false positive warning, see https://stackoverflow.com/a/78760067/1583122
+  const tree& gl = get_child_by_name(t,"GridLocation");
   return to_string(value(gl));
 }
 

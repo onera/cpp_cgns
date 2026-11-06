@@ -11,14 +11,14 @@ namespace cgns {
 
 // [Sphinx Doc] Tree manip {
 // predicates {
-auto is_of_name(const tree& tree, const std::string& name) -> bool;
-auto is_of_label(const tree& tree, const std::string& label) -> bool;
+auto is_of_name(const tree& tree, std::string_view name) -> bool;
+auto is_of_label(const tree& tree, std::string_view label) -> bool;
 auto is_one_of_labels(const tree& tree, const std::vector<std::string>& labels) -> bool;
 
 template<class Unary_pred> auto has_child_by_predicate(const tree& t, Unary_pred p) -> bool;
-                           auto has_child_of_name(const tree& t, const std::string& name) -> bool;
-                           auto has_child_of_label(const tree& t, const std::string& name) -> bool;
-                           auto has_node(const tree& t, const std::string& gen_path) -> bool;
+                           auto has_child_of_name(const tree& t, std::string_view name) -> bool;
+                           auto has_child_of_label(const tree& t, std::string_view name) -> bool;
+                           auto has_node(const tree& t, std::string_view gen_path) -> bool;
 // predicates }
 
 
@@ -27,37 +27,37 @@ template<class Tree, class Unary_pred> auto get_children_by_predicate (Tree& t, 
 template<class Tree, class Unary_pred> auto get_child_by_predicate    (Tree& t, Unary_pred p, const cgns_exception& e) -> tree_ref<Tree>;
 template<class Tree, class Unary_pred> auto get_child_by_predicate    (Tree& t, Unary_pred p)                          -> tree_ref<Tree>;
 
-template<class Tree>                   auto get_child_by_name         (Tree& t, const std::string& name ) -> tree_ref<Tree>;
+template<class Tree>                   auto get_child_by_name         (Tree& t, std::string_view name ) -> tree_ref<Tree>;
 
-template<class Tree>                   auto get_child_by_label        (Tree& t, const std::string& label) -> tree_ref<Tree>;
-template<class Tree>                   auto get_children_by_label     (Tree& t, const std::string& label) -> Tree_range<Tree>;
+template<class Tree>                   auto get_child_by_label        (Tree& t, std::string_view label) -> tree_ref<Tree>;
+template<class Tree>                   auto get_children_by_label     (Tree& t, std::string_view label) -> Tree_range<Tree>;
 template<class Tree>                   auto get_children_by_labels    (Tree& t, const std::vector<std::string>& labels) -> Tree_range<Tree>;
 
-template<class Tree>                   auto get_node_by_matching      (Tree& t, const std::string& gen_path) -> Tree&;
-template<class Tree>                   auto get_nodes_by_matching     (Tree& t, const std::string& gen_path) -> Tree_range<Tree>;
+template<class Tree>                   auto get_node_by_matching      (Tree& t, std::string_view gen_path) -> Tree&;
+template<class Tree>                   auto get_nodes_by_matching     (Tree& t, std::string_view gen_path) -> Tree_range<Tree>;
 template<class Tree>                   auto get_nodes_by_matching     (Tree& t, const std::vector<std::string>& gen_paths) -> Tree_range<Tree>;
 
 template<class Tree, class Unary_pred> auto get_node_by_predicate     (Tree& t, Unary_pred p)                -> tree_ref<Tree>;
 template<class Tree, class Unary_pred> auto get_nodes_by_predicate    (Tree& t, Unary_pred p)                -> Tree_range<Tree>;
 
-template<class Tree>                   auto get_node_by_name          (Tree& t, const std::string& name )    -> tree_ref<Tree>;
-template<class Tree>                   auto get_node_by_label         (Tree& t, const std::string& label)    -> tree_ref<Tree>;
-template<class Tree>                   auto get_nodes_by_name         (Tree& t, const std::string& name )    -> Tree_range<Tree>;
-template<class Tree>                   auto get_nodes_by_label        (Tree& t, const std::string& label)    -> Tree_range<Tree>;
+template<class Tree>                   auto get_node_by_name          (Tree& t, std::string_view name )    -> tree_ref<Tree>;
+template<class Tree>                   auto get_node_by_label         (Tree& t, std::string_view label)    -> tree_ref<Tree>;
+template<class Tree>                   auto get_nodes_by_name         (Tree& t, std::string_view name )    -> Tree_range<Tree>;
+template<class Tree>                   auto get_nodes_by_label        (Tree& t, std::string_view label)    -> Tree_range<Tree>;
 template<class Tree>                   auto get_nodes_by_labels       (Tree& t, const std::vector<std::string>& label) -> Tree_range<Tree>;
 
 template<class T, int N=1, class Tree> auto get_value                 (Tree& t);
-template<class T, int N=1, class Tree> auto get_child_value_by_name   (Tree& t, const std::string& s);
-template<class T, int N=1, class Tree> auto get_child_value_by_label  (Tree& t, const std::string& s);
-template<class T, int N=1, class Tree> auto get_node_value_by_matching(Tree& t, const std::string& s);
+template<class T, int N=1, class Tree> auto get_child_value_by_name   (Tree& t, std::string_view s);
+template<class T, int N=1, class Tree> auto get_child_value_by_label  (Tree& t, std::string_view s);
+template<class T, int N=1, class Tree> auto get_node_value_by_matching(Tree& t, std::string_view s);
 // searches }
 
 // removal {
 auto rm_child(tree& t, const tree& c) -> void;
-auto rm_child_by_name(tree& t, const std::string& name) -> void;
+auto rm_child_by_name(tree& t, std::string_view name) -> void;
 auto rm_children_by_names(tree& t, const std::vector<std::string>& names) -> void;
-auto rm_child_by_label(tree& t, const std::string& label) -> void;
-auto rm_children_by_label(tree& t, const std::string& label) -> void;
+auto rm_child_by_label(tree& t, std::string_view label) -> void;
+auto rm_children_by_label(tree& t, std::string_view label) -> void;
 
 template<class Tree_range>
 auto rm_children(tree& t, Tree_range& children) -> void;
@@ -113,7 +113,7 @@ get_child_by_predicate(Tree& t, Unary_pred p) -> tree_ref<Tree> {
 
 /// common searches {
 template<class Tree> auto
-get_children_by_label(Tree& t, const std::string& label) -> Tree_range<Tree> {
+get_children_by_label(Tree& t, std::string_view label) -> Tree_range<Tree> {
   auto predicate = [&](const tree& child){ return is_of_label(child,label); };
   return get_children_by_predicate(t,predicate);
 }
@@ -123,21 +123,21 @@ get_children_by_labels(Tree& t, const std::vector<std::string>& labels) -> Tree_
   return get_children_by_predicate(t,predicate);
 }
 template<class Tree> auto
-get_children_by_name_or_label(Tree& t, const std::string& s) -> Tree_range<Tree> {
+get_children_by_name_or_label(Tree& t, std::string_view s) -> Tree_range<Tree> {
   auto predicate = [&](const tree& child){ return is_of_name(child,s) || is_of_label(child,s); };
   return get_children_by_predicate(t,predicate);
 }
 
 template<class Tree> auto
-get_child_by_name(Tree& t, const std::string& name_) -> tree_ref<Tree> {
-  auto predicate = [&](const tree& child){ return is_of_name(child,name_); };
-  cgns_exception e("Child of name \""+name_+"\" not found in tree \""+name(t)+"\"");
+get_child_by_name(Tree& t, std::string_view name_) -> tree_ref<Tree> {
+  auto predicate = [name_](const tree& child){ return is_of_name(child,name_); };
+  cgns_exception e("Child of name \"",name_,"\" not found in tree \"",name(t),"\"");
   return get_child_by_predicate(t,predicate,e);
 }
 template<class Tree> auto
-get_child_by_label(Tree& t, const std::string& label) -> tree_ref<Tree> {
+get_child_by_label(Tree& t, std::string_view label) -> tree_ref<Tree> {
   auto predicate = [&](const tree& child){ return is_of_label(child,label); };
-  cgns_exception e("Child of label \""+label+"\" not found in tree \""+name(t)+"\"");
+  cgns_exception e("Child of label \"",label,"\" not found in tree \"",name(t),"\"");
   return get_child_by_predicate(t,predicate,e);
 }
 
@@ -147,7 +147,7 @@ template<class Tree>
 // requires Tree==tree or Tree==const tree
 class visitor_for_matching_path {
   public:
-    visitor_for_matching_path(const std::string& gen_path)
+    visitor_for_matching_path(std::string_view gen_path)
       : identifiers(std_e::split(gen_path,'/'))
       , max_depth(identifiers.size()-1)
     {}
@@ -172,11 +172,11 @@ class visitor_for_matching_path {
     const int max_depth;
 };
 template<class Tree> auto
-get_node_by_matching(Tree& t, const std::string& gen_path) -> Tree& {
+get_node_by_matching(Tree& t, std::string_view gen_path) -> Tree& {
   visitor_for_matching_path<Tree> v(gen_path);
   auto res = std_e::depth_first_search_adjacencies(children(t),v,std_e::depth::all);
   if (res == children(t).end()) {
-    throw cgns_exception("No sub-tree matching \""+gen_path+"\" in tree \""+name(t)+"\"");
+    throw cgns_exception("No sub-tree matching \"",gen_path,"\" in tree \"",name(t),"\"");
   } else {
     return *res;
   }
@@ -211,7 +211,7 @@ class visitor_for_matching_paths : public visitor_for_matching_path<Tree> {
 };
 
 template<class Tree> auto
-get_nodes_by_matching(Tree& t, const std::string& gen_path) -> Tree_range<Tree> {
+get_nodes_by_matching(Tree& t, std::string_view gen_path) -> Tree_range<Tree> {
   visitor_for_matching_paths<Tree> v(gen_path);
   std_e::depth_first_search_adjacencies(children(t),v,std_e::depth::all);
   return v.retrieve_nodes();
@@ -236,12 +236,12 @@ get_nodes_by_predicate(Tree& t, Unary_pred p) -> Tree_range<Tree> {
   return ts;
 }
 template<class Tree> auto
-get_nodes_by_name(Tree& t, const std::string& name) -> Tree_range<Tree> {
+get_nodes_by_name(Tree& t, std::string_view name) -> Tree_range<Tree> {
   auto predicate = [&](auto& child){ return is_of_name(child,name); };
   return get_nodes_by_predicate(t,predicate);
 }
 template<class Tree> auto
-get_nodes_by_label(Tree& t, const std::string& label) -> Tree_range<Tree> {
+get_nodes_by_label(Tree& t, std::string_view label) -> Tree_range<Tree> {
   auto predicate = [&](auto& child){ return is_of_label(child,label); };
   return get_nodes_by_predicate(t,predicate);
 }
@@ -251,10 +251,10 @@ get_nodes_by_labels(Tree& t, const std::vector<std::string>& labels) -> Tree_ran
   return get_nodes_by_predicate(t,predicate);
 }
 template<class Tree> auto
-get_node_by_name(Tree& t, const std::string& s) -> tree_ref<Tree> {
+get_node_by_name(Tree& t, std::string_view s) -> tree_ref<Tree> {
   auto ts = get_nodes_by_name(t,s);
   if (ts.size() == 0) {
-    throw cgns_exception("No child of name\""+s+"\" in tree \""+name(t)+"\"");
+    throw cgns_exception("No child of name\"",s,"\" in tree \"",name(t),"\"");
   } else {
     return ts[0].get();
   }
@@ -267,8 +267,8 @@ get_node_by_name(Tree& t, const std::string& s) -> tree_ref<Tree> {
 template<class T, int N> auto
 throw_if_incorrect_array_type(const tree& x) -> void {
   if (!cgns::holds_alternative<T>(value(x))) {
-    std::string msg = "Value of node \""+name(x)+"\" is of type "+value(x).data_type()
-                     + " but was asked to be of type "+to_string<T>();
+    auto msg = std_e::str_cat("Value of node \"",name(x),"\" is of type ",value(x).data_type()
+                            , " but was asked to be of type ",to_string<T>());
     throw cgns_exception(msg);
   }
 }
@@ -281,19 +281,19 @@ get_value(Tree& t) {
   return view_as_array<T,N>(value(t));
 }
 template<class T, int N, class Tree> auto
-get_child_value_by_name(Tree& t, const std::string& s) {
+get_child_value_by_name(Tree& t, std::string_view s) {
   auto&& n = get_child_by_name(t,s);
   throw_if_incorrect_array_type<T,N>(n);
   return view_as_array<T,N>(value(n));
 }
 template<class T, int N, class Tree> auto
-get_child_value_by_label(Tree& t, const std::string& s) {
+get_child_value_by_label(Tree& t, std::string_view s) {
   Tree& n = get_child_by_label(t,s);
   throw_if_incorrect_array_type<T,N>(n);
   return view_as_array<T,N>(value(n));
 }
 template<class T, int N, class Tree> auto
-get_node_value_by_matching(Tree& t, const std::string& s) {
+get_node_value_by_matching(Tree& t, std::string_view s) {
   Tree& n = get_node_by_matching(t,s);
   throw_if_incorrect_array_type<T,N>(n);
   return view_as_array<T,N>(value(n));
@@ -314,7 +314,7 @@ rm_child_by_predicate(tree& t, Unary_predicate p, const cgns_exception& e) -> vo
 }
 template<class Unary_predicate> auto
 rm_child_by_predicate(tree& t, Unary_predicate p) -> void {
-  const cgns_exception e("No child to erase satisfying predicate in tree \""+name(t)+"\"");
+  const cgns_exception e("No child to erase satisfying predicate in tree \"",name(t),"\"");
   return rm_child_by_predicate(t,p,e);
 }
 template<class Unary_predicate> auto

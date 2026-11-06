@@ -15,30 +15,30 @@ namespace cgns {
 
 /// common predicates {
 auto
-is_of_name(const tree& t, const std::string& s) -> bool {
+is_of_name(const tree& t, std::string_view s) -> bool {
   return name(t) == s;
 }
 auto
-is_of_label(const tree& t, const std::string& s) -> bool {
+is_of_label(const tree& t, std::string_view s) -> bool {
   return label(t) == s;
 }
 auto
 is_one_of_labels(const tree& t, const std::vector<std::string>& labels) -> bool {
-  return std::any_of(begin(labels),end(labels),[&t](const std::string& label){ return is_of_label(t,label); });
+  return std::any_of(begin(labels),end(labels),[&t](std::string_view label){ return is_of_label(t,label); });
 }
 
 auto
-has_child_of_name(const tree& t, const std::string& name) -> bool {
+has_child_of_name(const tree& t, std::string_view name) -> bool {
   auto predicate = [&](const tree& child){ return is_of_name(child,name); };
   return has_child_by_predicate(t,predicate);
 }
 auto
-has_child_of_label(const tree& t, const std::string& label) -> bool {
+has_child_of_label(const tree& t, std::string_view label) -> bool {
   auto predicate = [&](const tree& child){ return is_of_label(child,label); };
   return has_child_by_predicate(t,predicate);
 }
 auto
-has_node(const tree& t, const std::string& gen_path) -> bool {
+has_node(const tree& t, std::string_view gen_path) -> bool {
   auto ts = get_nodes_by_matching(t,gen_path);
   if (ts.size() == 0) {
     return false;
@@ -53,13 +53,13 @@ has_node(const tree& t, const std::string& gen_path) -> bool {
 auto
 rm_child(tree& t, const tree& c) -> void {
   auto predicate = [&](const tree& child){ return &child==&c; };
-  const cgns_exception e("Impossible to erase child "+name(c)+": it is not a child of tree "+name(t));
+  const cgns_exception e("Impossible to erase child ",name(c),": it is not a child of tree ",name(t));
   rm_child_by_predicate(t,predicate,e);
 }
 auto
-rm_child_by_name(tree& t, const std::string& name_) -> void {
+rm_child_by_name(tree& t, std::string_view name_) -> void {
   auto predicate = [&](const tree& child){ return is_of_name(child,name_); };
-  const cgns_exception e("Impossible to erase child of name "+name_+" in tree "+name(t)+": no such child with such name");
+  const cgns_exception e("Impossible to erase child of name ",name_," in tree "+name(t),": no such child with such name");
   rm_child_by_predicate(t,predicate,e);
 }
 auto rm_children_by_names(tree& t, const std::vector<std::string>& names) -> void {
@@ -69,13 +69,13 @@ auto rm_children_by_names(tree& t, const std::vector<std::string>& names) -> voi
 }
 
 auto
-rm_child_by_label(tree& t, const std::string& label) -> void {
+rm_child_by_label(tree& t, std::string_view label) -> void {
   auto predicate = [&](const tree& child){ return is_of_label(child,label); };
-  const cgns_exception e("Impossible to erase child of label "+label+" in tree "+name(t)+": no such child with such label");
+  const cgns_exception e("Impossible to erase child of label ",label," in tree ",name(t),": no such child with such label");
   rm_child_by_predicate(t,predicate,e);
 }
 auto
-rm_children_by_label(tree& t, const std::string& label) -> void {
+rm_children_by_label(tree& t, std::string_view label) -> void {
   auto predicate = [&](const tree& child){ return is_of_label(child,label); };
   rm_children_by_predicate(t,predicate);
 }
