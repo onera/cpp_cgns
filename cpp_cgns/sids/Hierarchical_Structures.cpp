@@ -6,7 +6,7 @@ namespace cgns {
 auto
 ZoneType(const tree& z) -> std::string {
   STD_E_ASSERT(label(z)=="Zone_t");
-  const tree& zone_type = get_child_by_label(z,"ZoneType_t");
+  const tree& zone_type = get_child_by_label(z,"ZoneType_t"); // note: GCC 14 false positive warning, see https://stackoverflow.com/a/78760067/1583122
   return to_string(value(zone_type));
 }
 

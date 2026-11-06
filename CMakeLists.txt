@@ -8,17 +8,19 @@ if(NOT DEFINED PROJECT_ROOT)
   set(PROJECT_ROOT ${CMAKE_SOURCE_DIR} CACHE PATH "Root directory, where the submodules are populated")
 endif()
 
+if(NOT DEFINED PROJECT_UTILS_DIR)
+  set(PROJECT_UTILS_DIR ${PROJECT_ROOT}/external/project_utils)
+endif()
+
 # Bootstrap project_utils
-set(sub_repo_path "${PROJECT_ROOT}/external/project_utils")
-file(GLOB sub_repo_files ${sub_repo_path}/*)
-list(LENGTH sub_repo_files sub_repo_nb_files)
-if(sub_repo_nb_files EQUAL 0)
+file(GLOB project_utils_files ${PROJECT_UTILS_DIR}/*)
+list(LENGTH project_utils_files n_file_project_utils)
+if(n_file_project_utils EQUAL 0)
   message(FATAL_ERROR
-    "${sub_repo_path} is empty.
+    "${PROJECT_UTILS_DIR} is empty.
     Maybe you forgot to initialize it with \"git submodule update --init\""
   )
 endif()
-set(PROJECT_UTILS_DIR ${PROJECT_ROOT}/external/project_utils)
 set(PROJECT_UTILS_CMAKE_DIR ${PROJECT_UTILS_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_UTILS_CMAKE_DIR}/find_package") # for custom Find*.cmake files
 include(${PROJECT_UTILS_CMAKE_DIR}/dependency_management.cmake) # project_add_subdirectory, project_find_package and target_install
@@ -32,10 +34,11 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 # ------------------------------------------------------------------------------
 project(
   cpp_cgns VERSION 0.1.0
-  DESCRIPTION	"C++/CGNS mapping"
-  LANGUAGES	CXX
+  DESCRIPTION "C++/CGNS mapping"
+  LANGUAGES CXX
 )
 
+option(${PROJECT_NAME}_ENABLE_PYTHON "Python bindings" ON)
 option(${PROJECT_NAME}_ENABLE_FETCH_PYBIND "Fetch Pybind11 sources on-the-fly if not found by find_package()" ON)
 option(${PROJECT_NAME}_ENABLE_COVERAGE "Enable coverage for ${PROJECT_NAME}" OFF)
 option(${PROJECT_NAME}_ENABLE_DOCUMENTATION "Build ${PROJECT_NAME} documentation" OFF)
@@ -43,7 +46,7 @@ option(${PROJECT_NAME}_ENABLE_TESTS "Make CTest run the tests" ON)
 
 ## Compiler flags
 ### C++ standard
-set(SUPPORTED_CXX_STANDARDS 17 20)
+set(SUPPORTED_CXX_STANDARDS 17 20 23)
 if(NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 20 CACHE STRING "C++ standard to compile against")
 endif()
@@ -68,11 +71,10 @@ include(${PROJECT_UTILS_CMAKE_DIR}/additional_build_types.cmake)
 # Dependencies
 # ------------------------------------------------------------------------------
 include(${PROJECT_UTILS_CMAKE_DIR}/find_or_fetch.cmake)
-find_or_fetch_pybind11()
-### std_e ###
 project_add_subdir_or_package(std_e REQUIRED)
-### Python ###
-if (NOT TARGET Python::Python OR NOT TARGET Python::NumPy)
+
+if (${PROJECT_NAME}_ENABLE_PYTHON)
+  find_or_fetch_pybind11()
   project_find_package(Python REQUIRED COMPONENTS Development NumPy)
 endif()
 
@@ -88,6 +90,9 @@ file(GLOB_RECURSE cpp_and_test_files
   CONFIGURE_DEPENDS
   "${src_dir}/*.cpp"
 )
+if (NOT ${PROJECT_NAME}_ENABLE_PYTHON)
+  list(FILTER cpp_and_test_files EXCLUDE REGEX "^${PROJECT_SOURCE_DIR}/${PROJECT_NAME}/interop.*")
+endif()
 set(cpp_files ${cpp_and_test_files})
 list(FILTER cpp_files EXCLUDE REGEX ".*\\.test\\.cpp$")
 list(FILTER cpp_files EXCLUDE REGEX ".*\\.pybind\\.cpp$")
@@ -105,10 +110,15 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
     std_e::std_e
-    pybind11::pybind11_headers
-    Python::Python
-    Python::NumPy
 )
+if (${PROJECT_NAME}_ENABLE_PYTHON)
+  target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+      pybind11::pybind11_headers
+      Python::Python
+      Python::NumPy
+  )
+endif()
 
 
 # ------------------------------------------------------------------------------

@@ -8,6 +8,7 @@
 namespace cgns {
 
 
+// TODO move to std_e
 constexpr int dyn_rank = std_e::dynamic_size;
 
 

@@ -1,10 +1,5 @@
 include(${PROJECT_UTILS_CMAKE_DIR}/doctest_pytest.cmake)
 
-
-file(GLOB_RECURSE test_files
-  CONFIGURE_DEPENDS "${src_dir}/*.test.cpp"
-)
-
 create_doctest(
   TESTED_TARGET ${PROJECT_NAME}
   LABEL         unit_tests

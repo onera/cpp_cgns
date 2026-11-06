@@ -3,6 +3,7 @@
 
 #include "std_e/buffer/polymorphic_array.hpp"
 #include "std_e/multi_array/multi_array.hpp"
+#include "std_e/future/dynarray.hpp"
 #include "cpp_cgns/base/data_type_variant.hpp"
 #include "cpp_cgns/base/md_array.hpp"
 
@@ -39,6 +40,7 @@ class node_value : public node_value_impl {
   private:
     struct tag_1d {};
     struct tag_multi {};
+    struct tag_direct {};
   public:
     using base = node_value_impl;
 
@@ -67,6 +69,15 @@ class node_value : public node_value_impl {
     template<class T>
     node_value(std::vector<T>&& x)
       : node_value(x,x.size(),tag_1d{}) // extract size before moving
+    {}
+    //// specialization for dynarray (for clearer error messages)
+    template<class T>
+    node_value(std_e::dynarray<T>&& x)
+      : node_value(x,x.size(),tag_1d{}) // extract size before moving
+    {}
+    template<class T>
+    node_value(std_e::polymorphic_array<T>&& x)
+      : node_value(x,x.size(),tag_1d{},tag_direct{}) // extract size before moving
     {}
 
     /// from multi array
@@ -145,6 +156,10 @@ class node_value : public node_value_impl {
     template<class Array>
     node_value(Array& x, I8 sz, tag_1d)
       : base(type_erase(std::move(x)),node_value_shape{{sz}})
+    {}
+    template<class T>
+    node_value(std_e::polymorphic_array<T>& x, I8 sz, tag_1d, tag_direct)
+      : base(node_value_array(std::move(x)),node_value_shape{{sz}})
     {}
     template<class Array, class Multi_index>
     node_value(Array& x, Multi_index&& is, tag_multi)
@@ -236,6 +251,72 @@ auto make_non_owning_node_value(const std::string& data_type, void* data, std::v
 inline constexpr int default_threshold_to_print_whole_array = 10;
 auto to_string(const node_value& x, int threshold = default_threshold_to_print_whole_array) -> std::string;
 /// to_string }
+
+
+/// types that can be used to create a `node_value` {
+// We could give any range for creating `node_value` objects
+// Then the range will be type-erased and stored in the `node_value`
+// For now, this is only done for
+//   - node_value&&, std::vector&&, std_e::dynarray&&, md_array&& (we force a `std::move` to prevent needless copies)
+//   - std_e::span (copies are very cheap)
+//   - md_array_view (copying dimensions is not free, but we don't prevent the user if he doesn't `std::move`)
+// While we can make things more general (with owning/non-owning array concepts), we don't need this for now
+
+template<class Arr> struct _is_span : std::false_type {};
+template<class T> struct _is_span<std_e::span<T>> : std::true_type {};
+
+template<class Arr> struct _is_polymorphic_array : std::false_type {};
+template<class T> struct _is_polymorphic_array<std_e::polymorphic_array<T>> : std::true_type {};
+
+template<class Arr> struct _is_dynarray : std::false_type {};
+template<class T, class A> struct _is_dynarray<std_e::dynarray<T,A>> : std::true_type {};
+
+template<class Arr> struct _is_vector : std::false_type {};
+template<class T, class A> struct _is_vector<std::vector<T,A>> : std::true_type {};
+
+template<class Arr> struct _is_md_array : std::false_type {};
+template<class T, int rank> struct _is_md_array<md_array<T,rank>> : std::true_type {};
+
+template<class Arr> struct _is_md_array_view : std::false_type {};
+template<class T, int rank> struct _is_md_array_view<md_array_view<T,rank>> : std::true_type {};
+
+template<class Arr> constexpr auto
+_movable_to_node_value_impl() -> bool {
+  using Decayed = std::decay_t<Arr>;
+  constexpr bool is_node_value        = std::is_same_v<Decayed, node_value>;
+  constexpr bool is_span              = _is_span             <Decayed>::value;
+  constexpr bool is_polymorphic_array = _is_polymorphic_array<Decayed>::value;
+  constexpr bool is_dynarray          = _is_dynarray         <Decayed>::value;
+  constexpr bool is_vector            = _is_vector           <Decayed>::value;
+  constexpr bool is_md_array          = _is_md_array         <Decayed>::value;
+  constexpr bool is_md_array_view     = _is_md_array_view    <Decayed>::value;
+
+  constexpr bool is_non_owning_array = is_span || is_md_array_view;
+  constexpr bool is_owning_array = is_node_value || is_polymorphic_array || is_dynarray || is_vector || is_md_array;
+
+  constexpr bool is_array = is_non_owning_array || is_owning_array;
+
+  if constexpr (!is_array) {
+    return false;
+  } else {
+    using T = Decayed::value_type;
+    if constexpr (not is_data_type<T>) {
+      return false;
+    }
+    if constexpr (is_non_owning_array) {
+      return true;
+    }
+    if constexpr (is_owning_array) {
+      return not std::is_lvalue_reference_v<Arr>; // don't allow implicit copies (force move)
+    }
+
+    return false;
+  }
+}
+
+template<class Arr>
+constexpr bool _movable_to_node_value = _movable_to_node_value_impl<Arr>();
+/// types that can be used to create a `node_value` }
 
 
 } // cgns

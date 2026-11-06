@@ -3,18 +3,16 @@
 
 #include "cpp_cgns/cgns.hpp"
 #include "cpp_cgns/sids/cgnslib.h"
+#include "std_e/meta/pack.hpp"
 #include <algorithm>
 #include <initializer_list>
 
 
 namespace cgns {
 
-// We could give any range for node creation functions (functions named "new_[CGNS_label]")
-// Then the range will be type-erased and stored in a node_value
-// For now, this is only done for std::vector
 
 // [Sphinx Doc] creation according to SIDS {
-auto new_CGNSTree() -> tree;
+auto new_CGNSTree(R4 version = 3.1) -> tree;
 auto new_CGNSVersionNode(R4 version = 3.1) -> tree;
 
 auto new_GridCoordinates(const std::string& name="GridCoordinates") -> tree;
@@ -36,14 +34,16 @@ auto new_GridConnectivity(const std::string& name, const std::string& z_donor_na
 
                             auto new_DataArray(const std::string& name, node_value&& value) -> tree;
 template<class T, int N   > auto new_DataArray(const std::string& name, const T(&arr)[N]) -> tree;
-template<class T          > auto new_DataArray(const std::string& name, std::vector<T>&& v) -> tree;
-template<class T, int rank> auto new_DataArray(const std::string& name, md_array<T,rank>&& arr) -> tree;
-template<class T, int rank> auto new_DataArray(const std::string& name, md_array_view<T,rank>& arr) -> tree;
+template<class Arr>         auto new_DataArray(const std::string& name, Arr arr) -> tree requires _movable_to_node_value<Arr>;
 
-                  auto new_UserDefinedData(const std::string& name, node_value value = MT()) -> tree;
-                  auto new_UserDefinedData(const std::string& name, const std::string& val) -> tree;
-template<class T> auto new_UserDefinedData(const std::string& name, const T& val) -> tree;
-template<class T> auto new_UserDefinedData(const std::string& name, std::vector<T>&& v) -> tree;
+template<class Arr> auto append_DataArray(tree& t, const std::string& name, Arr&& arr) -> tree&
+  requires _movable_to_node_value<Arr>;
+                    auto append_DataArray(tree& t, const std::string& name, const std::vector<std::string>& ss) -> tree&;
+
+                    auto new_UserDefinedData(const std::string& name, node_value value = MT()) -> tree;
+                    auto new_UserDefinedData(const std::string& name, const std::string& val) -> tree;
+template<class T  > auto new_UserDefinedData(const std::string& name, const T& val) -> tree;
+template<class Arr> auto new_UserDefinedData(const std::string& name, Arr arr) -> tree requires _movable_to_node_value<Arr>;
 
 template<class I> auto new_CGNSBase(const std::string& name, I cellDim, I physDim) -> tree;
 template<class I> auto new_UnstructuredZone(const std::string& name, const I(&dims)[3] = {0,0,0}) -> tree;
@@ -52,30 +52,46 @@ template<class I> auto new_ZoneSubRegion(const std::string& name, I dim, const s
 template<class I> auto new_PointRange(I first, I last) -> tree;
 template<class I> auto new_ElementRange(I first, I last) -> tree;
 
-template<class I> auto
-new_Elements(const std::string& name, I type, std::vector<I>&& connectivity, I first, I last, I nb_bnd_elts = 0) -> tree;
-template<class I> auto
-new_Elements(const std::string& name, ElementType_t type, std::vector<I>&& connectivity, I first, I last, I nb_bnd_elts = 0) -> tree;
+template<class I, class Arr> auto
+new_Elements(const std::string& name, I type, Arr connectivity, I first, I last, I nb_bnd_elts = 0) -> tree
+  requires _movable_to_node_value<Arr>;
+template<class I, class Arr> auto
+new_Elements(const std::string& name, ElementType_t type, Arr connectivity, I first, I last, I nb_bnd_elts = 0) -> tree
+ requires _movable_to_node_value<Arr>;
+
 template<class I> auto
 new_HomogenousElements(const std::string& name, I type, md_array<I,2>&& connectivity, I first, I last, I nb_bnd_elts=0) -> tree;
-template<class I> auto
-new_NgonElements(const std::string& name, std::vector<I>&& connectivity, I first, I last, I nb_bnd_elts=0) -> tree;
-template<class I> auto
-new_NfaceElements(const std::string& name, std::vector<I>&& connectivity, I first, I last) -> tree;
+template<class Arr, class I> auto
+new_NgonElements(const std::string& name, Arr connectivity, I first, I last, I nb_bnd_elts=0) -> tree
+  requires _movable_to_node_value<Arr>;
+template<class Arr, class I> auto
+new_NfaceElements(const std::string& name, Arr connectivity, I first, I last) -> tree
+  requires _movable_to_node_value<Arr>;
 
-template<class I> auto new_PointList(const std::string& name, std::vector<I>&& pl) -> tree;
+template<class Arr> auto new_PointList(const std::string& name, Arr pl) -> tree
+  requires _movable_to_node_value<Arr>;
 template<class I> auto new_PointList(const std::string& name, std::initializer_list<I> pl) -> tree;
 
-template<class I> auto new_BC(const std::string& name, const std::string& loc, std::vector<I>&& point_list) -> tree;
+template<class Arr> auto new_BC(const std::string& name, const std::string& loc, Arr point_list) -> tree
+  requires _movable_to_node_value<Arr>;
 template<class I> auto new_BC(const std::string& name, const std::string& loc, std::initializer_list<I> pl) -> tree;
 
-template<class I> auto new_Rind(std::vector<I>&& rind_planes) -> tree;
+template<class Arr> auto new_Rind(Arr rind_planes) -> tree
+  requires _movable_to_node_value<Arr>;
 
 template<class I> auto new_Ordinal(I i) -> tree;
 
-template<class I> auto new_Distribution(const std::string& entity_kind, std::vector<I>&& partial_dist) -> tree;
-template<class I> auto new_ElementDistribution(std::vector<I>&& partial_dist) -> tree;
-template<class I> auto new_ElementDistribution(std::vector<I>&& partial_dist, std::vector<I>&& partial_dist_connec) -> tree;
+template<class Arr> auto new_Distribution(const std::string& entity_kind, Arr partial_dist) -> tree
+  requires _movable_to_node_value<Arr>;
+template<class Arr> auto new_ElementDistribution(Arr partial_dist) -> tree
+  requires _movable_to_node_value<Arr>;
+template<class Arr> auto new_ElementDistribution(Arr partial_dist, Arr partial_dist_connec) -> tree
+  requires _movable_to_node_value<Arr>;
+
+
+template<class I> auto new_ConvergenceHistory(const std::string& name, I n_iteration) -> tree;
+
+auto new_IntegralData(const std::string& name = "IntegralData") -> tree;
 // [Sphinx Doc] creation according to SIDS }
 
 
@@ -107,22 +123,24 @@ new_ElementRange(I first, I last) -> tree {
 }
 
 
-template<class I> auto
+template<class I, class Arr> auto
 new_Elements(
-  const std::string& name, I type, std::vector<I>&& conns,
+  const std::string& name, I type, Arr conns,
   I first, I last, I nb_bnd_elts)
 -> tree
+  requires _movable_to_node_value<Arr>
 {
   return
     { name, "Elements_t", node_value({type,nb_bnd_elts}),
        { new_ElementRange(first,last) ,
          new_DataArray("ElementConnectivity", node_value(std::move(conns))) } };
 }
-template<class I> auto
+template<class I, class Arr> auto
 new_Elements(
-  const std::string& name, ElementType_t type, std::vector<I>&& conns,
+  const std::string& name, ElementType_t type, Arr conns,
   I first, I last, I nb_bnd_elts)
 -> tree
+  requires _movable_to_node_value<Arr>
 {
   return new_Elements(name,(I)type,std::move(conns),first,last,nb_bnd_elts);
 }
@@ -135,19 +153,25 @@ new_HomogenousElements(
   return new_Elements(name,type,std::move(conns.underlying_range()),first,last,nb_bnd_elts);
 }
 
-template<class I> auto
-new_NgonElements(const std::string& name, std::vector<I>&& conns, I first, I last, I nb_bnd_elts) -> tree {
+template<class Arr, class I> auto
+new_NgonElements(const std::string& name, Arr conns, I first, I last, I nb_bnd_elts) -> tree
+  requires _movable_to_node_value<Arr>
+{
   I ngon_type = NGON_n;
   return new_Elements(name,ngon_type,std::move(conns),first,last,nb_bnd_elts);
 }
-template<class I> auto
-new_NfaceElements(const std::string& name, std::vector<I>&& conns, I first, I last) -> tree {
+template<class Arr, class I> auto
+new_NfaceElements(const std::string& name, Arr conns, I first, I last) -> tree
+  requires _movable_to_node_value<Arr>
+{
   I nface_type = NFACE_n;
   return new_Elements(name,nface_type,std::move(conns),first,last,0);
 }
 
-template<class I> auto
-new_IndexArray(const std::string& name, std::vector<I>&& point_list) -> tree {
+template<class Arr> auto
+new_IndexArray(const std::string& name, Arr point_list) -> tree
+  requires _movable_to_node_value<Arr>
+{
   node_value pl_value = node_value(std::move(point_list));
   return {name, "IndexArray_t", std::move(pl_value)};
 }
@@ -156,8 +180,10 @@ new_IndexArray(const std::string& name, std::initializer_list<I> pl) -> tree {
   return new_IndexArray(name,std::vector(pl.begin(),pl.end()));
 }
 
-template<class I> auto
-new_PointList(const std::string& name, std::vector<I>&& point_list) -> tree {
+template<class Arr> auto
+new_PointList(const std::string& name, Arr point_list) -> tree
+  requires _movable_to_node_value<Arr>
+{
   std::vector<I8> dims = {1,(I8)point_list.size()}; // required by SIDS (9.3: BC_t)
   node_value pl_value(std::move(point_list),std::move(dims));
   return {name, "IndexArray_t", std::move(pl_value)};
@@ -167,8 +193,10 @@ new_PointList(const std::string& name, std::initializer_list<I> pl) -> tree {
   return new_PointList(name,std::vector(pl.begin(),pl.end()));
 }
 
-template<class I> auto
-new_BC(const std::string& name, const std::string& loc, std::vector<I>&& point_list) -> tree {
+template<class Arr> auto
+new_BC(const std::string& name, const std::string& loc, Arr point_list) -> tree
+  requires _movable_to_node_value<Arr>
+{
   return
     { name, "BC_t", node_value("FamilySpecified"),
        { new_GridLocation(loc),
@@ -179,8 +207,10 @@ new_BC(const std::string& name, const std::string& loc, std::initializer_list<I>
   return new_BC(name,loc,std::vector(pl.begin(),pl.end()));
 }
 
-template<class I> auto
-new_Rind(std::vector<I>&& rind_planes) -> tree {
+template<class Arr> auto
+new_Rind(Arr rind_planes) -> tree
+  requires _movable_to_node_value<Arr>
+{
   return {"Rind", "Rind_t", node_value(std::move(rind_planes))};
 }
 
@@ -189,19 +219,25 @@ new_Ordinal(I i) -> tree {
   return {"Ordinal", "Ordinal_t", node_value(i)};
 }
 
-template<class I> auto
-new_Distribution(const std::string& entity_kind, std::vector<I>&& partial_dist) -> tree {
+template<class Arr> auto
+new_Distribution(const std::string& entity_kind, Arr partial_dist) -> tree
+  requires _movable_to_node_value<Arr>
+{
   tree vtx_dist = cgns::new_DataArray(entity_kind,std::move(partial_dist));
   tree dist = cgns::new_UserDefinedData(":CGNS#Distribution");
   emplace_child(dist,std::move(vtx_dist));
   return dist;
 }
-template<class I> auto
-new_ElementDistribution(std::vector<I>&& partial_dist) -> tree {
+template<class Arr> auto
+new_ElementDistribution(Arr partial_dist) -> tree
+  requires _movable_to_node_value<Arr>
+{
   return new_Distribution("Element",std::move(partial_dist));
 }
-template<class I> auto
-new_ElementDistribution(std::vector<I>&& partial_dist, std::vector<I>&& partial_dist_connec) -> tree {
+template<class Arr> auto
+new_ElementDistribution(Arr partial_dist, Arr partial_dist_connec) -> tree
+  requires _movable_to_node_value<Arr>
+{
   tree elt_dist = cgns::new_DataArray("Element",std::move(partial_dist));
   tree connec_dist = cgns::new_DataArray("ElementConnectivity",std::move(partial_dist_connec));
   tree dist = cgns::new_UserDefinedData(":CGNS#Distribution");
@@ -214,26 +250,41 @@ template<class T> auto
 new_UserDefinedData(const std::string& name, const T& val) -> tree {
   return {name, "UserDefinedData_t", node_value(val)};
 }
-template<class T> auto
-new_UserDefinedData(const std::string& name, std::vector<T>&& v) -> tree {
-  return new_UserDefinedData(name,node_value(std::move(v)));
+template<class Arr> auto
+new_UserDefinedData(const std::string& name, Arr arr) -> tree
+  requires _movable_to_node_value<Arr>
+{
+  return new_UserDefinedData(name,node_value(std::move(arr)));
 }
 
 template<class T> auto
 new_DataArray(const std::string& name, std::initializer_list<T>&& arr) -> tree {
   return {name, "DataArray_t", node_value(std::move(arr))};
 }
+template<class Arr> auto
+new_DataArray(const std::string& name, Arr arr) -> tree
+  requires _movable_to_node_value<Arr>
+{
+  return new_DataArray(name,node_value(std::move(arr)));
+}
 template<class T> auto
-new_DataArray(const std::string& name, std::vector<T>&& v) -> tree {
-  return new_DataArray(name,node_value(std::move(v)));
-}
-template<class T, int rank> auto
-new_DataArray(const std::string& name, md_array<T,rank>&& arr) -> tree {
+new_DataArray(const std::string& name, std_e::polymorphic_array<T>&& arr) -> tree
+{
   return new_DataArray(name,node_value(std::move(arr)));
 }
-template<class T, int rank> auto
-new_DataArray(const std::string& name, md_array_view<T,rank>& arr) -> tree {
-  return new_DataArray(name,node_value(std::move(arr)));
+
+template<class I> auto
+new_ConvergenceHistory(const std::string& name, I n_iteration) -> tree {
+  return {name, "ConvergenceHistory_t", node_value(std::vector<I>{n_iteration})};
+}
+
+template<class Arr> auto
+append_DataArray(tree& t, const std::string& name, Arr&& arr) -> tree&
+  requires _movable_to_node_value<Arr>
+{
+  auto new_node = new_DataArray(name, FWD(arr));
+  emplace_child(t, std::move(new_node));
+  return children(t).back();
 }
 
 
